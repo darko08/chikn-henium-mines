@@ -1,7 +1,7 @@
 // Battle screen: arena hero, squad power, PvE missions, PvP guild wars and the animated battle modal.
 (() => {
 const G = window.G, D = G.D, ui = G.ui, esc = ui.esc;
-const now = () => Date.now();
+const now = () => G.now(); // the game clock (moves faster in test mode)
 const STEP = 450; // ms per battle round
 
 let mode = 'pve'; // 'pve' | 'pvp'

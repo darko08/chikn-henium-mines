@@ -5,7 +5,7 @@ const G = window.G, D = G.D, R = D.rules;
 const ok = (extra) => Object.assign({ ok: true }, extra);
 const fail = (msg) => ({ ok: false, msg });
 const lack = (cost) => fail('Not enough ' + G.missing(cost).map((r) => D.res[r].name).join(', '));
-const now = () => Date.now();
+const now = () => G.now(); // the game clock (moves faster in test mode)
 G.sys = {}; G.act = {};
 
 // ---------- mine ----------
@@ -233,21 +233,138 @@ G.rollRarity = (w) => {
   for (let i = 0; i < w.length; i++) { r -= w[i]; if (r <= 0) return D.rarities[i].id; }
   return 'common';
 };
-G.newChikn = (rarity, role) => {
+// a Chikn joins your coop: one you own (bought or won) or one you rent (extra: { own: false, rent, kg, name, num })
+G.newChikn = (rarity, role, extra = {}) => {
   const S = G.S;
-  const c = { id: S.nextId++, name: G.pick(D.names), num: G.randInt(1000, 9999), role: role || G.pick(Object.keys(D.roles)), rarity, lv: 1, kg: D.rarity(rarity).kg0, status: 'idle', until: 0 };
+  const c = Object.assign({ id: S.nextId++, name: G.pick(D.names), num: G.randInt(1000, 9999), role: role || G.pick(Object.keys(D.roles)), rarity, lv: 1,
+    kg: D.rarity(rarity).kg0, status: 'idle', until: 0, own: true }, extra);
+  G.syncLv(c);
   S.chikns.push(c);
   if (S.squad.length < G.squadSlots()) { S.squad.push(c.id); c.status = 'squad'; }
   return c;
 };
-G.act.hire = (kind = 'standard') => {
-  const S = G.S, h = D.hires[kind];
-  const free = kind === 'standard' && S.stats.hired === 0;
+// ---------- Chikn NFT rentals: rent from other holders, or rent yours out for passive EGG ----------
+const hex4 = () => Math.floor(Math.random() * 65536).toString(16).padStart(4, '0');
+G.wallet = () => `0x${hex4()}…${hex4()}`;                                   // a simulated holder's wallet
+G.rentPrice = (c) => D.rentPrice(c.rarity, c.kg || G.kgStart(c));            // fair EGG a day for this Chikn now
+G.rentOffer = (free) => {
+  const S = G.S, rarity = free ? free.rarity : G.rollRarity(D.rent.weights), R = D.rarity(rarity);
+  const kg = free ? R.kg0 : Math.round(R.kg0 + (R.kgMax - R.kg0) * D.rent.heavy * Math.random());
+  return { id: S.nextId++, rarity, role: free ? free.role : G.pick(Object.keys(D.roles)), kg, name: G.pick(D.names), num: G.randInt(1000, 9999),
+    owner: G.wallet(), price: free ? 0 : Math.round(D.rentPrice(rarity, kg) * G.rand(0.85, 1.15) * 100) / 100, free: !!free };
+};
+// the rental market: D.rent.offers offers, new ones every farm day; a new player's first rental is free
+G.rentMarket = () => {
+  const S = G.S;
+  if (!S.rentMk || S.rentMk.day !== S.farm.day) S.rentMk = { day: S.farm.day, offers: Array.from({ length: D.rent.offers }, () => G.rentOffer()) };
+  const free = S.stats.hired === 0;
+  if (free && !S.rentMk.offers.some((o) => o.free)) S.rentMk.offers.unshift(G.rentOffer(D.rent.free));
+  if (!free) S.rentMk.offers = S.rentMk.offers.filter((o) => !o.free);
+  return S.rentMk;
+};
+G.rentDays = (o, days) => (o.free ? D.rent.free.days : days);
+G.act.rent = (oid, days = 7, auto = true) => {
+  const S = G.S, mk = G.rentMarket(), o = mk.offers.find((x) => x.id === oid);
+  if (!o) return fail('That offer is gone: another player rented it');
+  days = G.rentDays(o, days);
+  if (!o.free && !D.rent.days.includes(days)) return fail('Pick how many days to rent');
   if (S.chikns.length >= G.coopCap()) return fail(`The coop is full (${S.chikns.length}/${G.coopCap()}). Upgrade it on the Farm.`);
-  if (!free && !G.pay(h.cost)) return lack(h.cost);
-  const c = G.newChikn(free ? R.freeHire.rarity : G.rollRarity(h.weights), free ? R.freeHire.role : null);
+  const cost = o.free ? 0 : D.rentCost(o.price, days);
+  if (S.res.egg < cost) return fail(`Not enough EGG: renting ${o.name} for ${days} day${days === 1 ? '' : 's'} costs ${cost} EGG`);
+  S.res.egg -= cost; S.stats.rentPaid = (S.stats.rentPaid || 0) + cost; S.stats.eggBurned += cost * D.rent.fee;
+  mk.offers = mk.offers.filter((x) => x !== o);
+  const c = G.newChikn(o.rarity, o.role, { own: false, kg: o.kg, name: o.name, num: o.num,
+    rent: { left: days * 86400, days, price: o.price, owner: o.owner, auto: !!auto && !o.free } });
+  G.stat('hired'); G.addXP(20); G.emit('res');
+  return ok({ c, cost, days, free: o.free });
+};
+G.act.extendRent = (cid, days = 7) => {
+  const S = G.S, c = G.chikn(S, cid);
+  if (!c || !c.rent) return fail('That Chikn is not rented');
+  if (!D.rent.days.includes(days)) return fail('Pick how many days to add');
+  const price = c.rent.price || G.rentPrice(c), cost = D.rentCost(price, days); // a free starter is extended at the market price
+  if (S.res.egg < cost) return fail(`Not enough EGG: ${days} more day${days === 1 ? '' : 's'} cost ${cost} EGG`);
+  S.res.egg -= cost; S.stats.rentPaid = (S.stats.rentPaid || 0) + cost; S.stats.eggBurned += cost * D.rent.fee;
+  c.rent.price = price; c.rent.left += days * 86400; c.rent.days = days;
+  G.emit('res');
+  return ok({ cost, left: c.rent.left });
+};
+G.act.autoRenew = (cid) => {
+  const c = G.chikn(G.S, cid);
+  if (!c || !c.rent) return fail('That Chikn is not rented');
+  c.rent.auto = !c.rent.auto;
+  return ok({ auto: c.rent.auto });
+};
+// buy a Chikn NFT from another holder (the collection stays at 22,000): Rare or better
+G.act.buyNft = () => {
+  const S = G.S, b = D.buyNft;
+  if (S.chikns.length >= G.coopCap()) return fail(`The coop is full (${S.chikns.length}/${G.coopCap()}). Upgrade it on the Farm.`);
+  if (!G.pay(b.cost)) return lack(b.cost);
+  const c = G.newChikn(G.rollRarity(b.weights), null, { own: true, seller: G.wallet() });
   G.stat('hired'); G.addXP(20);
-  return ok({ c, free });
+  return ok({ c });
+};
+// list one of your own Chikns for rent: it keeps working for you until a renter takes it
+G.act.listRent = (cid, days = 7, k = 1) => {
+  const S = G.S, c = G.chikn(S, cid);
+  if (!c) return fail('Chikn not found');
+  if (c.own === false) return fail(`${c.name} is rented: only its owner can rent it out`);
+  if (c.lease) return fail(`${c.name} is already ${c.lease.left == null ? 'listed' : 'rented out'}`);
+  if (c.status === 'exp' || c.status === 'injured') return fail(`${c.name} is ${c.status === 'exp' ? 'on an expedition' : 'recovering'}: list it when it is back`);
+  if (!D.rent.days.includes(days)) return fail('Pick how many days to rent it out');
+  const price = Math.round(G.rentPrice(c) * (D.rent.priceK.includes(k) ? k : 1) * 100) / 100;
+  c.lease = { price, days, left: null, renter: null, earned: 0, k };
+  return ok({ price });
+};
+G.act.cancelRent = (cid) => {
+  const c = G.chikn(G.S, cid);
+  if (!c || !c.lease) return fail('That Chikn is not listed');
+  if (c.lease.left != null) return fail(`${c.name} is rented out: it comes back when the rental ends`);
+  delete c.lease;
+  return ok();
+};
+G.rentWait = (c) => D.rent.wait * Math.pow(c.lease.price / Math.max(1e-9, G.rentPrice(c)), D.rent.elastic); // mean wait for a renter (s)
+G.rentIncome = () => G.S.chikns.reduce((s, c) => s + (c.lease && c.lease.left != null ? c.lease.price * (1 - D.rent.fee) : 0), 0); // EGG a day
+G.rentSpend = () => G.S.chikns.reduce((s, c) => s + (c.rent ? c.rent.price : 0), 0);   // EGG a day your rentals cost
+// rentals run on game time (also while you are away): rented Chikns go home, renters take your listings, rent is paid
+G.sys.rentTick = (dt, offline) => {
+  const S = G.S, fee = D.rent.fee;
+  for (const c of [...S.chikns]) {
+    if (c.rent) {
+      c.rent.left -= dt;
+      if (c.rent.left > 0) continue;
+      const cost = D.rentCost(c.rent.price || G.rentPrice(c), c.rent.days);
+      if (c.rent.auto && S.res.egg >= cost) {
+        S.res.egg -= cost; S.stats.rentPaid = (S.stats.rentPaid || 0) + cost; S.stats.eggBurned += cost * fee;
+        c.rent.left += c.rent.days * 86400;
+        G.emit('note', { text: `${c.name}'s rental renewed for ${c.rent.days} day${c.rent.days === 1 ? '' : 's'} (−${cost} EGG)`, icon: 'res/egg' });
+      } else if (c.status !== 'exp') {
+        S.chikns.splice(S.chikns.indexOf(c), 1); S.squad = S.squad.filter((id) => id !== c.id);
+        G.emit('note', { text: `${c.name}'s rental ended: the Chikn went back to its owner${c.rent.auto ? ' (not enough EGG to renew)' : ''}.`, icon: 'ui/chikns', bad: true });
+        G.emit('rentEnd', c);
+      }
+      continue;
+    }
+    const L = c.lease;
+    if (!L) continue;
+    if (L.left == null) { // listed: does a renter take it in this slice of time?
+      if (c.status === 'exp' || c.status === 'injured') continue;
+      if (Math.random() < 1 - Math.exp(-dt / G.rentWait(c))) {
+        L.left = L.days * 86400; L.renter = G.wallet();
+        S.squad = S.squad.filter((id) => id !== c.id); c.status = 'away';
+        G.emit('note', { text: `${c.name} was rented for ${L.days} day${L.days === 1 ? '' : 's'}: +${G.fmt(L.price * (1 - fee), 2)} EGG a day for you`, icon: 'res/egg', good: true });
+      }
+      continue;
+    }
+    const t = Math.min(dt, L.left), got = L.price * (1 - fee) * t / 86400; // rent arrives continuously, minus the fee
+    S.res.egg += got; L.earned += got; S.stats.rentEarned = (S.stats.rentEarned || 0) + got; S.stats.eggBurned += L.price * fee * t / 86400;
+    L.left -= t;
+    if (L.left <= 0) {
+      c.status = 'idle';
+      G.emit('note', { text: `${c.name} is back from a rental and earned you ${G.fmt(L.earned, 1)} EGG`, icon: 'res/egg', good: true });
+      delete c.lease;
+    }
+  }
 };
 G.act.toggleSquad = (cid) => {
   const S = G.S, c = G.chikn(S, cid);
@@ -382,6 +499,8 @@ G.act.startExp = (siteId, ids) => {
   if (S.exps.some((e) => e.site === siteId)) return fail('A team is already exploring there');
   ids = (ids || []).filter((id) => { const c = G.chikn(S, id); return c && c.status === 'idle'; }).slice(0, site.slots);
   if (!ids.length) return fail('Pick at least one idle Chikn (not in your squad)');
+  const short = ids.map((id) => G.chikn(S, id)).find((c) => c.rent && c.rent.left < site.t && !c.rent.auto);
+  if (short) return fail(`${short.name}'s rental ends before this expedition returns: extend the rental or turn on auto-renew`);
   ids.forEach((id) => (G.chikn(S, id).status = 'exp'));
   S.exps.push({ id: S.nextId++, site: siteId, ids, t: 0, dur: site.t, done: false });
   return ok();
@@ -411,6 +530,7 @@ G.act.claimExp = (id) => {
   }
   G.give(rew); G.stat('exps'); G.addXP(25 + site.t / 600);
   S.exps.splice(S.exps.indexOf(e), 1);
+  for (const c of team) if (c.rent && c.rent.left <= 0) G.sys.rentTick(0); // a rental that ran out on the way ends now
   return ok({ rew, injured, site });
 };
 
@@ -511,7 +631,7 @@ G.act.claimSeason = (lv) => {
     return fail(`Your coop is full (${G.S.chikns.length}/${G.coopCap()}). Upgrade the Coop on the Farm, then claim your ${D.rarity(r.chikn).name} Chikn.`);
   }
   s.claimed.push(lv);
-  if (r.chikn) { const c = G.newChikn(r.chikn); return ok({ c }); }
+  if (r.chikn) { const c = G.newChikn(r.chikn, null, { own: true }); return ok({ c }); } // from the game's treasury of Chikn NFTs
   G.give(r);
   return ok({ rew: r });
 };
@@ -538,6 +658,7 @@ G.sys.hazardTick = () => {
   if (H) { if (H.until && t >= H.until) G.sys.clearHazard(true); return; }
   if (t < S.hazardNext) return;
   S.hazardNext = t + G.rand(R.hazardGap[0], R.hazardGap[1]) * 1000;
+  if (G.speed() > 10) return; // test speed: no hazards you couldn't react to in time
   const open = D.zones.filter((z) => G.zoneOpen(z));
   if (!open.length) return;
   let types = S.player.lv < R.hazardLv ? ['richvein', 'supply'] : ['richvein', 'supply', 'creature', 'bandits', 'collapse'];

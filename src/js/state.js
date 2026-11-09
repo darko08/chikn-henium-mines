@@ -2,8 +2,10 @@
 (() => {
 const G = window.G, D = G.D, R = D.rules;
 const SAVE_KEY = 'chikn-henium-mines-v2'; // v2: real-time economy (old saves from the fast prototype are not loaded)
-const now = () => Date.now();
+// the game clock: real time plus whatever test speed / time skips added (S.clockOff, saved with the game)
+const now = () => Date.now() + ((G.S && G.S.clockOff) || 0);
 G.now = now;
+G.speed = () => (G.S && G.S.settings && G.S.settings.speed) || 1; // test speed: game seconds per real second
 
 // ---------- formatting ----------
 const units = [[1e12, 1e12, 'T'], [1e9, 1e9, 'B'], [1e6, 1e6, 'M'], [1e4, 1e3, 'K']]; // [threshold, divisor, suffix]
@@ -24,7 +26,7 @@ G.fmtTime = (s) => {
   if (m) return `${m}m ${String(x).padStart(2, '0')}s`;
   return `${x}s`;
 };
-G.dayKey = () => new Date().toISOString().slice(0, 10);
+G.dayKey = () => new Date(now()).toISOString().slice(0, 10);
 G.rand = (a, b) => a + Math.random() * (b - a);
 G.randInt = (a, b) => Math.floor(G.rand(a, b + 1));
 G.pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -54,12 +56,12 @@ G.newState = (kind = 'fresh') => {
     season: { lv: 1, xp: 0, claimed: [], ends: now() + (23 * 24 + 14) * 3600e3 },
     daily: { day: G.dayKey(), prog: {}, claimed: {} },
     quests: { done: [] },
-    stats: { mined: 0, processed: 0, crafted: 0, refined: 0, taps: 0, hired: 0, wins: 0, exps: 0, upgrades: 0, ingots: 0, eggBurned: 0, feeBurned: 0 },
+    stats: { mined: 0, processed: 0, crafted: 0, refined: 0, taps: 0, hired: 0, wins: 0, exps: 0, upgrades: 0, ingots: 0, eggBurned: 0, feeBurned: 0, rentEarned: 0, rentPaid: 0 },
     world: { mined: 0, war: D.supply.worldWar0, hunt: D.supply.worldHunt0, paid: 0 }, worldT: Math.max(0, (now() - D.supply.genesis) / 1000),
     hunt: 0, tapEnergy: D.rules.tap.energyMax,
     live: { id: null, until: 0, next: now() + 75e3 },
     hazard: null, hazardNext: now() + 100e3,
-    notes: [], settings: { sound: true }, saveT: 0,
+    notes: [], settings: { sound: true, speed: 1 }, saveT: 0, clockOff: 0,
   };
   S.world.mined = D.cumEmission(S.worldT / 86400);
   G.dexInit(S);
@@ -81,7 +83,7 @@ function showcase(S) {
     { id: 2, type: 'improved', lv: 5, dur: 88, zone: 'iron' },
     { id: 3, type: 'basic', lv: 4, dur: 64, zone: 'coal' },
   ];
-  const mk = (role, rarity, lv, name) => ({ id: S.nextId++, name, num: G.randInt(1000, 9999), role, rarity, lv, status: 'idle', until: 0 });
+  const mk = (role, rarity, lv, name) => ({ id: S.nextId++, name, num: G.randInt(1000, 9999), role, rarity, lv, status: 'idle', until: 0, own: true });
   S.nextId = 10;
   S.chikns = [mk('miner', 'legendary', 10, 'Goldie'), mk('engineer', 'rare', 8, 'Gizmo'), mk('miner', 'epic', 1, 'Rocky'),
     mk('guardian', 'epic', 12, 'Flint'), mk('explorer', 'rare', 10, 'Juniper'), mk('operator', 'uncommon', 9, 'Tinker'),
@@ -90,6 +92,14 @@ function showcase(S) {
   S.chikns.forEach((c) => G.ensureKg(c));
   S.squad = S.chikns.slice(0, 3).map((c) => c.id);
   S.squad.forEach((id) => (G.chikn(S, id).status = 'squad'));
+  // rentals: one Chikn rented from another holder, one of yours rented out (passive EGG), one listed for rent
+  const rented = mk('miner', 'epic', 1, 'Pebbles'); rented.own = false; G.ensureKg(rented); rented.kg += 60; G.syncLv(rented);
+  rented.rent = { left: 3.4 * 86400, days: 7, price: 1.5, owner: '0x8f3a…c21d', auto: true };
+  S.chikns.push(rented);
+  const pip = S.chikns.find((c) => c.name === 'Pip'); pip.status = 'away';
+  pip.lease = { price: 0.85, days: 7, left: 2.2 * 86400, renter: '0x51be…07a9', earned: 3.6, k: 1 };
+  const biscuit = S.chikns.find((c) => c.name === 'Biscuit');
+  biscuit.lease = { price: 0.62, days: 3, left: null, renter: null, earned: 0, k: 1 };
   S.jobs = [
     { id: 1, f: 'smelter', r: 'smeltCopper', t: 200, dur: 485, repeat: true },
     { id: 2, f: 'forge', r: 'parts', t: 600, dur: 1458, repeat: true },
@@ -127,7 +137,7 @@ G.load = () => {
     const saved = JSON.parse(raw);
     const S = merge(G.newState(), saved);
     for (const id in S.factories) if (S.factories[id].con === undefined) S.factories[id].con = null;
-    S.chikns.forEach((c) => G.ensureKg(c));
+    S.chikns.forEach((c) => { G.ensureKg(c); if (c.own === undefined) c.own = true; }); // Chikns hired before rentals are yours
     // saves from before the world clock and the world hunt pool
     if (!(typeof S.worldT === 'number' && S.worldT >= 0)) S.worldT = Math.max(0, (now() - D.supply.genesis) / 1000);
     if (!(typeof S.world.hunt === 'number' && S.world.hunt > 0)) S.world.hunt = D.supply.worldHunt0;
@@ -314,6 +324,8 @@ G.tick = (dt, offline = false, mineK = 1) => {
   S.tapEnergy = Math.min(D.rules.tap.energyMax, (S.tapEnergy ?? D.rules.tap.energyMax) + D.rules.tap.regen * dt);
   // farm: eggs, FEED upkeep, hunger
   G.farmTick(dt, offline);
+  // Chikn NFT rentals: rented Chikns go home, renters take your listings, rent arrives (also while you are away)
+  G.sys.rentTick(dt, offline);
   // construction and digging timers
   for (const f of D.factories) { const st = S.factories[f.id]; if (st.con) { st.con.t += dt; if (st.con.t >= st.con.dur) G.sys.finishBuild(f, offline); } }
   if (S.dig) { S.dig.t += dt * G.digSpeed(); if (S.dig.t >= S.dig.dur) G.sys.finishDig(offline); }
@@ -363,6 +375,15 @@ G.tick = (dt, offline = false, mineK = 1) => {
   S.last = now();
 };
 
+// Test tool: skip ahead `sec` seconds as if you played the whole time (floors mine all along, no 8 h cap), quietly
+// (no hazards pop up while skipping). The clock moves with it, so every timer stays consistent.
+G.warp = (sec) => {
+  const S = G.S, before = { ...S.res }, step = 60, n = Math.ceil(sec / step);
+  for (let i = 0; i < n; i++) { const dt = Math.min(step, sec - i * step); S.clockOff = (S.clockOff || 0) + dt * 1000; G.tick(dt, true, 1); }
+  const gains = {};
+  for (const r in S.res) { const d = S.res[r] - before[r]; if (d > 0.5) gains[r] = d; }
+  return { sec, gains };
+};
 G.offline = (sec) => {
   const S = G.S;
   if (!(sec >= 30)) return null;

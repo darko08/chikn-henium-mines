@@ -5,7 +5,7 @@ The game is a single-file browser idle/tycoon game. `node build.mjs <out.html>` 
 
 ## Read these first (core, do NOT edit)
 - `src/js/data.js` — all static data & formulas (`G.D`): resources, zones, factories+recipes, machines, roles,
-  rarities, hires, guild projects/donations, market prices, expeditions, battle stages, missions, quests,
+  rarities, rentals, guild projects/donations, market prices, expeditions, battle stages, missions, quests,
   journey (6-month roadmap), live events, HENIUM supply/halvings, reward bundles `D.bundle(depth, k)` and the rule
   numbers `D.rules` (hazards, battle, expeditions, guild, timings; see "Economy rules" below).
 - `src/js/state.js` — state shape (`G.S`), formatting (`G.fmt`, `G.fmtFull`, `G.fmtRes`, `G.fmtTime`),
@@ -45,7 +45,11 @@ Nav ids: `mines factories crafting chikns farm guild dex expeditions battle even
   `ui.btn(...)`, `ui.chiknCard(c, {sel, cls, attrs, noStatus})`, `ui.modal({title, html, hero, wide, actions:[{label, cls, fn}]})`,
   `ui.toast(text, 'good'|'bad'|'purple', iconKey)`, `ui.float(html, x, y)`, `ui.sparks(x, y, color)`, `ui.centerOf(el)`,
   `ui.reveal(chikn)` (new-chikn reveal modal), `ui.go(viewId)`, `ui.render()`, `G.sfx('ok'|'err'|'coin'|'win'|'lose'|'up'|'hire')`.
-- The "Hire Chikn" dialog already exists: any element with `data-a="hire"` opens it.
+- The rental market dialog already exists: any element with `data-a="hire"` opens it (`data-a="buyNftDlg"` opens
+  "Buy a Chikn NFT"). Chikn NFTs are a fixed collection: `c.own` (yours), `c.rent` (rented from a holder: `left` seconds,
+  `price`, `auto`), `c.lease` (yours on the rental market: `left == null` while listed; status `'away'` while rented
+  out). Actions: `G.act.rent`, `extendRent`, `autoRenew`, `buyNft`, `listRent`, `cancelRent`; numbers in `D.rent`.
+- Time: always use `G.now()` (the game clock: real time plus test-speed skips, `S.clockOff`), never `Date.now()`.
 
 ## Images — `G.img(key)` returns a data URI
 - `res/<resource id>` for every resource in `D.res` (egg, feed, henium, stone, coal, copper, iron, heniumOre,
@@ -83,7 +87,7 @@ your own Playwright snippets (Chromium is preinstalled; `require('playwright')`)
   creatures, bandit and PvP wins pay ores & materials (`D.bundle`), a little FEED or HENIUM. The DEX only moves existing
   EGG. EGG can be burned for FEED (`G.act.exchange('e2f', qty)`, rate `G.exRate().e2f`); EGG → HENIUM goes through the
   DEX (`e2h` is refused), and HENIUM can **not** be turned into EGG (`h2e` was removed — don't show it).
-  EGG sinks: hires, coop upgrades, bandit tolls, guild donations/zone/License, global factory upgrades, burning for FEED.
+  EGG sinks: Chikn rentals (fee burned), coop upgrades, bandit tolls, guild donations/zone/License, global factory upgrades, burning for FEED.
 - **FEED is scarce**: the Feed Mill's daily quota is the main source. Other FEED is small on purpose: level-ups pay
   `D.rules.levelFeed(lv)` (2 + lv/5), daily missions at most 6 a day in total, even season levels `ceil(lv/3)`, a few
   one-time quests, and 1–4 now and then from expeditions, supply crates and creatures.
@@ -139,7 +143,7 @@ your own Playwright snippets (Chromium is preinstalled; `require('playwright')`)
     points halve every day (`D.rules.huntKeep`). First clears of stages pay a one-time HENIUM bounty (`st.first`).
   - Guild projects pay `G.guildProjectReward(i)` HENIUM (project i, 0-based) — always show that number.
   - No more HENIUM from level-ups, missions or EGG minting. HENIUM sinks: digging below depth 21, building levels 5+,
-    premium hires, guild license/zone, speed-ups, and a burn on every DEX trade.
+    buying Chikn NFTs, guild license/zone, speed-ups, and a burn on every DEX trade.
 - **DEX** = constant-product AMM pools (x·y=k). Pools: every resource/HENIUM, EGG/HENIUM, HENIUM/ETH, EGG/ETH
   (`G.dexPools()` → `{id: {a, b, ra, rb, hist[]}}`, price of a in b = `rb/ra`, `G.poolPrice(p)`, `G.poolTVL(p)` in HENIUM).
   - `G.spot(x, y)` = price of 1 x in y; `G.dexTokens()`; `G.dexRoute(from, to)` (direct, or via HENIUM).
@@ -160,7 +164,7 @@ your own Playwright snippets (Chromium is preinstalled; `require('playwright')`)
 
 ## Economy rules (`D.rules`)
 Every rule number the code uses outside the data tables lives in `D.rules` (data.js): the specialization level, the
-free first hire, hazard timings, costs and loot, the tap yield, rich veins, expedition loot and injury odds, PvE rest
+free first rental, hazard timings, costs and loot, the tap yield, rich veins, expedition loot and injury odds, PvE rest
 times and hunt points, rivals, PvP points and loot, war/hunt decay and world growth, the guild member rate, License
 level and project HENIUM, refunds, offline hours, hunger, market-maker noise and the rotating missions. systems.js,
 state.js, farm.js and dex.js read them from there, and the wiki shows them live (`const RULE = D.rules`). In a view,

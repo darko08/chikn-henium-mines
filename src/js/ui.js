@@ -7,7 +7,7 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 ui.$ = $; ui.$$ = $$;
 const esc = ui.esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 G.img = (key) => G.ASSETS[key] || '';
-const now = () => Date.now();
+const now = () => G.now(); // the game clock (moves faster in test mode)
 
 // ---------- small builders ----------
 ui.icon = (r, size = 24, cls = '') => `<img class="ic ${cls}" src="${G.img('res/' + r)}" width="${size}" height="${size}" alt="${esc(D.res[r] ? D.res[r].name : r)}">`;
@@ -25,9 +25,13 @@ ui.btn = (label, a, args = [], cls = '', need = null, extra = '') =>
 ui.perH = (perSec) => G.fmt(perSec * 3600) + '/h';
 
 // Chikn card used by several screens
+// rental badge: a Chikn you rent (time left), or one of yours listed for rent
+ui.rentTag = (c) => (c.rent ? ` <span class="tag o" title="Rented from ${c.rent.owner}${c.rent.auto ? ', renews automatically' : ''}">Rented · ${G.fmtTime(Math.max(0, c.rent.left))}</span>`
+  : c.lease && c.lease.left == null ? ' <span class="tag p" title="Listed on the rental market: it keeps working for you until a renter takes it">For rent</span>' : '');
 ui.chiknCard = (c, opts = {}) => {
   const R = D.rarity(c.rarity), role = D.roles[c.role];
-  const st = { squad: '<span class="tag g">Squad</span>', exp: '<span class="tag o">Expedition</span>', injured: '<span class="tag r">Recovering</span>', idle: '<span class="tag">Idle</span>' }[c.status];
+  const st = { squad: '<span class="tag g">Squad</span>', exp: '<span class="tag o">Expedition</span>', injured: '<span class="tag r">Recovering</span>', idle: '<span class="tag">Idle</span>',
+    away: '<span class="tag p">Rented out</span>' }[c.status] + ui.rentTag(c);
   return `<div class="ccard rarity-${c.rarity} ${opts.sel ? 'sel' : ''} ${opts.cls || ''}" ${opts.attrs || ''}>
     <div class="ccard-art">${ui.img('chikn/' + c.role, 'ccard-img', role.name)}<span class="ccard-lv">Lv.${c.lv}</span></div>
     <div class="ccard-name">${esc(c.name)} <span class="dim">#${c.num}</span></div>
@@ -132,14 +136,24 @@ const NAV = [['mines', 'Mines'], ['factories', 'Factories'], ['crafting', 'Craft
 ui.renderShell = () => {
   const pill = (r) => `<div class="pill cur"><img src="${G.img('res/' + r)}" alt=""><div><div class="lbl">${D.res[r].name}</div><div class="val" data-b="res:${r}"></div></div>
     <button class="plus" data-a="exchangeDlg" data-args='["${r}"]' aria-label="Get more ${D.res[r].name}">+</button></div>`;
-  const strip = D.topRes.map((r) => `<div class="r" title="${D.res[r].name}"><img src="${G.img('res/' + r)}" alt=""><div><div class="lbl">${r === 'heniumOre' ? 'H. Ore' : D.res[r].name}</div><div class="val num" data-b="res:${r}"></div></div></div>`).join('');
+  const strip = D.barRes.map((r) => `<div class="r" title="${D.res[r].name}"><img src="${G.img('res/' + r)}" alt=""><div><div class="lbl">${D.shortName[r] || D.res[r].name}</div><div class="val num" data-b="res:${r}"></div></div></div>`).join('');
   $('#topbar').innerHTML = `<img class="logo" src="${G.img('ui/logo')}" alt="Chikn Henium Mines" data-a="nav" data-args='["mines"]'>
-    <div class="top-scroll">${pill('egg')}${pill('feed')}${pill('henium')}<div class="pill eth" data-a="nav" data-args='["dex"]' title="Simulated ETH — trade on the DEX"><img src="${G.img('res/eth')}" alt=""><div><div class="lbl">ETH</div><div class="val" data-b="res:eth"></div></div></div><div class="res-strip">${strip}</div></div>
+    <div class="top-scroll">${pill('egg')}${pill('feed')}${pill('henium')}<div class="pill eth" data-a="nav" data-args='["dex"]' title="Simulated ETH — trade on the DEX"><img src="${G.img('res/eth')}" alt=""><div><div class="lbl">ETH</div><div class="val" data-b="res:eth"></div></div></div><button type="button" class="res-strip" data-a="inventory" title="Inventory: every ore and material you have" aria-label="Open inventory">${strip}<span class="res-more" aria-hidden="true">▾</span></button></div>
     <div class="top-icons"><button class="icon-btn" data-a="notes" aria-label="Notifications"><img src="${G.img('ui/bell')}" alt=""><span class="badge" id="note-badge" hidden></span></button>
     <button class="icon-btn" data-a="settings" aria-label="Settings"><img src="${G.img('ui/settings')}" alt=""></button></div>`;
+  setTimeout(ui.speedChip, 0);
   $('#sidenav').innerHTML = NAV.map(([id, label]) => `<button class="nav-btn ${ui.cur === id ? 'on' : ''}" data-view="${id}" data-a="nav" data-args='["${id}"]'>
       <img src="${G.img(id === 'farm' ? 'farm/nest' : 'ui/' + id)}" alt=""><span>${label}</span><span class="badge" data-badge="${id}" hidden></span></button>`).join('') +
     `<div class="nav-player" data-a="profile"><img class="av" src="${G.img('chikn/miner')}" alt=""><div style="flex:1;min-width:0"><div class="row"><span class="lv" data-b="lv"></span><span class="muted" style="font-size:12px">Level</span></div>${ui.bar(0, 'gold', '', 'data-b="xp"')}</div></div>`;
+};
+// Inventory: every resource you hold, grouped like the production chain, with the live amount and the mining rate
+ui.handlers.inventory = () => {
+  const S = G.S, rates = G.rates(), cat = (c) => Object.keys(D.res).filter((r) => D.res[r].cat === c && r in S.res);
+  const item = (r) => `<div class="inv-it" title="${esc(D.res[r].name)}">${ui.icon(r, 34)}<div><b data-b="res:${r}">${G.fmt(S.res[r])}</b><small>${esc(D.res[r].name)}</small>${rates[r] > 0 && r !== 'egg' ? `<i>+${G.fmt(rates[r] * 3600)}/h</i>` : ''}</div></div>`;
+  const group = (title, list) => (list.length ? `<h3 class="inv-h">${title}</h3><div class="inv-grid">${list.map(item).join('')}</div>` : '');
+  ui.modal({ title: 'Inventory', wide: true, html: group('Ores from the mines', cat('raw')) + group('Processed materials (Factories)', cat('mat'))
+    + `<p class="dim" style="font-size:13px;margin:10px 0 0">Crushed Ore comes from the Ore Crusher; the Ore Separator and the Feed Mill use it. EGG, FEED and HENIUM are in the top bar.</p>`,
+    actions: [{ label: 'Factories', cls: 'purple', fn: () => ui.go('factories') }, { label: 'Close', cls: 'green' }] });
 };
 ui.handlers.nav = (el, e, id) => { if (el.closest('#modal-root')) ui.closeModal(); ui.go(id); };
 ui.navBadges = () => {
@@ -262,14 +276,43 @@ ui.handlers.notes = () => {
     html: S.notes.length ? S.notes.slice(0, 25).map((n) => `<div class="list-row">${n.icon ? ui.img(n.icon, 'ic', '').replace('class="ic"', 'class="ic" width="28" height="28"') : ''}<div class="sp">${esc(n.text)}</div><span class="dim" style="font-size:12px">${G.fmtTime((now() - n.t) / 1000)} ago</span></div>`).join('') : '<div class="empty">No notifications yet.</div>' });
   ui.navBadges();
 };
+const SPEEDS = [1, 10, 60, 600, 3600];
+const SKIPS = [[3600, '1 h'], [8 * 3600, '8 h'], [86400, '1 day'], [7 * 86400, '7 days']];
+// a chip in the top bar while the game runs faster than real time (click: settings)
+ui.speedChip = () => {
+  const bar = $('#topbar .top-icons'), k = G.speed();
+  if (!bar) return;
+  let chip = bar.querySelector('.speed-chip');
+  if (k <= 1) { if (chip) chip.remove(); return; }
+  if (!chip) { chip = document.createElement('button'); chip.type = 'button'; chip.className = 'speed-chip'; chip.dataset.a = 'settings'; bar.prepend(chip); }
+  chip.textContent = `⏩ ×${G.fmtFull(k)}`; chip.title = `Test speed: the game runs ${G.fmtFull(k)}× faster than real time. Click to change.`;
+};
 ui.handlers.settings = () => {
   const S = G.S;
   ui.modal({ title: `${ui.img('ui/settings', '', '')} Settings`, actions: [{ label: 'Close', cls: 'gray' }],
     html: `<div class="list-row"><div class="sp">Sound effects</div><button class="btn sm ${S.settings.sound ? 'green' : 'gray'}" data-set="sound">${S.settings.sound ? 'On' : 'Off'}</button></div>
+      <div class="set-test"><div class="hx">Test speed</div><div class="muted" style="font-size:13px">The game runs in real time (a day is 24 hours). For testing, make time run faster: at ×60 one real minute is one game hour. Hazards pause above ×10, because you couldn't react to them.</div>
+        <div class="tabs set-speeds">${SPEEDS.map((k) => `<button type="button" class="tab ${G.speed() === k ? 'on' : ''}" data-speed="${k}">×${G.fmtFull(k)}</button>`).join('')}</div>
+        <div class="hx" style="margin-top:8px;font-size:15px">Skip ahead</div><div class="muted" style="font-size:13px">Jump forward as if you played the whole time (floors mine all along).</div>
+        <div class="set-skips">${SKIPS.map(([sec, l]) => `<button type="button" class="btn sm purple" data-skip="${sec}">+${l}</button>`).join('')}</div></div>
       <div class="list-row"><div class="sp"><div class="hx">Start a new game</div><div class="muted" style="font-size:13px">Month 1: The Beginning — a small mine at depth 1.</div></div><button class="btn sm red" data-set="fresh">New Game</button></div>
       <div class="list-row"><div class="sp"><div class="hx">Showcase save</div><div class="muted" style="font-size:13px">Jump to the mockup: Lv. 27, depth 27, Heavy Drill on the Henium Vein.</div></div><button class="btn sm purple" data-set="showcase">Load</button></div>
       <p class="dim" style="font-size:12px;margin-bottom:0">Progress saves automatically in this browser. Prototype build: tokens, NFTs and other players are simulated.</p>` });
   ui.modalEl().addEventListener('click', (ev) => {
+    const sp = ev.target.closest('[data-speed]'), sk = ev.target.closest('[data-skip]');
+    if (sp) {
+      S.settings.speed = +sp.dataset.speed; G.save();
+      ui.modalEl().querySelectorAll('[data-speed]').forEach((x) => x.classList.toggle('on', x === sp));
+      ui.speedChip(); ui.toast(S.settings.speed > 1 ? `Test speed ×${G.fmtFull(S.settings.speed)}: one real minute is ${G.fmtTime(60 * S.settings.speed)} of game time` : 'Real time again', '', 'ui/timer');
+      return;
+    }
+    if (sk) {
+      const r = G.warp(+sk.dataset.skip); G.save(); ui.closeModal(); ui.render();
+      const rows = Object.entries(r.gains).sort((a, b) => b[1] - a[1]).slice(0, 8);
+      ui.modal({ title: `${ui.img('ui/timer', '', '')} Skipped ${G.fmtTime(r.sec)}`, actions: [{ label: 'OK', cls: 'green' }],
+        html: `<p style="text-align:center;margin-top:0">Your mine, factories, farm and rentals ran for <b>${G.fmtTime(r.sec)}</b>.</p><div style="display:flex;justify-content:center">${ui.rew(Object.fromEntries(rows), 24)}</div>` });
+      return;
+    }
     const b = ev.target.closest('[data-set]');
     if (!b) return;
     const k = b.dataset.set;

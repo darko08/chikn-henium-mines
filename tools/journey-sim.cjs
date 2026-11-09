@@ -106,12 +106,18 @@ function manageMachines() {
 function manageFarm() {
   if (S.nest >= 1) G.act.collectNest();
   if (S.chikns.length >= G.coopCap() && S.farm.coopLv < D.farm.coopMax && canSpend(D.farm.coopCost(S.farm.coopLv))) G.act.upgradeCoop();
-  const hc = D.hires.standard.cost;
-  if (S.stats.hired === 0 || (S.chikns.length < G.coopCap() && S.res.egg - hc.egg >= reserve('egg') && S.res.feed >= hc.feed + 3 * G.upkeepPerDay())) {
-    if (G.act.hire('standard').ok) mark('chikns ' + S.chikns.length);
+  // rent Chikns from other holders (Chikn NFTs are a fixed collection): the free starter first, then the best bonus per EGG,
+  // 30 days with auto-renew, while the EGG reserve and three days of FEED upkeep stay covered
+  if (S.chikns.length < G.coopCap()) {
+    const val = (o) => D.rarity(o.rarity).pct / Math.max(0.1, o.price);
+    const o = G.rentMarket().offers.slice().sort((a, b) => (b.free - a.free) || val(b) - val(a))[0];
+    const cost = o ? (o.free ? 0 : D.rentCost(o.price, 30)) : Infinity;
+    if (o && (o.free || (S.res.egg - cost >= reserve('egg') + 10 && S.res.feed >= 3 * (G.upkeepPerDay() + D.farm.upkeep(o.kg))))) {
+      if (G.act.rent(o.id, 30, true).ok) mark('chikns ' + S.chikns.length);
+    }
   }
   const keep = 3 * G.upkeepPerDay();
-  for (const c of S.chikns.slice().sort((a, b) => a.kg - b.kg)) if (S.res.feed - G.feedCost(c) > keep) G.act.feed(c.id, 1);
+  for (const c of S.chikns.filter((x) => !x.rent).sort((a, b) => a.kg - b.kg)) if (S.res.feed - G.feedCost(c) > keep) G.act.feed(c.id, 1);
 }
 function manageOther() {
   G.questList().forEach((q) => q.done && G.act.claimQuest(q.id));

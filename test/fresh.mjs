@@ -26,7 +26,7 @@ await page.click('button.act[data-a="dig"]');
 await page.waitForTimeout(300);
 await page.click('button.act[data-a="hire"]');
 await page.waitForTimeout(400);
-await page.click('[data-hire="standard"]');
+await page.click('.rent-free [data-rent]');
 await page.waitForTimeout(700);
 await page.screenshot({ path: `${out}/f2-reveal.png` });
 await page.click('text=Awesome!');

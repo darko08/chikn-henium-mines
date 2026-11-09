@@ -155,8 +155,9 @@ function statsHTML(m) {
     ${row('ui/mines', 'Mining speed', `×${a.speed.toFixed(2)}`, `×${b.speed.toFixed(2)}`, 'Multiplies the floor output')}
     ${row('prop/cart', 'Capacity', `+${G.fmt(a.cap)}/h`, `+${G.fmt(b.cap)}/h`, 'Flat ore per hour added to the floor')}
     ${row('ui/energy', 'Energy', `${G.fmt(a.energy)} Coal/h`, '', 'Coal burned while deployed')}
-    ${row('ui/settings', 'Wear', `${m.wear}%/min`, '', 'Durability lost per minute while working')}
+    ${row('ui/settings', 'Wear', `${m.wear}%/min`, '', 'Durability lost per minute while you play (machines don\'t wear out offline)')}
     ${extra}
+    ${row('ui/mines', 'Per floor', '1 machine', '', 'Only one machine works on a floor. Deploying another one there sends the first back to storage: machines on the same floor do not stack')}
     ${row('ui/timer', 'Craft time', G.fmtTime(craftTime(m)), '', G.bonus('craft') ? `Crafter bonus: −${Math.round((1 - 1 / (1 + G.bonus('craft'))) * 100)}% time` : 'Crafter Chikns speed this up')}
     <div class="cr-st-note">${isLocked(m) ? `${plainImg('ui/lock', 'cr-st-ic')}<span>Unlocks at player <b>Lv. ${m.lv}</b></span>` : `${plainImg('ui/trophy', 'cr-st-ic')}<span>Upgrade up to <b>Lv. ${D.machineMaxLv}</b> after crafting</span>`}</div>
   </div>`;
@@ -207,7 +208,8 @@ function floorsHTML() {
       ${m ? `<span class="cr-fl-m">${ui.img('machine/' + m.type, 'cr-fl-img', d.name)}<span><b>${esc(d.name)}</b><small>Lv. ${m.lv} · ×${ms.speed.toFixed(2)}</small></span></span>`
         : '<span class="cr-fl-none">No machine</span>'}</div>`;
   }).join('') || '<div class="empty">No mine floors open yet.</div>';
-  return `<section class="panel cr-floors" aria-label="Mine floors"><div class="panel-h">${plainImg('ui/mines')}<span class="sp">Mine Floors</span><small>${open.filter((z) => G.machineOn(z.id)).length}/${open.length} equipped</small></div>${rows}</section>`;
+  return `<section class="panel cr-floors" aria-label="Mine floors"><div class="panel-h">${plainImg('ui/mines')}<span class="sp">Mine Floors</span><small>${open.filter((z) => G.machineOn(z.id)).length}/${open.length} equipped</small></div>
+    <p class="cr-fl-rule"><b>One machine per floor.</b> A second one on the same floor replaces the first (it goes back to storage), so machines don't stack. Its speed multiplies the floor's output together with your Chikn, guild and specialization bonuses. On your deepest floor it also speeds up digging.</p>${rows}</section>`;
 }
 
 // ---------- my machines ----------

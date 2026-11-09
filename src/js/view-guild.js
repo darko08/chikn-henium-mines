@@ -24,7 +24,7 @@ const rival = (name, i) => {
   return { i, name, base: 1500 + a % 9500, rate: 20 + b % 80, lv: 3 + c % 9, members: 96 + d % 104, hue: 25 + i * 43 };
 };
 const RIVALS = D.rivals.map(rival);
-const rivalScore = (r) => Math.floor(r.base + r.rate * Math.max(0, (Date.now() - G.S.created) / 3600e3)); // grows slowly over time
+const rivalScore = (r) => Math.floor(r.base + r.rate * Math.max(0, (G.now() - G.S.created) / 3600e3)); // grows slowly over time
 const myScore = () => Math.floor(G.S.guild.contrib + G.S.guild.warPts);
 const board = () => {
   const g = G.S.guild;

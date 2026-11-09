@@ -9,8 +9,8 @@ const WORLD_CHIKNS = 22000; // Chikn NFTs in the real collection (the same figur
 // Rule numbers the code uses outside the data tables (hazards, battle, expeditions, guild, timings...) live in D.rules
 // (data.js) and the game reads them from there, so the wiki always shows the live rules.
 const RULE = D.rules;
-// "an Uncommon Miner": the free first hire (G.act.hire)
-const freeHire = () => { const n = `${(D.rarity(RULE.freeHire.rarity) || {}).name || RULE.freeHire.rarity} ${(D.roles[RULE.freeHire.role] || {}).name || RULE.freeHire.role}`; return (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n; };
+// "an Uncommon Miner": the free first rental (D.rent.free)
+const freeHire = () => { const f = D.rent.free, n = `${(D.rarity(f.rarity) || {}).name || f.rarity} ${(D.roles[f.role] || {}).name || f.role}`; return (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n; };
 
 // ---------- module state (survives visits to other screens) ----------
 let cur = 'home';
@@ -274,7 +274,7 @@ function aStart() {
     ${OL([
       `<b>Tap</b> the Stone Zone floor to mine by hand, then <b>upgrade</b> it (Lv. 2 costs ${chips(D.floorCost(D.zones[0], 1), 16)}) so it mines faster on its own. See ${L('zones')}.`,
       `<b>Dig deeper.</b> The first dig costs ${chips(D.digCost(1), 16)} and takes ${tm(D.digTime(2))}. Every dig costs more and takes longer: ${L('digging')}.`,
-      `<b>Hire your first Chikn.</b> It's free (${freeHire()}). Chikns in your Mining Team boost everything they're good at: ${L('chikns')}.`,
+      `<b>Rent your first Chikn.</b> The first rental is free: ${freeHire()} for ${D.rent.free.days} days. Chikns in your Mining Team boost everything they're good at: ${L('chikns')}.`,
       `At depth ${crusher.reqDepth} build the ${L('b-crusher', 'Ore Crusher')} (${chips(crusher.build, 16)}), at depth ${mill.reqDepth} the ${L('b-feedmill', 'Feed Mill')} (${chips(mill.build, 16)}). You need the crusher to break into the Coal Zone.`,
       `Follow the <b>quests</b> on the Mines screen. They walk you through every unlock and pay ores and materials for the next step, a little FEED and, at the big milestones, HENIUM (${L('events', 'quests')}).`,
       `Craft your first ${L('machines', 'machine')} and deploy it on a floor: it mines faster, and you need one to break into the Iron Zone.`,
@@ -299,7 +299,7 @@ function aStart() {
 }
 
 function aCurrencies() {
-  const S = G.S, x = G.exRate(), st = D.hires.standard.cost, fr = freshState().res;
+  const S = G.S, x = G.exRate(), fr = freshState().res, cheap = D.rentCost(D.rent.base.common, 30);
   const card = (r, t, line, id) => `<a class="wk-tok" href="#wiki/${id}" data-a="wkGo" data-args='${args([id])}'>${ic(r, 46)}<div><b>${t}</b><span>${line}</span></div></a>`;
   const eggUps = D.fUpgrades.filter((u) => u.base.egg).map((u) => u.name);
   const dep = PLAY() ? S.depth : 25;
@@ -310,7 +310,7 @@ function aCurrencies() {
     ${P(`EGG is the everyday currency of the Chikn world, and it is <b>scarce</b>: only Chikns lay it, about one per farm day each (a 100 kg Chikn lays ${sig(F.eggsAt(100))}, an 800 kg one ${sig(F.eggsAt(800))}). Eggs collect in the nest, which holds ${F.nestDays} days of laying; collect them on the ${L('farm', 'Farm')} or with Collect All before it fills up.`)}
     ${P('Spending EGG <b>burns</b> it: it leaves the economy for good instead of going to another player. Where EGG goes:')}
     ${UL([
-      `Hiring Chikns: a Standard Hire costs ${chips(st, 16)} (${L('chikns')}).`,
+      `Renting Chikns from other holders: from about ${sig(D.rent.base.common)} EGG a day (a Common for 30 days: ${chips({ egg: cheap }, 16)}). ${pc(D.rent.fee, 0)} of every rent is burned, the rest goes to the holder (${L('chikns', 'Chikns')}).`,
       `Coop upgrades: ${chips({ egg: F.coopCost(1).egg }, 16)} up to ${chips({ egg: F.coopCost(F.coopMax - 1).egg }, 16)} (${L('b-coop', 'Coop')}).`,
       eggUps.length ? `Global factory upgrades (${eggUps.join(', ')}), see ${L('buildings')}.` : '',
       `Guild: donations, zone expansions and the Guild License (${chips(D.licenseCost, 16)}), see ${L('guild')}.`,
@@ -385,8 +385,8 @@ function usesOf(r, scan) {
   const fl = D.zones.filter((z) => z.up[r]);
   if (fl.length) push('Floors', `upgrading ${fl.map((z) => esc(z.short)).join(', ')}`);
   if (scan[r]) push('Digging', `${L('digging', 'digs')} from depth ${segTxt(scan[r])}`);
-  const hires = Object.values(D.hires).filter((h) => h.cost[r]);
-  if (hires.length) push('Hiring', hires.map((h) => esc(h.name)).join(', '));
+  if (r === 'egg') push('Rentals', 'renting Chikns from other holders');
+  if (D.buyNft.cost[r]) push('NFTs', esc(D.buyNft.name));
   if (r === 'feed') push('Farm', 'feeding & daily upkeep');
   const gd = [];
   if (D.donations.some((d) => d.res === r)) gd.push('donations');
@@ -666,7 +666,7 @@ function aChikns() {
   const S = myPlay(), pct1 = G.chiknPct(fakeChikn({ lv: 2 })) / G.chiknPct(fakeChikn({ lv: 1 })) - 1;
   const RM = D.rarities[D.rarities.length - 1], pow1 = (G.chiknPower(fakeChikn({ rarity: RM.id, lv: D.chiknMaxLv })) / G.chiknPower(fakeChikn({ rarity: RM.id })) - 1) / (D.chiknMaxLv - 1);
   const guardK = G.chiknPower(fakeChikn({ role: 'guardian' })) / G.chiknPower(fakeChikn({}));
-  const so = odds(D.hires.standard.weights), po = odds(D.hires.premium.weights), max = D.chiknMaxLv;
+  const so = odds(D.rent.weights), po = odds(D.buyNft.weights), max = D.chiknMaxLv;
   const roles = Object.entries(D.roles).map(([id, r]) => [`<span class="wk-mname">${pic('chikn/' + id, 'wk-chikn', r.name)}<b>${esc(r.name)}</b></span>`, esc(r.label), `<span class="wk-sm">${(() => { const t = BONUS_TXT[r.bonus]; return typeof t === 'function' ? safe(t, '') : t || ''; })()}</span>`,
     ['explore'].includes(r.bonus) ? 'expedition team' : r.bonus === 'safety' ? 'squad & expedition' : 'Mining Team']);
   const rar = D.rarities.map((R, i) => {
@@ -679,14 +679,32 @@ function aChikns() {
   const lvEx = kgs.map((kg) => { const lv = lvAt(ex.id, kg); return [{ h: `${kg} kg`, c: 'wk-n' }, { h: `Lv. ${lv}`, c: 'wk-n' }, { h: `+${sig(G.chiknPct(fakeChikn({ rarity: ex.id, lv })))}%`, c: 'wk-n' }, { h: sig(F.eggsAt(kg), 3), c: 'wk-n' }, { h: n0(G.chiknPower(fakeChikn({ rarity: ex.id, lv }))), c: 'wk-n' }]; });
   const leaderTo = Object.values(D.roles).map((r) => r.bonus).filter((b, i, a) => a.indexOf(b) === i && b !== 'all')
     .filter((b) => withS({ chikns: [fakeChikn({ id: -7, role: 'leader', status: 'squad' })], squad: [-7] }, () => G.bonus(b)) > 0);
-  const st = D.hires.standard, pr = D.hires.premium;
-  return `${P(`Chikns are your workers (in the real game, Chikn NFTs). Every Chikn has a <b>role</b> (what it's good at), a <b>rarity</b> (how good) and a <b>weight</b>, which sets its level. Chikns in your <b>Mining Team</b> (squad) give their bonus to the whole mine; Explorers and Medics shine on ${L('expeditions', 'expeditions')}. All Chikns lay EGG on the ${L('farm', 'farm')} and eat FEED.`)}
+  const pr = D.buyNft, rr = D.rarities.map((R) => [`<b style="color:${R.color}">${esc(R.name)}</b>`, { h: `${sig(D.rentPrice(R.id, R.kg0))} → ${sig(D.rentPrice(R.id, R.kgMax))}`, c: 'wk-n' },
+    { h: `${sig(F.eggsAt(R.kg0))} → ${sig(F.eggsAt(R.kgMax))}`, c: 'wk-n' }, { h: chips({ egg: D.rentCost(D.rentPrice(R.id, R.kg0), 30) }, 14), c: 'wk-n' }]);
+  const out = S ? S.chikns.filter((c) => c.lease) : [];
+  return `${P(`Chikns are your workers (in the real game, Chikn NFTs).`)}
+    ${box(`<b>A fixed collection.</b> There are exactly ${G.fmtFull(D.nftSupply)} Chikn NFTs and the game never mints one. You get Chikns by <b>renting</b> them from their holders (EGG a day) or <b>buying</b> one from another holder; the season track hands out a few from the game's own treasury. Holders <b>rent theirs out</b> for passive income.`, 'info')}
+    ${P(`Every Chikn has a <b>role</b> (what it's good at), a <b>rarity</b> (how good) and a <b>weight</b>, which sets its level. Chikns in your <b>Mining Team</b> (squad) give their bonus to the whole mine; Explorers and Medics shine on ${L('expeditions', 'expeditions')}. All Chikns lay EGG on the ${L('farm', 'farm')} and eat FEED.`)}
     ${H('The 10 roles', 'roles')}
     ${T(['Role', 'Bonus', 'What it does', 'Counts in'], roles, { min: 640, cls: 'wk-roles' })}
     ${P(`A Leader adds half its bonus to: ${leaderTo.map((b) => esc((Object.values(D.roles).find((r) => r.bonus === b) || {}).label || b)).join(', ')}. Guardians have ×${sig(guardK)} battle power of their own.`)}
     ${H('Rarities', 'rarity')}
-    ${T(['Rarity', ['Bonus (Lv. 1 → ' + max + ')', 'wk-n'], ['Weight (start → max)', 'wk-n'], ['EGG/day (start → max)', 'wk-n'], ['Battle power (Lv. 1 → ' + max + ')', 'wk-n'], ['Hire odds (standard · premium)', 'wk-n']], rar, { min: 700 })}
-    ${P(`The bonus grows by ${pc(pct1, 0)} of the base per level, battle power by ${pc(pow1, 0)} per level. ${esc(st.name)}: ${chips(st.cost, 16)} · ${esc(pr.name)}: ${chips(pr.cost, 16)} (Rare or better guaranteed). Your very first hire is free: ${freeHire()}. Hiring, and claiming a Chikn from the season track, needs a free spot in the ${L('b-coop', 'Coop')}.`)}
+    ${T(['Rarity', ['Bonus (Lv. 1 → ' + max + ')', 'wk-n'], ['Weight (start → max)', 'wk-n'], ['EGG/day (start → max)', 'wk-n'], ['Battle power (Lv. 1 → ' + max + ')', 'wk-n'], ['Odds (rental market · buy)', 'wk-n']], rar, { min: 700 })}
+    ${P(`The bonus grows by ${pc(pct1, 0)} of the base per level, battle power by ${pc(pow1, 0)} per level. ${esc(pr.name)}: ${chips(pr.cost, 16)} (Rare or better guaranteed). Renting, buying, and claiming a Chikn from the season track, needs a free spot in the ${L('b-coop', 'Coop')}.`)}
+    ${H('Renting Chikns', 'rent')}
+    ${P(`The rental market shows ${D.rent.offers} Chikns from other holders, new ones every farm day. Pick ${D.rent.days.map((d) => `${d} day${d === 1 ? '' : 's'}`).join(', ')}; longer rentals are cheaper per day (${D.rent.days.filter((d) => D.rent.disc[d] < 1).map((d) => `${d} days −${pc(1 - D.rent.disc[d], 0)}`).join(', ')}). You pay the whole rental up front in EGG. Your very first rental is free: ${freeHire()} for ${D.rent.free.days} days.`)}
+    ${UL([
+      'A rented Chikn joins your coop and Mining Team, lays EGG for you and fights for you until the rental ends.',
+      'You feed it (its daily FEED upkeep), but you can\'t fatten it, and it never loses weight: the NFT goes back to its holder unchanged.',
+      '<b>Auto-renew</b> extends a rental for the same length when it ends, if you have the EGG; otherwise the Chikn goes home. You can extend any time.',
+      'A rented Chikn can\'t join an expedition that comes back after its rental ends (unless auto-renew is on).',
+    ])}
+    ${T(['Rarity', ['Fair rent, EGG a day (start → max weight)', 'wk-n'], ['It lays, EGG a day', 'wk-n'], ['30 days at start weight', 'wk-n']], rr, { min: 560 })}
+    ${P(`Heavier Chikns cost more to rent: the fair price grows with weight like the eggs they lay. Offers vary ±15% around it.`)}
+    ${H('Renting yours out: passive income', 'passive')}
+    ${P(`List a Chikn you own (rented ones can't be sublet) for ${D.rent.days.join(', ')} days at the market price, ${D.rent.priceK.filter((k) => k !== 1).map((k) => (k > 1 ? '+' : '−') + pc(Math.abs(k - 1), 0)).join(', ')}. It keeps working for you until a renter takes it: at the market price that usually happens within about ${tm(D.rent.wait)}, slower the higher your price. While it is rented out it works and lays EGG for the renter and doesn't eat your FEED, and you earn the rent every day minus the ${pc(D.rent.fee, 0)} market fee (burned), also while you are offline. When the rental ends it comes back exactly as it left.`)}
+    ${box(`Renting out pays most for Chikns that would sit idle: a full coop, more Chikns than Mining Team slots, or simply not playing for a while. A Chikn in your Mining Team is usually worth more to you than its rent.`, 'tip')}
+    ${S ? you(out.length ? `${out.length} of your Chikns ${out.length === 1 ? 'is' : 'are'} on the rental market; rent income <b>${sig(G.rentIncome())} EGG a day</b>, ${sig(S.stats.rentEarned || 0)} EGG earned so far.` : 'None of your Chikns is on the rental market.') : ''}
     ${H('Weight sets the level', 'weight')}
     ${P(`A Chikn's level follows its weight: it starts at its rarity's start weight (Lv. 1) and reaches Lv. ${max} at its rarity's max weight. Feeding adds ${F.step} kg for a little FEED (more the heavier it is); hungry Chikns lose weight and levels. Example, a ${esc(ex.name)} Chikn:`)}
     ${T([['Weight', 'wk-n'], ['Level', 'wk-n'], ['Bonus', 'wk-n'], ['EGG/day', 'wk-n'], ['Battle power', 'wk-n']], lvEx, { min: 440 })}
@@ -744,7 +762,7 @@ function aFarm() {
       `Keep FEED for at least two days of upkeep before you fatten anybody.`,
       `Fatten the <b>lightest</b> Chikns first: they are the cheapest to feed and gain the most eggs per kg.`,
       `When FEED is your bottleneck, keep more Chikns light; when coop space is the bottleneck, make them heavy.`,
-      `Sell surplus EGG on the ${L('dex', 'DEX')} (1 EGG = ${sig(pE)} HENIUM right now) or use it for hires, coop upgrades and the guild.`,
+      `Sell surplus EGG on the ${L('dex', 'DEX')} (1 EGG = ${sig(pE)} HENIUM right now) or use it for rentals, coop upgrades and the guild.`,
     ])}
     ${H('The world view', 'world')}
     ${P(`There are about <b>${G.fmtFull(WORLD_CHIKNS)}</b> Chikns in the world. At 100 kg each they lay <b>${G.fmtFull(Math.round(e100))} EGG</b> a day and eat <b>${G.fmtFull(Math.round(u100))} FEED</b>. Fattening them all to 400 kg would mean ${G.fmtFull(Math.round(WORLD_CHIKNS * F.eggsAt(400)))} EGG a day, but also ${G.fmtFull(Math.round(WORLD_CHIKNS * F.upkeep(400)))} FEED. FEED is the brake: it comes from Feed Mills with daily quotas (a maxed mill grinds ${F.millQuota(D.factoryMaxLv)} FEED a day, which feeds ${Math.floor(F.millQuota(D.factoryMaxLv) / F.upkeep(100))} Chikns at 100 kg, while a maxed coop holds ${fullCoop}) and from burning EGG at ${G.exRate().e2f}:1. So the world's egg supply can only grow as fast as its FEED supply, and every egg spent is burned.`)}
@@ -851,7 +869,7 @@ function aHenium() {
     ${T(['Sink', 'Cost', 'Notes'], [
       [`${L('digging', 'Digging')} from depth ${hd}`, `${chips({ henium: D.digCost(hd).henium }, 15)} → ${chips({ henium: D.digCost(D.maxDepth - 1).henium }, 15)}`, `${chips({ henium: digH }, 15)} to reach depth ${D.maxDepth}`],
       [`${L('buildings', 'Building upgrades')} from Lv. ${fh} → ${fh + 1}`, `${chips({ henium: D.factoryUpCost(D.factories[0], fh).henium }, 15)} → ${chips({ henium: D.factoryUpCost(D.factories[0], D.factoryMaxLv - 1).henium }, 15)}`, `${chips({ henium: upH }, 15)} to max all ${D.factories.length}`],
-      [`${L('chikns', 'Premium hire')}`, chips(D.hires.premium.cost, 15), 'Rare or better'],
+      [`${L('chikns', 'Buying a Chikn NFT')}`, chips(D.buyNft.cost, 15), 'Rare or better, from another holder'],
       [`${L('guild', 'Guild License')}`, chips(D.licenseCost, 15), 'needed for the Core Zone'],
       [`${L('guild', 'Guild zone')}`, `${chips({ henium: D.guildZoneCost(1).henium }, 15)} and up`, 'per expansion'],
       [`${L('buildings', 'Factory upgrades')}`, chips({ henium: fupH }, 15), 'all levels of all global upgrades'],
@@ -867,7 +885,7 @@ function aHenium() {
       `<b>Fixed supply</b>: no more than ${G.fmt(sp.cap)}, ever.`,
       `<b>Halvings</b>: new supply shrinks every epoch.`,
       `<b>Rising difficulty</b>: the world's refinery power grows every day, so each refinery earns less.`,
-      `<b>Burns</b>: everything spent on digs, upgrades, hires and fees is gone for good.`,
+      `<b>Burns</b>: everything spent on digs and upgrades, and the market fees on trades and rentals, is gone for good.`,
       `<b>Market makers follow it</b>: the DEX's NPC market makers value HENIUM higher in every epoch, so resources cost fewer HENIUM and HENIUM costs more ETH:`,
     ])}
     ${T([['Epoch', 'wk-n'], ['Value factor', 'wk-n'], ['Fair price of 1 HENIUM (ETH)', 'wk-n'], ['Fair price of 1 Stone (HENIUM)', 'wk-n'], ['Emission / day', 'wk-n']], kRows, { min: 560, me: (i) => i === ep })}`;
@@ -1092,6 +1110,8 @@ const GLOSS = [
   ['Nest', 'Where laid eggs collect until you pick them up.', 'farm'],
   ['Pool', 'Two tokens locked together on the DEX for trading.', 'dex'],
   ['Price impact', 'How much your own trade moves the price.', 'dex'],
+  ['Rental', `Using another holder's Chikn NFT for EGG a day; it goes home when the rental ends.`, 'chikns'],
+  ['Passive income', 'Rent you earn every day from your own Chikns that other players rent.', 'chikns'],
   ['Quota', 'The FEED a Feed Mill may grind per farm day.', 'b-feedmill'],
   ['Refinery power', 'Sets your share of the refiners\' HENIUM.', 'henium'],
   ['Route', 'The path of a swap; through HENIUM when there is no direct pool.', 'dex'],
@@ -1148,7 +1168,7 @@ const ARTS = [
   ...D.factories.map((f) => ({ id: 'b-' + f.id, cat: 'build', title: f.name, icon: artOf(f.id), sub: `${f.desc}. Unlocks at depth ${f.reqDepth}.`, body: () => aFactory(f), kw: `factory building ${f.recipes.map((r) => r.name).join(' ')}` })),
   { id: 'b-coop', cat: 'build', title: 'Coop', icon: 'farm/coop', sub: 'Where your Chikns live: capacity, upgrades and its 10 looks.', body: aCoop, kw: 'coop capacity chikn house' },
   { id: 'b-hq', cat: 'build', title: 'Headquarters', icon: 'prop/hq', sub: 'Your company HQ: a new look every few depth levels.', body: aHQ, kw: 'hq headquarters' },
-  { id: 'chikns', cat: 'chikn', title: 'Chikns', icon: 'ui/chikns', sub: 'The 10 roles, the 6 rarities, hiring, weight and levels, and the Mining Team.', body: aChikns, kw: 'nft role rarity hire squad team level weight' },
+  { id: 'chikns', cat: 'chikn', title: 'Chikns', icon: 'ui/chikns', sub: 'The 10 roles, the 6 rarities, renting and buying NFTs, passive income from rent, weight and levels, and the Mining Team.', body: aChikns, kw: 'nft role rarity rent rental lease passive income buy hire squad team level weight' },
   { id: 'farm', cat: 'chikn', title: 'The Egg Farm', icon: 'farm/nest', sub: 'Eggs by weight, FEED upkeep and hunger, coop and mill, and the Egg Farmer strategy.', body: aFarm, kw: 'egg feed weight kg nest upkeep hunger farmer' },
   { id: 'specs', cat: 'chikn', title: 'Specializations', icon: 'ui/trophy', sub: 'Seven permanent play styles to choose at player Lv. 8.', body: aSpecs, kw: 'specialization miner industrialist trader explorer commander farmer guild leader' },
   { id: 'henium', cat: 'econ', title: 'HENIUM Tokenomics', icon: 'res/henium', sub: 'The 21M cap, halvings, the emission split, refinery shares, faucets, sinks and burns.', body: aHenium, kw: 'supply halving emission epoch refinery share war hunt faucet sink burn value' },

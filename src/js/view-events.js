@@ -1,7 +1,7 @@
 // Events screen: Season 1 pass + reward track, daily missions, live events & hazards, and the 6-month journey.
 (() => {
 const G = window.G, D = G.D, ui = G.ui, esc = ui.esc;
-const now = () => Date.now();
+const now = () => G.now(); // the game clock (moves faster in test mode)
 
 const MIS_IC = { mined: 'ui/mines', processed: 'ui/factories', crafted: 'ui/crafting', wins: 'ui/battle', exps: 'ui/expeditions', upgrades: 'ui/energy', taps: 'res/stone' };
 const EV_IC = { vein: 'res/heniumOre', comp: 'ui/trophy', collapse: 'prop/rubble', rush: 'res/copper', feast: 'res/feed', stoneday: 'res/stone' };
@@ -31,7 +31,7 @@ let trackX = null; // remembered scroll position of the reward track
 const amt = (r, v) => (r === 'henium' ? ui.amt(r, v) : G.fmtFull(Math.round(v)));
 const rewFull = (rew, size) => `<span class="cost gain">${Object.entries(rew).filter(([, v]) => v > 0).map(([r, v]) => `<span class="c">${ui.icon(r, size)}+${amt(r, v)}</span>`).join('')}</span>`;
 
-const nextReset = () => { const d = new Date(); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1); };
+const nextReset = () => { const d = new Date(G.now()); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1); };
 const claimable = () => { const s = G.S.season; return Array.from({ length: s.lv }, (_, i) => i + 1).filter((l) => !s.claimed.includes(l)); };
 const rewOf = (lv) => D.seasonReward(lv, G.S.depth);
 const seasonFrac = () => { const s = G.S.season; return s.lv >= D.seasonMax ? 1 : Math.min(1, s.xp / D.seasonNeed(s.lv)); };

@@ -14,17 +14,20 @@ await page.waitForTimeout(600);
 await page.click('text=Load Showcase');
 await page.waitForTimeout(600);
 
-// 1. opening the Hire dialog several times must not multiply hires or charges
+// 1. opening the rental market several times must not multiply rentals or charges
 for (let i = 0; i < 3; i++) {
   await page.click('button.act[data-a="hire"]'); await page.waitForTimeout(150);
   await page.click('.modal > .x'); await page.waitForTimeout(150);
 }
-const before = await page.evaluate(() => ({ n: G.S.chikns.length, egg: G.S.res.egg, cost: G.D.hires.standard.cost.egg }));
-await page.click('button.act[data-a="hire"]'); await page.waitForTimeout(150);
-await page.click('[data-hire="standard"]'); await page.waitForTimeout(400);
-const after = await page.evaluate(() => ({ n: G.S.chikns.length, egg: G.S.res.egg }));
-check(after.n - before.n === 1, `one click hires exactly one chikn (got ${after.n - before.n})`);
-check(Math.round(before.egg - after.egg) === before.cost, `hire charges ${before.cost} EGG once (charged ${Math.round(before.egg - after.egg)})`);
+await page.click('button.act[data-a="hire"]'); await page.waitForTimeout(200);
+const before = await page.evaluate(() => {
+  const o = G.rentMarket().offers.find((x) => !x.free);
+  return { n: G.S.chikns.length, egg: G.S.res.egg, id: o.id, cost: G.D.rentCost(o.price, 7) };
+});
+await page.click(`[data-rent="${before.id}"]`); await page.waitForTimeout(400);
+const after = await page.evaluate(() => ({ n: G.S.chikns.length, egg: G.S.res.egg, last: G.S.chikns[G.S.chikns.length - 1] }));
+check(after.n - before.n === 1 && after.last.own === false && after.last.rent && Math.abs(after.last.rent.left - 7 * 86400) < 5, `one click rents exactly one Chikn for 7 days (got ${after.n - before.n})`);
+check(Math.round(before.egg - after.egg) === before.cost, `renting charges ${before.cost} EGG once (charged ${Math.round(before.egg - after.egg)})`);
 await page.click('.modal > .x'); await page.waitForTimeout(200);
 
 // 2. the top-bar exchange dialog must convert exactly once per click (EGG -> FEED)
@@ -226,6 +229,32 @@ check(au.season, 'season rewards scale with the player\'s depth');
 check(au.lossy.length === 0, `no recipe destroys value at reference prices${au.lossy.length ? ': ' + au.lossy.join(', ') : ''}`);
 check(au.raids === 'bandits richvein bandits', `bandits raid at most once per ${8} h (${au.raids})`);
 check(au.floor40 > 1, `a Lv 40 floor upgrade costs more than a day of its own output (${au.floor40.toFixed(1)} days)`);
+
+// Chikn NFT rentals: rented Chikns go home, auto-renew pays, listings get rented and pay passive EGG (also offline),
+// rented Chikns can't be fattened or sublet, and the collection is never minted from
+const rt = await page.evaluate(() => {
+  const keep = G.S, out = {}, S = (G.S = G.newState('fresh'));
+  const offer = () => G.rentMarket().offers.find((o) => !o.free);
+  S.res.egg = 500; S.stats.hired = 1; S.farm.coopLv = 5;
+  let o = offer(); G.act.rent(o.id, 1, false); const a = S.chikns[S.chikns.length - 1];
+  o = offer(); G.act.rent(o.id, 1, true); const b = S.chikns[S.chikns.length - 1];
+  const egg0 = S.res.egg; G.offline(1.5 * 86400);
+  out.home = !S.chikns.includes(a); out.renewed = S.chikns.includes(b) && b.rent.left > 0 && S.res.egg < egg0;
+  out.noFatten = G.act.feed(b.id).ok === false; out.noSublet = G.act.listRent(b.id, 7, 1).ok === false;
+  const mine = G.newChikn('rare', 'miner', { own: true }); const r = G.act.listRent(mine.id, 3, 1);
+  const e1 = S.res.egg; G.offline(4 * 86400);
+  out.listed = r.ok; out.earned = mine.lease ? -1 : S.stats.rentEarned; out.back = mine.status === 'idle' && !mine.lease;
+  out.expect = r.price * 3 * (1 - G.D.rent.fee);
+  G.S = keep;
+  // test speed: the game clock runs k times faster and every timer follows it
+  const t0 = G.now(), d0 = G.S.farm.dayT; G.S.settings.speed = 1; const w = G.warp(3600);
+  out.warp = Math.abs((G.now() - t0) / 1000 - 3600) < 1 && Math.abs(((G.S.farm.dayT - d0 + 86400) % 86400) - 3600) < 1 && w.sec === 3600;
+  return out;
+});
+check(rt.home && rt.renewed, `a rental ends and the Chikn goes home; auto-renew extends it and charges EGG (${rt.home}, ${rt.renewed})`);
+check(rt.noFatten && rt.noSublet, 'rented Chikns cannot be fattened or rented out again');
+check(rt.listed && rt.back && Math.abs(rt.earned - rt.expect) < 0.05, `your Chikn rented out earns ${rt.earned.toFixed(2)} EGG over 3 days while away (expected ${rt.expect.toFixed(2)}) and comes back`);
+check(rt.warp, 'skipping 1 h moves the game clock and every timer by 1 h');
 
 // tapping is limited by energy (no infinite clicking)
 const tap = await page.evaluate(() => {

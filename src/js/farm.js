@@ -18,9 +18,11 @@ G.ensureKg = (c) => {
   c.kg = Math.round(R.kg0 + (R.kgMax - R.kg0) * ((c.lv || 1) - 1) / 29);
 };
 G.chiknEgg = (c) => F.eggsAt(c.kg || G.kgStart(c));                 // EGG per farm day
-G.eggsPerDay = () => G.S.chikns.reduce((s, c) => s + G.chiknEgg(c), 0);
+// a Chikn you rented out lays and eats at its renter's farm, not yours
+const home = () => G.S.chikns.filter((c) => c.status !== 'away');
+G.eggsPerDay = () => home().reduce((s, c) => s + G.chiknEgg(c), 0);
 G.eggRate = () => G.eggsPerDay() / F.day;                              // EGG per second
-G.upkeepPerDay = () => G.S.chikns.reduce((s, c) => s + F.upkeep(c.kg || G.kgStart(c)), 0);
+G.upkeepPerDay = () => home().reduce((s, c) => s + F.upkeep(c.kg || G.kgStart(c)), 0);
 G.nestCap = () => Math.max(2, G.eggsPerDay() * F.nestDays * (G.specIs('farmer') ? 2 : 1));
 G.feedCost = (c) => Math.max(1, Math.ceil(F.step * F.feedPerKg(c.kg) * (G.specIs('farmer') ? 0.8 : 1) *
   (G.liveEvent() && G.liveEvent().id === 'feast' ? 0.7 : 1)));
@@ -40,7 +42,8 @@ G.farmTick = (dt, offline) => {
   S.res.feed = 0;
   if (!fm.hungry && !offline) G.emit('hungry');
   fm.hungry = true;
-  for (const c of S.chikns) {
+  for (const c of home()) {
+    if (c.rent) continue; // a rented Chikn never loses weight at your farm: the NFT goes back to its owner unchanged
     const a = G.kgStart(c);
     c.kg = Math.max(a, c.kg - ((c.kg - a) * F.hunger + D.rules.hungerFlat) * dt / F.day);
     G.syncLv(c);
@@ -51,6 +54,8 @@ G.farmTick = (dt, offline) => {
 G.act.feed = (cid, times = 1) => {
   const S = G.S, c = G.chikn(S, cid);
   if (!c) return fail('Chikn not found');
+  if (c.rent) return fail(`${c.name} is rented: only its owner can fatten it`);
+  if (c.status === 'away') return fail(`${c.name} is rented out: feed it when it is back`);
   let done = 0, spent = 0;
   for (let i = 0; i < times; i++) {
     if (c.kg >= G.kgCap(c)) break;

@@ -12,7 +12,9 @@ The in-game **Wiki** explains every rule; a standalone copy is built to `dist/ch
   Feed Mill. Construction and upgrades take time and get much pricier per level. **Every building has 10 looks,
   one per level**, each grander than the last (wood → stone → iron → brass → gold → crystal → legendary palace).
 - **Crafting** — six machine tiers; deploy them on floors (they burn Coal and wear down while you play).
-- **Chikn NFT** — hire Chikns (10 roles × 6 rarities), build a Mining Team. A Chikn's level follows its weight.
+- **Chikn NFT** — Chikn NFTs are a fixed collection of 22,000 (never minted in the game): rent Chikns from other
+  holders for EGG a day, buy one from another holder, or rent your own out for passive EGG income. 10 roles × 6
+  rarities, a Mining Team, and a Chikn's level follows its weight.
 - **Farm** — every Chikn lays about 1 EGG per day; fatten them with scarce FEED to lay more (diminishing returns).
   Chikns eat FEED daily to keep their weight. Coop capacity, Feed Mill daily quota, egg nest.
 - **Guild**, **Expeditions**, **Battle** (PvE monsters, PvP guild wars), **Events** (Season pass, missions,
@@ -26,7 +28,7 @@ EGG is scarce: only Chikns lay it, ~1 per Chikn per day. FEED is scarce: a small
 HENIUM works like bitcoin: 21M cap, 7,200 a day for the whole world, halving every 1,458 days (~4 years, the same
 schedule as the `HeniumEmission` contract in `onchain/`), split 70% to
 refiners (by share of world refinery power), 20% to guild-war fighters and 10% to monster hunters. Nothing else mints
-HENIUM. It is spent on deep digging, high building levels, premium hires, the guild license and speed-ups, and burned
+HENIUM. It is spent on deep digging, high building levels, buying Chikn NFTs, the guild license and speed-ups, and burned
 on every DEX trade — so it gets scarcer and more valuable over time.
 
 ## Prototype notes
@@ -40,6 +42,8 @@ on every DEX trade — so it gets scarcer and more valuable over time.
 - Art was generated with Runway from the mockups (sheets in `assets/raw`, cut sprites in `assets/sprites`,
   optimised WebP in `assets/web`).
 - Settings → **Showcase save** jumps to the mockup state (Lv. 27, depth 27).
+- Settings → **Test speed** (×1, ×10, ×60, ×600, ×3600) makes game time run faster for testing, and **Skip ahead**
+  (+1 h, +8 h, +1 day, +7 days) jumps forward as if you had played the whole time. Hazards pause above ×10.
 
 ## Build & test
 ```

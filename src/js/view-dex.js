@@ -473,7 +473,7 @@ function sinksHTML() {
   const rows = [
     ['ui/mines', 'Digging below depth 21', dig, 'mines'],
     ['ui/factories', 'Building levels 5+', `Lv. 5 → 6 costs ${D.factoryUpCost(f, 5).henium}, Lv. 9 → 10 costs ${D.factoryUpCost(f, 9).henium} HENIUM`, 'factories'],
-    ['ui/chikns', 'Premium hires', `${D.hires.premium.cost.henium} HENIUM per hire, rare or better`, 'chikns'],
+    ['ui/chikns', 'Buying Chikn NFTs', `${D.buyNft.cost.henium} HENIUM per NFT, rare or better`, 'chikns'],
     ['ui/guild', 'Guild license & zone', `${g.license ? 'License owned' : `License ${D.licenseCost.henium} HENIUM`} · zone Lv. ${g.zoneLv + 1}: ${D.guildZoneCost(g.zoneLv).henium} HENIUM`, 'guild'],
     ['ui/timer', 'Speed-ups', `${G.speedCost(60)} HENIUM per minute skipped (digs and builds cost double; refinery batches can't be rushed)`, 'factories'],
     ['ui/dex', 'Every DEX swap', `A third of the ${pct(G.dexFee(), 3)} fee is burned`, null],
@@ -606,7 +606,7 @@ function historyHTML() {
 
 // ---------- live binders ----------
 ui.binders.dxTick = (el) => { if (dexReady()) setT(el, Math.max(0, Math.ceil(D.dex.tick - G.S.dex.t)) + 's'); };
-ui.binders.dxAgo = (el, t) => { const s = (Date.now() - +t) / 1000; setT(el, s < 5 ? 'just now' : G.fmtTime(s) + ' ago'); };
+ui.binders.dxAgo = (el, t) => { const s = (G.now() - +t) / 1000; setT(el, s < 5 ? 'just now' : G.fmtTime(s) + ' ago'); };
 ui.binders.dxPx = (el, a) => { const [x, y] = a.split(','); setH(el, px(G.spot(x, y))); };
 ui.binders.dxSpark = (el, a) => { const [x, y] = a.split(','); setH(el, sparkSVG(series(x, y), 200, 44)); };
 ui.binders.dxVal = (el, k) => {

@@ -185,6 +185,13 @@ button.fx-rc:hover { border-color: #6a76d8; }
 .fx-rc-io .cost { gap: 2px 6px; }
 .fx-rc-io .cost .c { font-size: 14px; }
 .fx-arr { color: var(--gold); font-size: 13px; }
+/* what you have of a recipe's inputs and outputs (live) */
+.fx-rc-have { flex-basis: 100%; display: flex; align-items: center; flex-wrap: wrap; gap: 2px 8px; padding-top: 3px; border-top: 1px dashed rgba(122, 132, 220, .3);
+  font: 600 12px var(--font-b); color: var(--muted); }
+.fx-rc-have small { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.fx-hv { display: inline-flex; align-items: center; gap: 3px; }
+.fx-hv b { color: #fff; font-weight: 700; }
+.fx-rc-have .fx-arr { font-size: 11px; }
 
 .fx-foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
 .fx-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

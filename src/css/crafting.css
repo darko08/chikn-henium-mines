@@ -235,3 +235,6 @@
 @media (prefers-reduced-motion: reduce) {
   .cr-link.cr-ok, .cr-tglow, .cr-tart-img, .cr-mc.cr-mc-dep .cr-mc-img { animation: none; }
 }
+
+.cr-fl-rule { margin: 0 0 8px; font-size: 12.5px; line-height: 1.35; color: var(--muted); }
+.cr-fl-rule b { color: #fff; }

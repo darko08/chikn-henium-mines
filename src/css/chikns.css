@@ -239,3 +239,68 @@
   .ck-power span { display: none; }
   .ck-team .panel-h { font-size: 18px; }
 }
+
+/* ---------- rental market dialog ---------- */
+.rent-intro { margin: 0 0 10px; color: var(--muted); font-size: 14px; line-height: 1.4; }
+.rent-intro b { color: #fff; }
+.rent-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 10px; }
+.rent-bar .tabs { margin: 0; }
+.rent-days .tab small { font-family: var(--font-b); font-size: 11px; color: #9dffa8; }
+.rent-auto { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); cursor: pointer; }
+.rent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.rent-card { display: flex; flex-direction: column; gap: 3px; padding: 8px 10px 10px; border-radius: 14px; border: 2px solid #3a4392; background: rgba(9, 12, 42, .62); min-width: 0; }
+.rent-card.rent-free { border-color: var(--gold); box-shadow: 0 0 14px rgba(255, 201, 60, .3); }
+.rent-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.rent-img { width: 64px; height: 64px; object-fit: contain; flex: none; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .5)); }
+.rent-id { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
+.rent-id b { font: 400 16px var(--font-h); }
+.rent-id span { font-size: 13px; }
+.rent-id small { font-size: 11px; color: var(--dim); }
+.rent-kv { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--muted); }
+.rent-kv b { color: #fff; text-align: right; }
+.rent-price { margin: 4px 0 6px; font-size: 13px; color: var(--muted); text-align: center; }
+.rent-price b { font: 400 20px var(--font-h); color: var(--gold); }
+.rent-card .btn { font-size: 14px; padding: 7px 6px; }
+.rent-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin-top: 12px; font-size: 13px; color: var(--muted); }
+.rent-foot b { color: #fff; }
+.rent-foot .btn { margin-left: auto; }
+
+/* ---------- rentals panel on the Chikn NFT screen ---------- */
+.ck-rent-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.ck-rent-col { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ck-rent-col > .btn { align-self: flex-start; }
+.ck-rent-h { font: 400 15px var(--font-h); display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.ck-rent-h small { font: 600 12px var(--font-b); color: var(--muted); }
+.ck-rent-row { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 12px; border: 2px solid #343d86; background: rgba(9, 12, 42, .62); cursor: pointer; min-width: 0; }
+.ck-rent-row:hover { border-color: #6a76d8; }
+.ck-rent-img { width: 40px; height: 40px; object-fit: contain; flex: none; }
+.ck-rent-t { display: flex; flex-direction: column; min-width: 0; flex: 1; line-height: 1.15; }
+.ck-rent-t b { font: 400 15px var(--font-h); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ck-rent-t small { font-size: 12px; }
+.ck-rent-r { display: flex; flex-direction: column; align-items: flex-end; text-align: right; line-height: 1.15; min-width: 0; }
+.ck-rent-r b { font: 400 15px var(--font-h); }
+.ck-rent-r small { font-size: 11.5px; color: var(--muted); }
+.ck-rent-empty { font-size: 13px; color: var(--muted); padding: 6px 2px; }
+.ck-rent-tot { font-size: 13px; color: var(--muted); }
+.ck-good { color: #8dff9b !important; }
+.ck-income .ck-sv { color: #8dff9b; }
+
+/* ownership & rental box in the Chikn detail */
+.ck-rentbox { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 8px 0; padding: 8px 10px; border-radius: 12px; border: 2px dashed #5b4bb0;
+  background: rgba(91, 75, 176, .12); font-size: 13.5px; color: var(--muted); }
+.ck-rentbox b { color: #fff; }
+.ck-rentbox > div:first-child { flex: 1 1 260px; min-width: 0; }
+.ck-rb-in { border-color: #c4782a; background: rgba(196, 120, 42, .12); }
+.ck-rb-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.ck-auto { display: flex; align-items: center; gap: 6px; margin-top: 4px; cursor: pointer; }
+
+/* rent-out dialog */
+.ck-ro { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 14px; align-items: start; }
+.ck-ro .tabs { margin-bottom: 6px; }
+.ck-ro-l { font: 400 15px var(--font-h); margin: 6px 0 4px; }
+.ck-ro-l small { font: 600 12px var(--font-b); color: var(--muted); margin-left: 6px; }
+.ck-ro-sum { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 8px 0 4px; }
+.ck-ro-sum > div { display: flex; flex-direction: column; padding: 6px 10px; border-radius: 10px; background: rgba(9, 12, 42, .62); border: 2px solid #343d86; }
+.ck-ro-sum span { font-size: 12px; color: var(--muted); }
+.ck-ro-sum b { font: 400 17px var(--font-h); }
+@media (max-width: 560px) { .ck-ro { grid-template-columns: minmax(0, 1fr); } .ck-ro > .ccard { max-width: 200px; margin: 0 auto; } }

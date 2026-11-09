@@ -42,6 +42,17 @@ h1, h2, h3, h4 { font-family: var(--font-h); font-weight: 400; margin: 0; letter
 .res-strip img { width: 28px; height: 28px; object-fit: contain; }
 .res-strip .lbl { font-size: 9px; }
 .res-strip .val { font-size: 15px; min-width: 40px; }
+button.res-strip { font: inherit; color: inherit; cursor: pointer; align-items: center; text-align: left; }
+button.res-strip:hover { border-color: #6a76d8; }
+.res-strip .res-more { color: var(--gold); font-size: 13px; padding: 0 2px 0 4px; }
+/* inventory dialog */
+.inv-h { margin: 6px 0 8px; font: 400 17px var(--font-h); color: var(--gold); }
+.inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.inv-it { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 2px solid #343d86; background: rgba(9, 12, 42, .62); }
+.inv-it div { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.inv-it b { font: 400 17px var(--font-h); color: #fff; }
+.inv-it small { font-size: 12px; color: var(--muted); }
+.inv-it i { font-style: normal; font-size: 11px; color: #7dff9a; }
 .top-icons { display: flex; gap: 6px; flex: none; }
 .icon-btn { position: relative; width: 42px; height: 42px; border: 0; padding: 4px; border-radius: 12px; background: transparent; cursor: pointer; }
 .icon-btn img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .5)); }
@@ -174,3 +185,10 @@ h1, h2, h3, h4 { font-family: var(--font-h); font-weight: 400; margin: 0; letter
 /* standalone wiki page */
 .wiki-only #topbar, .wiki-only #sidenav { display: none; }
 .wiki-only #app { grid-template-columns: 1fr; grid-template-rows: 1fr; grid-template-areas: 'view'; }
+
+/* test speed */
+.speed-chip { align-self: center; border: 2px solid #ff8a3d; background: linear-gradient(#ff9d4d, #e5641c); color: #fff; font: 400 15px var(--font-h);
+  border-radius: 12px; padding: 4px 10px; cursor: pointer; box-shadow: 0 0 12px rgba(255, 138, 61, .5); white-space: nowrap; }
+.set-test { margin: 10px 0; padding: 10px 12px; border-radius: 12px; border: 2px dashed #ff8a3d; background: rgba(255, 138, 61, .07); }
+.set-speeds { margin-top: 8px; flex-wrap: wrap; }
+.set-skips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }

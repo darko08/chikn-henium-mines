@@ -104,7 +104,7 @@ G.act.swap = (from, to, amt, minOut = 0) => {
   S.res[to] = (S.res[to] || 0) + q.out;
   const value = amt * G.spot(from, 'henium');
   S.dex.volume += value;
-  S.dex.log.unshift({ t: Date.now(), from, to, amt, out: q.out, value });
+  S.dex.log.unshift({ t: G.now(), from, to, amt, out: q.out, value });
   S.dex.log.length = Math.min(S.dex.log.length, 40);
   G.emit('res');
   return { ok: true, out: q.out, q };

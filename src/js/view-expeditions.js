@@ -200,7 +200,7 @@ function showResults(r, hadMedic) {
       <p class="ex-res-t">Your team is back from <b>${esc(r.site.name)}</b> with:</p>
       <div class="ex-res-rew">${ui.rew(r.rew, 30)}</div>
       ${inj.length ? `<div class="ex-res-inj"><div class="ex-res-h">${inj.length} Chikn${inj.length > 1 ? 's' : ''} got hurt and ${inj.length > 1 ? 'are' : 'is'} recovering</div>
-          ${inj.map((c) => `<div class="ex-res-c">${avatar(c)}<span class="sp"><b>${esc(c.name)}</b> <span class="muted">${D.roles[c.role].name}</span></span><span class="tag r">Back in <span data-b="until:${c.until}">${G.fmtTime((c.until - Date.now()) / 1000)}</span></span></div>`).join('')}
+          ${inj.map((c) => `<div class="ex-res-c">${avatar(c)}<span class="sp"><b>${esc(c.name)}</b> <span class="muted">${D.roles[c.role].name}</span></span><span class="tag r">Back in <span data-b="until:${c.until}">${G.fmtTime((c.until - G.now()) / 1000)}</span></span></div>`).join('')}
           <div class="dim ex-res-tip">${hadMedic ? 'Your Medic helped, but risky sites still bite. Level up your Medics for better protection.' : 'Tip: bring a Medic to cut the injury risk.'}</div></div>`
         : '<div class="ex-res-safe">✔ Everyone came back safe!</div>'}
     </div>` });

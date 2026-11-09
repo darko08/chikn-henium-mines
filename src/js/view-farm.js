@@ -64,7 +64,7 @@ function feedPlan(c, n) {
 }
 // "Fatten all": feed the lightest Chikn, again and again, while RESERVE_DAYS of upkeep stay in stock
 function fattenPlan() {
-  const S = G.S, flock = S.chikns.map((c) => ({ c, kg: c.kg, cap: G.kgCap(c), n: 0 }));
+  const S = G.S, flock = S.chikns.filter((c) => !c.rent && c.status !== 'away').map((c) => ({ c, kg: c.kg, cap: G.kgCap(c), n: 0 })); // only your own Chikns at home
   let feed = S.res.feed, up = G.upkeepPerDay(), spent = 0, n = 0, eggs = 0;
   for (let guard = 0; guard < 5000; guard++) {
     let x = null;
@@ -79,7 +79,7 @@ function fattenPlan() {
 }
 
 const KEY = { kg: (c) => c.kg, egg: (c) => G.chiknEgg(c) };
-const flock = () => G.S.chikns.slice().sort((a, b) => (KEY[sortBy](a) - KEY[sortBy](b)) * (desc ? -1 : 1) || a.id - b.id);
+const flock = () => G.S.chikns.filter((c) => c.status !== 'away').sort((a, b) => (KEY[sortBy](a) - KEY[sortBy](b)) * (desc ? -1 : 1) || a.id - b.id);
 const scaleChikn = () => {
   const S = G.S;
   let c = scaleId != null && G.chikn(S, scaleId);
@@ -150,6 +150,7 @@ ui.binders.fmCard = (el, id) => {
   if (nx.dataset.h !== nh) { nx.dataset.h = nh; nx.innerHTML = nh; }
   nx.title = max ? '' : `Next feeding: ${two(G.chiknEgg(c))} → ${two(next)} EGG/day`;
   const b1 = q('.fm-f1', el), b5 = q('.fm-f5', el);
+  if (c.rent) { b1.disabled = true; b5.hidden = true; setT(q('.fm-f1l', b1), 'Rented'); setT(q('.fm-fcv', b1), '—'); b1.title = `${c.name} is rented: only its owner can fatten it`; return; }
   b1.disabled = max || feed + 1e-9 < cost;
   setT(q('.fm-f1l', b1), max ? 'Max weight' : 'Feed ×1');
   setT(q('.fm-fcv', b1), String(cost));
@@ -301,7 +302,7 @@ function cardHTML(c) {
       ${ui.img('chikn/' + c.role, 'fm-art-img', role.name)}<span class="fm-lv">Lv.<b class="fm-lvv">${c.lv}</b></span></button>
     <div class="fm-cm">
       <div class="fm-c1"><b class="fm-name">${esc(c.name)}</b><span class="fm-rar" style="color:${R.color}">${R.name}</span></div>
-      <div class="fm-c2"><span>${role.name} #${c.num}</span>${TAGS[c.status] || ''}</div>
+      <div class="fm-c2"><span>${role.name} #${c.num}</span>${TAGS[c.status] || ''}${ui.rentTag(c)}</div>
       <div class="bar fm-wbar"><i class="fm-wfill"></i><b class="fm-wtxt"></b></div>
       <div class="fm-eggs"><span class="fm-epd">${ui.icon('egg', 18)}<b class="fm-ev"></b><small>EGG/day</small></span><span class="fm-next"></span></div>
       <div class="fm-btns">

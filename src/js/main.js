@@ -11,7 +11,7 @@ G.start = (S) => {
 
 const note = (n) => {
   const S = G.S;
-  S.notes.unshift({ text: n.text, icon: n.icon || null, t: Date.now(), read: false });
+  S.notes.unshift({ text: n.text, icon: n.icon || null, t: G.now(), read: false });
   if (S.notes.length > 40) S.notes.length = 40;
   ui.toast(n.text, n.bad ? 'bad' : n.good ? 'good' : '', n.icon || null, 3.4);
 };
@@ -87,7 +87,7 @@ function boot() {
   G.S = saved || G.newState('fresh');
   ui.renderShell();
   let off = null;
-  if (saved) off = G.offline((Date.now() - G.S.last) / 1000);
+  if (saved) off = G.offline((G.now() - G.S.last) / 1000);
   ui.go('mines');
   if (!saved) welcome();
   else if (off && Object.keys(off.gains).length) showOffline(off);
@@ -96,7 +96,9 @@ function boot() {
   const loop = (t) => {
     const dt = Math.min(1, Math.max(0, (t - last) / 1000));
     last = t;
-    G.tick(dt);
+    const k = G.speed(); // test speed: the game clock runs k times faster
+    if (k > 1) G.S.clockOff = (G.S.clockOff || 0) + dt * (k - 1) * 1000;
+    G.tick(dt * k);
     acc += dt; saveAcc += dt;
     if (acc >= 0.25) { acc = 0; ui.refresh(); }
     if (saveAcc >= 8) { saveAcc = 0; G.save(); }
@@ -105,7 +107,7 @@ function boot() {
   requestAnimationFrame(loop);
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { G.save(); return; }
-    const gap = (Date.now() - G.S.last) / 1000;
+    const gap = (G.now() - G.S.last) / 1000;
     if (gap >= 30) { const o = G.offline(gap); if (o && Object.keys(o.gains).length) showOffline(o); ui.render(); }
     else if (gap > 1) G.tick(gap);
     last = performance.now();

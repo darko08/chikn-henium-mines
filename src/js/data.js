@@ -24,7 +24,9 @@ D.res = {
   alloy:       { name: 'Alloy',        cat: 'mat', color: '#b98aff' },
   circuit:     { name: 'Circuit',      cat: 'mat', color: '#5fe08a' },
 };
-D.topRes = ['stone', 'coal', 'copper', 'iron', 'heniumOre', 'rareEarth'];
+D.topRes = ['stone', 'coal', 'copper', 'iron', 'heniumOre', 'rareEarth'];            // mined ores (rates on the Mines screen)
+D.barRes = ['stone', 'crushedOre', 'coal', 'copper', 'iron', 'heniumOre', 'rareEarth']; // the top bar: ores + Crushed Ore
+D.shortName = { heniumOre: 'H. Ore', crushedOre: 'Crushed', copperIngot: 'Cu Ingot', ironIngot: 'Fe Ingot', machinePart: 'Parts' };
 
 // Mine zones (vertical floors). base = units/sec at floor level 1.
 D.zones = [
@@ -196,10 +198,27 @@ D.rarities = [
   { id: 'mythic',    name: 'Mythic',    color: '#ff4d8d', pct: 60, kg0: 175, kgMax: 900, power: 120, w: 0.2 },
 ];
 D.rarity = (id) => D.rarities.find((r) => r.id === id);
-D.hires = {
-  standard: { name: 'Standard Hire', cost: { egg: 25, feed: 20 }, weights: [52, 27, 13.5, 5.6, 1.7, 0.2] },
-  premium:  { name: 'Premium Hire',  cost: { henium: 60 },          weights: [0, 0, 70, 22, 7, 1] },
+// Chikn NFTs are a fixed collection of 22,000: the game never mints one. You OWN some (c.own: your wallet, bought or won)
+// and RENT more from other holders for EGG a day (c.rent). Holders list their own Chikns for rent and earn passive EGG
+// while somebody else uses them (c.lease). A rental never changes the NFT: rented Chikns can't be fattened and don't
+// lose weight, and a Chikn you rent out comes back exactly as it left.
+D.nftSupply = 22000;
+D.rent = {
+  days: [1, 3, 7, 30],                                    // rental lengths
+  disc: { 1: 1, 3: 0.95, 7: 0.9, 30: 0.8 },               // price per day by length: longer rentals are cheaper per day
+  base: { common: 0.6, uncommon: 0.75, rare: 0.95, epic: 1.3, legendary: 2, mythic: 3.2 }, // fair EGG a day at start weight
+  fee: 0.1,                                               // market fee on every rent: burned
+  offers: 6,                                              // offers on the rental market; new ones every farm day
+  weights: [52, 27, 13.5, 5.6, 1.7, 0.2],                 // rarity mix of the offers
+  heavy: 0.5,                                             // offered Chikns weigh between start weight and halfway to max
+  wait: 2 * 3600,                                         // average wait for a renter when you list at the market price
+  elastic: 3,                                             // the wait grows with (your price ÷ market price)^elastic
+  priceK: [0.8, 1, 1.2, 1.5],                             // price choices when you list a Chikn: −20%, market, +20%, +50%
+  free: { rarity: 'uncommon', role: 'miner', days: 7 },   // a new player's first rental is free
 };
+D.rentPrice = (rarity, kg) => D.rent.base[rarity] * Math.pow(kg / D.rarity(rarity).kg0, 0.6); // fair EGG a day
+D.rentCost = (price, days) => Math.max(1, Math.ceil(price * days * (D.rent.disc[days] || 1)));  // whole EGG for a rental
+D.buyNft = { name: 'Buy a Chikn NFT', cost: { henium: 60 }, weights: [0, 0, 70, 22, 7, 1] }; // from another holder: Rare+
 D.chiknMaxLv = 30;
 D.names = ['Clucky', 'Nugget', 'Henrietta', 'Pecky', 'Drumstick', 'Goldie', 'Feathers', 'Rocky', 'Sparky', 'Ruby', 'Pip', 'Biscuit',
   'Waffles', 'Scramble', 'Omelette', 'Yolko', 'Sunny', 'Pebbles', 'Cobalt', 'Ember', 'Gizmo', 'Dusty', 'Tinker', 'Boomer', 'Coco',
@@ -335,7 +354,7 @@ D.quests = [
   { id: 'tap10',     text: 'Tap the Stone Zone 10 times',  p: (S) => [S.stats.taps, 10],              r: { stone: 150000 } },
   { id: 'stone3',    text: 'Upgrade Stone Zone to Lv. 3',  p: (S) => [S.zones.stone.lv, 3],          r: { stone: 300000 } },
   { id: 'depth3',    text: 'Dig to depth 3',               p: (S) => [S.depth, 3],                    r: { stone: 400000, feed: 4 } },
-  { id: 'hire1',     text: 'Hire your first Chikn',        p: (S) => [S.stats.hired, 1],              r: { feed: 5 } },
+  { id: 'hire1',     text: 'Rent your first Chikn',        p: (S) => [S.stats.hired, 1],              r: { feed: 5 } },
   { id: 'crusher',   text: 'Build the Ore Crusher',        p: (S) => [built(S, 'crusher'), 1],        r: { stone: 800000 } },
   { id: 'depth6',    text: 'Reach the Coal Zone (depth 6)', p: (S) => [S.depth, 6],                   r: { henium: 3 } },
   { id: 'process300', text: 'Process 300 ore in factories', p: (S) => [S.stats.processed, 300],       r: { crushedOre: 200000, coal: 300000 } },
@@ -388,7 +407,6 @@ D.hazards = ['collapse', 'bandits', 'creature', 'richvein', 'supply'];
 // Times in seconds; d = the player's depth; loot = an ore & material bundle (D.bundle), never EGG.
 D.rules = {
   specLv: 8,                                        // G.act.chooseSpec: player level that unlocks the specialization
-  freeHire: { rarity: 'uncommon', role: 'miner' },  // G.act.hire: the first standard hire is free
   hazardLv: 4, hazardGap: [300, 900], hazardMin: 40, // G.sys.hazardTick: hostile hazards from this player level; gap while playing (s); min. squad power
   collapse: { sec: 90, stone: (d) => Math.round(D.digCost(Math.max(5, d)).stone * 0.002) },
   rich: { sec: 25, mult: 10, taps: 8 },

@@ -132,7 +132,7 @@ function actionsHTML() {
         : `${ui.cost(cost, 1, 15)} <span class="dig-time">${ui.img('ui/timer', 'ic', '').replace('class="ic"', 'class="ic" width="14" height="14"')}${G.fmtTime(D.digTime(S.depth + 1) / G.digSpeed())}</span>`}</span></button>`;
   return `<div class="mine-actions">
     ${digCard}
-    <button class="act" data-a="hire">${ui.img('ui/chikns', 'act-ic', '')}<span class="act-l">Hire Chikn</span><span class="act-c">${S.stats.hired === 0 ? 'First one is free!' : ui.cost(D.hires.standard.cost, 1, 15)}</span>${S.stats.hired === 0 ? '<span class="badge">!</span>' : ''}</button>
+    <button class="act" data-a="hire">${ui.img('ui/chikns', 'act-ic', '')}<span class="act-l">Rent a Chikn</span><span class="act-c">${S.stats.hired === 0 ? 'First rental is free!' : `from ${ui.cost({ egg: 1 }, 1, 15)} a day`}</span>${S.stats.hired === 0 ? '<span class="badge">!</span>' : ''}</button>
     <button class="act" data-a="nav" data-args='["factories"]'>${ui.img('ui/factories', 'act-ic', '')}<span class="act-l">Build Factory</span><span class="act-c">${D.factories.filter((f) => S.factories[f.id].lv > 0).length}/${D.factories.length} built</span></button>
     <button class="act gold" data-a="collectAll">${ui.img('prop/chest', 'act-ic', '')}<span class="act-l">Collect All</span><span class="act-c">Nest: ${ui.icon('egg', 15)}<span data-b="nest"></span></span>${collectN ? `<span class="badge">${collectN}</span>` : ''}</button>
     <div class="ticker ${h ? 'haz-' + h.type : ''}" data-a="nav" data-args='["events"]'>${ui.img(h ? 'ui/battle' : 'ui/events', 'act-ic', '')}<div class="col" style="gap:0">${ticker}</div><span class="go">➜</span></div>
@@ -255,22 +255,61 @@ ui.handlers.hazardAct = (el, e, choice) => {
   if (r.rew) { const [x, y] = ui.centerOf(el); Object.entries(r.rew).forEach(([res, v], i) => ui.float(`+${ui.amt(res, v)}${ui.icon(res, 20)}`, x + i * 30, y - 10)); }
   ui.render();
 };
-// Hiring dialog (shared with the Chikn NFT screen)
+// Rental market (shared with the Chikn NFT screen): Chikn NFTs are a fixed collection, so you rent one from its holder
+let rentDays = 7, rentAuto = true;
+const rentOfferCard = (o) => {
+  const R = D.rarity(o.rarity), role = D.roles[o.role], c = { rarity: o.rarity, role: o.role, kg: o.kg, lv: 1 };
+  G.syncLv(c);
+  const days = G.rentDays(o, rentDays), cost = o.free ? 0 : D.rentCost(o.price, days), S = G.S, full = S.chikns.length >= G.coopCap();
+  const btn = full ? '<button class="btn gray block" data-a="nav" data-args=\'["farm"]\'>Coop full: upgrade it</button>'
+    : `<button class="btn ${o.free ? 'gold' : 'green'} block" data-rent="${o.id}" ${cost ? `data-need="egg:${cost}"` : ''}>${o.free ? `Rent FREE for ${days} days` : `Rent ${days} day${days === 1 ? '' : 's'} · ${ui.cost({ egg: cost }, 1, 16)}`}</button>`;
+  return `<div class="rent-card rarity-${o.rarity} ${o.free ? 'rent-free' : ''}">
+    <div class="rent-top">${ui.img('chikn/' + o.role, 'rent-img', role.name)}<div class="rent-id"><b style="color:${R.color}">${R.name} ${role.name}</b>
+      <span>${esc(o.name)} #${o.num} · Lv. ${c.lv}</span><small title="The holder who rents it out">Holder ${o.owner}</small></div></div>
+    <div class="rent-kv"><span>Team bonus</span><b>+${G.fmt(G.chiknPct(c), 1)}% ${role.label}</b></div>
+    <div class="rent-kv"><span>Weight</span><b>${Math.round(o.kg)} kg</b></div>
+    <div class="rent-kv"><span>Lays</span><b>${G.fmt(G.chiknEgg(c), 2)} EGG/day</b></div>
+    <div class="rent-kv"><span>Eats</span><b>${G.fmt(D.farm.upkeep(o.kg), 2)} FEED/day</b></div>
+    <div class="rent-kv"><span>Battle power</span><b>${G.fmt(G.chiknPower(c))}</b></div>
+    <div class="rent-price">${o.free ? '<b>Free</b> first rental' : `<b>${G.fmt(o.price * (D.rent.disc[days] || 1), 2)}</b> EGG a day`}</div>
+    ${btn}</div>`;
+};
+const rentHTML = () => {
+  const S = G.S, mk = G.rentMarket(), n = S.chikns.length, cap = G.coopCap();
+  const tabs = D.rent.days.map((d) => `<button type="button" class="tab ${rentDays === d ? 'on' : ''}" data-rdays="${d}">${d} day${d === 1 ? '' : 's'}${D.rent.disc[d] < 1 ? ` <small>−${Math.round((1 - D.rent.disc[d]) * 100)}%</small>` : ''}</button>`).join('');
+  return `<p class="rent-intro">Chikn NFTs are a fixed collection of ${G.fmtFull(D.nftSupply)}: nobody can mint new ones. <b>Rent</b> one from its holder: it joins your coop, works in your Mining Team and lays EGG for you until the rental ends, then goes home. You feed it, but you can't fatten it and it never loses weight. Holders earn the rent as passive income (${Math.round(D.rent.fee * 100)}% market fee is burned).</p>
+    <div class="rent-bar"><div class="tabs rent-days" role="group" aria-label="Rental length">${tabs}</div>
+      <label class="rent-auto"><input type="checkbox" data-rauto ${rentAuto ? 'checked' : ''}> Renew automatically when it ends</label></div>
+    <div class="rent-grid">${mk.offers.map(rentOfferCard).join('') || '<div class="empty">No offers right now.</div>'}</div>
+    <div class="rent-foot"><span>Coop <b>${n}/${cap}</b></span><span>You have ${ui.cost({ egg: Math.floor(S.res.egg) }, 1, 16)}</span><span>New offers in <b data-b="farmday"></b></span>
+      <button type="button" class="btn sm purple" data-a="buyNftDlg">Buy an NFT instead</button></div>`;
+};
 ui.handlers.hire = () => {
-  const S = G.S, free = S.stats.hired === 0;
-  const odds = (w) => { const t = w.reduce((a, b) => a + b, 0); return D.rarities.map((r, i) => w[i] ? `<span style="color:${r.color}">${r.name} ${(w[i] / t * 100).toFixed(w[i] / t < 0.01 ? 1 : 0)}%</span>` : '').filter(Boolean).join(' · '); };
-  ui.modal({ title: `${ui.img('ui/chikns', '', '')} Hire a Chikn`, wide: true, actions: [],
-    html: `<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
-      <div class="card col" style="align-items:center;text-align:center">${ui.img('chikn/miner', 'hire-img', '')}<div class="hx" style="font-size:22px">Standard Hire</div>
-        <div class="dim" style="font-size:12px">${odds(D.hires.standard.weights)}</div>
-        <button class="btn green lg block" data-hire="standard" ${free ? '' : `data-need="${ui.need(D.hires.standard.cost)}"`}>${free ? 'Hire FREE' : 'Hire ' + ui.cost(D.hires.standard.cost, 1, 18)}</button></div>
-      <div class="card col" style="align-items:center;text-align:center">${ui.img('chikn/leader', 'hire-img', '')}<div class="hx" style="font-size:22px">Premium Hire</div>
-        <div class="dim" style="font-size:12px">${odds(D.hires.premium.weights)}</div>
-        <button class="btn purple lg block" data-hire="premium" data-need="${ui.need(D.hires.premium.cost)}">Hire ${ui.cost(D.hires.premium.cost, 1, 18)}</button></div></div>` });
-  ui.modalEl().addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-hire]');
+  ui.modal({ title: `${ui.img('ui/chikns', '', '')} Rent a Chikn`, wide: true, actions: [], html: `<div class="rent-wrap">${rentHTML()}</div>` });
+  const box = ui.modalEl(), redraw = () => { const w = box.querySelector('.rent-wrap'); if (w) w.innerHTML = rentHTML(); };
+  box.addEventListener('click', (ev) => {
+    const t = ev.target.closest('[data-rdays]');
+    if (t) { rentDays = +t.dataset.rdays; G.sfx('click'); redraw(); return; }
+    const b = ev.target.closest('[data-rent]');
     if (!b) return;
-    const r = G.act.hire(b.dataset.hire);
+    const r = G.act.rent(+b.dataset.rent, rentDays, rentAuto);
+    if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); redraw(); return; }
+    ui.reveal(r.c);
+  });
+  box.addEventListener('change', (ev) => { if (ev.target.matches('[data-rauto]')) rentAuto = ev.target.checked; });
+};
+// Buying a Chikn NFT from another holder (the old premium hire): it is yours to keep, fatten and rent out
+ui.handlers.buyNftDlg = () => {
+  const b = D.buyNft, t = b.weights.reduce((x, y) => x + y, 0);
+  const odds = D.rarities.map((r, i) => (b.weights[i] ? `<span style="color:${r.color}">${r.name} ${(b.weights[i] / t * 100).toFixed(b.weights[i] / t < 0.01 ? 1 : 0)}%</span>` : '')).filter(Boolean).join(' · ');
+  ui.modal({ title: `${ui.img('ui/chikns', '', '')} Buy a Chikn NFT`, actions: [],
+    html: `<div class="card col" style="align-items:center;text-align:center">${ui.img('chikn/leader', 'hire-img', '')}
+      <p class="muted" style="margin:4px 0 8px">You buy a random Chikn NFT from another holder on the market: the collection stays at ${G.fmtFull(D.nftSupply)}. It is <b>yours</b>: it works and lays EGG for you, you can fatten it, and you can <b>rent it out</b> for passive EGG.</p>
+      <div class="dim" style="font-size:12px">${odds}</div>
+      <button class="btn purple lg block" data-buynft data-need="${ui.need(b.cost)}" style="margin-top:10px">Buy ${ui.cost(b.cost, 1, 18)}</button></div>` });
+  ui.modalEl().addEventListener('click', (ev) => {
+    if (!ev.target.closest('[data-buynft]')) return;
+    const r = G.act.buyNft();
     if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
     ui.reveal(r.c);
   });
@@ -278,11 +317,11 @@ ui.handlers.hire = () => {
 ui.reveal = (c) => {
   const R = D.rarity(c.rarity), role = D.roles[c.role];
   G.sfx('hire');
-  ui.modal({ title: `New Chikn!`, actions: [{ label: 'Awesome!', cls: 'green' }], onClose: () => ui.render(),
+  ui.modal({ title: c.rent ? 'Chikn rented!' : 'New Chikn NFT!', actions: [{ label: 'Awesome!', cls: 'green' }], onClose: () => ui.render(),
     html: `<div class="reveal rarity-${c.rarity}"><div class="rays"></div>${ui.img('chikn/' + c.role, 'reveal-img', role.name)}</div>
       <div style="text-align:center"><div class="hx" style="font-size:26px;color:${R.color}">${R.name} ${role.name}</div>
       <div class="hx" style="font-size:18px">${esc(c.name)} #${c.num}</div>
       <div class="muted">+${G.fmt(G.chiknPct(c), 1)}% ${role.label} · ${Math.round(c.kg)} kg · lays ~${G.chiknEgg(c).toFixed(1)} EGG/day</div>
-      <div style="margin-top:6px">${c.status === 'squad' ? '<span class="tag g">Joined your Mining Team</span>' : '<span class="tag">Waiting in the barracks</span>'}</div></div>` });
+      <div style="margin-top:6px">${c.rent ? `<span class="tag o">Rented for ${G.fmtTime(c.rent.left)}${c.rent.auto ? ' · auto-renew' : ''}</span> ` : '<span class="tag p">Your NFT</span> '}${c.status === 'squad' ? '<span class="tag g">Joined your Mining Team</span>' : '<span class="tag">Waiting in the barracks</span>'}</div></div>` });
 };
 })();

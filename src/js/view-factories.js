@@ -174,8 +174,11 @@ function recChip(f, rec, built, on) {
   const inp = built ? G.recipeIn(rec) : rec.in;
   const out = built ? G.recipeOut(f, rec) : rec.out;
   const t = built ? rec.t * G.factorySpeed(f) : rec.t;
+  const have = (list) => list.map((r) => `<span class="fx-hv" title="${esc(D.res[r].name)} you have">${ui.icon(r, 15)}<b data-b="fxAmt:${r}">${G.fmt(G.S.res[r])}</b></span>`).join('');
+  const stock = built || G.S.depth >= f.reqDepth
+    ? `<span class="fx-rc-have"><small>You have</small>${have(Object.keys(inp))}<span class="fx-arr">➜</span>${have(Object.keys(out))}</span>` : '';
   const body = `<span class="fx-radio"></span><span class="fx-rc-nt"><b class="fx-rc-n">${esc(rec.name)}</b><span class="fx-rc-t" title="Time per batch">${plainImg('ui/timer')}${G.fmtTime(t)}</span></span>
-    <span class="fx-rc-io">${ui.cost(inp, 1, 18)}<span class="fx-arr">➜</span>${ui.rew(out, 18)}</span>`;
+    <span class="fx-rc-io">${ui.cost(inp, 1, 18)}<span class="fx-arr">➜</span>${ui.rew(out, 18)}</span>${stock}`;
   if (!built || f.recipes.length < 2) return `<div class="fx-rc ${built ? 'fx-on' : ''} fx-solo">${body}</div>`;
   return `<button type="button" class="fx-rc ${on ? 'fx-on' : ''}" data-a="setRecipe" data-args='${esc(JSON.stringify([f.id, rec.id]))}' aria-pressed="${on}" ${on ? '' : `title="Select ${esc(rec.name)}"`}>${body}</button>`;
 }
