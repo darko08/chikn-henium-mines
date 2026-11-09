@@ -56,6 +56,7 @@ h1, h2, h3, h4 { font-family: var(--font-h); font-weight: 400; margin: 0; letter
 .res-strip .val { font-size: 15px; min-width: 40px; }
 button.res-strip { font: inherit; color: inherit; cursor: pointer; align-items: center; text-align: left; }
 button.res-strip:hover { border-color: #6a76d8; }
+.res-inv-ic { display: none; }
 .res-strip .res-more { color: var(--gold); font-size: 13px; padding: 0 2px 0 4px; }
 /* inventory dialog */
 .inv-h { margin: 6px 0 8px; font: 400 17px var(--font-h); color: var(--gold); }
@@ -204,6 +205,56 @@ button.res-strip:hover { border-color: #6a76d8; }
 .set-test { margin: 10px 0; padding: 10px 12px; border-radius: 12px; border: 2px dashed #ff8a3d; background: rgba(255, 138, 61, .07); }
 .set-speeds { margin-top: 8px; flex-wrap: wrap; }
 .set-skips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+
+/* "Welcome back" report */
+.away { display: flex; flex-direction: column; gap: 6px; }
+.away-row { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 12px; background: rgba(9, 12, 42, .55); border: 2px solid #2f3780; font-size: 14px; line-height: 1.35; }
+.away-row .sp { flex: 1; min-width: 0; }
+.away-bad { color: #ffb4bd; }
+.away-h { margin: 6px 0 2px; font: 400 16px var(--font-h); color: var(--gold); }
+.away-gains { display: flex; flex-wrap: wrap; gap: 6px; }
+.away-g { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: rgba(9, 12, 42, .62); border: 2px solid #343d86; }
+.away-g b { font: 400 15px var(--font-h); color: #8dff9b; }
+.away-g small { font-size: 12px; color: var(--muted); }
+
+/* phones: EGG, FEED and HENIUM always visible, the ores behind an inventory button, the nav hints that it scrolls */
+@media (max-width: 600px) {
+  .logo { display: none; }
+  #topbar { gap: 4px; padding: 4px 4px 4px 6px; }
+  .top-scroll { gap: 4px; }
+  .pill { gap: 3px; padding: 2px 3px 2px 2px; border-radius: 10px; }
+  .pill .lbl { display: none; }
+  .pill img { width: 24px; height: 24px; }
+  .pill .val { font-size: 14px; min-width: 0; }
+  .pill .plus { width: 18px; height: 18px; font-size: 14px; line-height: 16px; border-radius: 5px; }
+  .pill.eth { display: none; }
+  .res-strip { padding: 2px 4px; }
+  .res-strip .r { display: none; }
+  .res-inv-ic { display: block; width: 26px !important; height: 26px !important; }
+  .top-icons { gap: 0; }
+  .icon-btn { width: 34px; height: 34px; padding: 3px; }
+  .speed-chip { font-size: 12px; padding: 2px 6px; }
+  #sidenav { -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); }
+}
+
+.cost-miss { flex-basis: 100%; margin-top: 3px; font-size: 12px; line-height: 1.3; color: #ffb4bd; }
+
+.nest-eta { display: block; font-size: 12px; color: var(--muted); }
+.nest-eta.nest-full { color: #ffb4bd; font-weight: 700; }
+
+/* EGG / FEED / HENIUM "+" dialog */
+.ex-how { margin: 4px 0 8px; padding-left: 20px; font-size: 14px; line-height: 1.45; }
+.ex-go { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.ex-btns { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+/* level chip: phones only (the sidebar card shows it on wide screens) */
+.lvl-chip { display: none; position: relative; align-self: center; width: 36px; height: 36px; border-radius: 50%; border: 0; padding: 0; cursor: pointer; color: #fff;
+  font: 400 15px var(--font-h); background: #1a2058; }
+.lvl-chip i { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(var(--gold) calc(var(--p, 0) * 360deg), rgba(255, 255, 255, .12) 0);
+  -webkit-mask: radial-gradient(circle, transparent 13px, #000 14px); mask: radial-gradient(circle, transparent 13px, #000 14px); }
+.lvl-chip .badge { position: absolute; top: -3px; right: -3px; }
+@media (max-width: 900px) { .lvl-chip { display: block; } }
+
+.set-vol { width: 120px; accent-color: var(--gold); margin-right: 8px; }
 
 /* mines.css */
 .mines-grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 12px; align-items: start; }
@@ -411,6 +462,27 @@ button.res-strip:hover { border-color: #6a76d8; }
   .rb-next { font-size: 10px; } .rb-next .cost .c { font-size: 10px; }
   .rb-lv { display: none; }
   .tap-energy { left: 6px; top: 6px; font-size: 12px; } .te-bar { width: 46px; }
+}
+
+/* quests show their reward */
+.q-rew { display: block; margin-top: 2px; }
+.q-rew .cost { font-size: 12px; }
+/* the dig card: time on the bar, Finish now on its own line, gate text wraps */
+.act.digging { flex-wrap: wrap; }
+.act.digging .dig-row { flex: 1 1 100%; }
+.act.digging .dig-row .bar { min-width: 110px; flex: 1; }
+.dig-fin { margin-top: 4px; }
+.act-c.act-gate { white-space: normal; overflow: visible; line-height: 1.25; font-size: 12px; }
+/* hazards: countdown and odds */
+.haz-t { font-weight: 700; color: #ffe27a; }
+.haz-box .cost { font-size: 12px; }
+.rb-x2 { color: #8dff9b; font-weight: 700; }
+.floors-more { display: none; align-items: center; gap: 8px; padding: 8px 12px; margin: 4px 0; border-radius: 12px; background: rgba(9, 12, 42, .7); color: var(--muted); font-size: 13px; }
+.floors-more .lk { width: 18px; height: 18px; }
+@media (max-width: 600px) {
+  .floor.locked.far { display: none; }
+  .floors-more { display: flex; }
+  .side .side-quests { order: -1; }
 }
 
 /* factories.css */
@@ -714,7 +786,7 @@ button.fx-rc:hover { border-color: #6a76d8; }
 
 /* ---------- production queue ---------- */
 .fx-cnt { color: var(--gold-hi); }
-.fx-qnote { white-space: nowrap; }
+.fx-qnote { white-space: normal; line-height: 1.25; }
 .fx-qgrid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(min(212px, 100%), 1fr)); }
 .fx-jt { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 7px 8px 8px; border-radius: 13px; border: 2px solid var(--gold-line);
   background: linear-gradient(#2b3270, #181d50); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .08), 0 3px 8px rgba(0, 0, 0, .35); }
@@ -741,7 +813,7 @@ button.fx-rc:hover { border-color: #6a76d8; }
 .fx-add.fx-add-lock { flex-direction: row; gap: 8px; min-height: 48px; border-style: solid; border-color: #343d86; }
 .fx-add.fx-add-lock .fx-lk { width: 22px; height: 22px; }
 .fx-side .fx-add { min-height: 54px; flex-direction: row; gap: 8px; }
-.fx-side .fx-qnote { display: none; }
+@container fxwrap (min-width: 1320px) { .fx-side .fx-qnote { font-size: 11px; } }
 
 /* ---------- factory upgrades ---------- */
 .fx-upgrid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(min(292px, 100%), 1fr)); }
@@ -852,7 +924,7 @@ button.fx-rc:hover { border-color: #6a76d8; }
   .fx-scene::after { left: -6px; right: -6px; }
   .fx-ct h3 { font-size: 17px; }
   .fx-crane { font-size: 26px; }
-  .fx-qnote { display: none; }
+  .fx-qnote { font-size: 11px; }
   .fx-qgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .fx-jt-ic { width: 32px; height: 32px; }
   .fx-jt-ic .ic, .fx-jt-fac { width: 30px; height: 30px; }
@@ -885,6 +957,15 @@ button.fx-rc:hover { border-color: #6a76d8; }
   .fx-cel-a .fx-cel-img, .fx-cel-arr, .fx-cel-rays { animation: none; }
   .fx-pulse { box-shadow: 0 0 0 3px var(--gold); }
 }
+
+.fx-gate { margin: 6px 0 0; padding: 4px 8px; border-radius: 9px; font-size: 12.5px; line-height: 1.3; color: #ffd9a8; background: rgba(122, 61, 10, .35); border: 1px solid rgba(255, 154, 31, .35); }
+.fx-gate-ok { color: #b8ffbf; background: rgba(31, 106, 42, .3); border-color: rgba(125, 255, 154, .3); }
+.fx-upg-warn { grid-column: 1 / -1; font-size: 12px; color: #ffd9a8; margin-top: 2px; }
+.fx-upg-f { flex-wrap: wrap; }
+.fx-jt-wait { font-size: 11.5px; color: var(--muted); margin: 2px 0; }
+.fx-norush { font-size: 11px; color: var(--muted); align-self: center; }
+
+.fx-batches { text-transform: none !important; letter-spacing: 0 !important; }
 
 /* crafting.css */
 /* Crafting screen (prefix cr-) */
@@ -1127,6 +1208,15 @@ button.fx-rc:hover { border-color: #6a76d8; }
 
 .cr-fl-rule { margin: 0 0 8px; font-size: 12.5px; line-height: 1.35; color: var(--muted); }
 .cr-fl-rule b { color: #fff; }
+
+.cr-bad { color: #ffb4bd; }
+.cr-coal { margin: 0 0 8px; font-size: 12.5px; color: var(--muted); }
+.cr-coal b { color: #fff; }
+.cr-coal.cr-bad b { color: #ffb4bd; }
+
+.cr-q-lock { opacity: .75; cursor: default; font-size: 12.5px; }
+button.cr-q-lock { cursor: pointer; }
+.cr-q-lock img { width: 22px; height: 22px; }
 
 /* chikns.css */
 /* ---------- Chikn NFT screen (.ck-) ---------- */
@@ -2179,6 +2269,9 @@ button.fx-rc:hover { border-color: #6a76d8; }
   .gd-side { grid-template-columns: minmax(0, 1fr); }
 }
 
+.gd-have { font-size: 11.5px; color: var(--muted); margin: 2px 0 4px; }
+.gd-lic-how { font-size: 12.5px; color: var(--muted); margin: 4px 0; }
+
 /* dex.css */
 /* ---------- DEX screen (.dx-) ---------- */
 .dx-page { container: dx / inline-size; display: flex; flex-direction: column; gap: 12px; max-width: 1560px; margin: 0 auto; }
@@ -2944,6 +3037,8 @@ button.dx-sink:hover { border-color: var(--gold-line); background: rgba(255, 200
 }
 @media (max-width: 380px) { .ex-rws { grid-template-columns: 1fr; } }
 
+button.ex-chip { font: inherit; color: inherit; cursor: pointer; border: inherit; }
+
 /* battle.css */
 /* ---------- Battle ---------- */
 .bt-top { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -3224,6 +3319,9 @@ button.dx-sink:hover { border-color: var(--gold-line); background: rgba(255, 200
   .bt-res-h { font-size: 46px; }
 }
 
+.bt-chip small { font-size: 11px; color: var(--muted); font-weight: 600; }
+.bt-hunt { font-size: 11px; color: #c9d2ff; background: rgba(60, 70, 160, .45); border-radius: 999px; padding: 1px 7px; align-self: center; }
+
 /* events.css */
 /* ---------- Events ---------- */
 .ev-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -3465,6 +3563,8 @@ button.dx-sink:hover { border-color: var(--gold-line); background: rgba(255, 200
 .ev-n-multi .ic { width: 38px; height: 38px; }
 .ev-n-sub { display: inline-flex; align-items: center; gap: 2px; font: 400 13px/1 var(--font-h); color: #e8ecff; text-shadow: 0 1px 0 rgba(0, 0, 0, .5); }
 .ev-n-sub .ic { width: 18px; height: 18px; }
+
+.ev-mo-prog { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; }
 
 /* wiki.css */
 /* Wiki (view id "wiki"): encyclopedia layout, article typography, zebra tables, galleries and charts. Prefix: wk- */
@@ -3989,8 +4089,8 @@ D.factoryUpCost = (f, lv) => {
   const c = {}, k = f.id === 'refinery' ? 1.5 : 1, g = f.upG || 1.9; // the refinery (the HENIUM engine) needs 1.5× the materials
   for (const r in f.build) c[r] = Math.ceil(f.build[r] * (D.res[r].cat === 'raw' ? pow(g, lv) : k * pow(1.5, lv)));
   const need = (r, v) => { c[r] = Math.max(c[r] || 0, Math.ceil(v)); };
-  if (lv >= 2) need('components', 200 * pow(1.5, lv - 2));
-  if (lv >= 4) need('machinePart', 150 * pow(1.5, lv - 4));
+  if (lv >= 4) need('components', 200 * pow(1.5, lv - 4));  // Components and Machine Parts come from the Iron Forge (depth 14)
+  if (lv >= 5) need('machinePart', 150 * pow(1.5, lv - 5));
   if (lv >= 5) need('henium', 10 * pow(1.7, lv - 5));
   if (f.id === 'refinery') need('henium', 15 * pow(1.8, lv - 1)); // every refinery upgrade costs HENIUM: 15, 27, 49 … 1,700
   if (lv >= 6) need('alloy', 150 * pow(1.5, lv - 6));
@@ -4031,7 +4131,10 @@ D.machines = [
 D.machineById = (id) => D.machines.find((m) => m.id === id);
 D.machineMaxLv = 10;
 D.machineUpCost = (m, lv) => { const i = D.machines.indexOf(m); const c = { machinePart: Math.ceil(30 * lv * (1 + i * 0.6)), ironIngot: Math.ceil(300 * lv * (1 + i * 0.4)) }; if (lv >= 5) c.alloy = Math.ceil(20 * (lv - 3) * (1 + i * 0.5)); return c; };
-D.machineServiceCost = (dur) => { const miss = 100 - dur; return { machinePart: Math.max(1, Math.ceil(miss / 10)), coal: Math.ceil(miss * 20000) }; };
+// servicing: Coal, plus Machine Parts once you can make them (the Iron Forge opens at depth 14): early drills need Stone instead
+D.machineServiceCost = (dur, tier = 3) => { const miss = 100 - dur;
+  return tier <= 2 ? { stone: Math.ceil(miss * 30000), coal: Math.ceil(miss * 5000) } : { machinePart: Math.max(1, Math.ceil(miss / 10)), coal: Math.ceil(miss * 20000) }; };
+D.machineTier = (type) => { const i = D.machines.findIndex((m) => m.id === type); return i < 0 ? 3 : i + 1; }; // basic 1, improved 2, heavy 3 …
 
 // Chikns
 D.roles = {
@@ -4240,18 +4343,18 @@ D.quests = [
 
 // Six-month journey from the roadmap
 D.journey = [
-  { name: 'The Beginning',    goal: 'Stable mine',       items: ['First mines (Depth 1–5)', 'Gather Stone & Coal', 'Build basic buildings', 'Learn core mechanics'], done: (S) => S.depth >= 6 },
-  { name: 'Build & Produce',  goal: 'Active production', items: ['Unlock core factories', 'Start resource production', 'Craft first machines', 'Contribute to your guild'], done: (S) => S.stats.crafted >= 1 && built(S, 'smelter') },
-  { name: 'Specialize',       goal: 'Specialization',    items: ['Deeper mines (Depth 11–20)', 'Choose a specialization', 'Advanced equipment', 'First large guild project'], done: (S) => !!S.spec && S.depth >= 20 },
-  { name: 'Expand Territory', goal: 'Territory control', items: ['Guild competitions (PvE/PvP)', 'Rare Earth production', 'World events & expeditions'], done: (S) => S.guild.warPts >= 300 },
-  { name: 'The Henium Rush',  goal: 'Henium yield',      items: ['Unlock Henium zones (21–30)', 'Limited Henium vein events', 'Defend against raids', 'Advanced tech'], done: (S) => S.stats.refined >= 500 },
-  { name: 'Mining Empire',    goal: 'Empire status',     items: ['Core Zone (Depth 41+)', 'Guild wars & world rankings', 'Prestige (Season 1)', 'Long-term empire upgrades'], done: (S) => S.depth >= 50 },
+  { name: 'The Beginning',    goal: 'Stable mine',       items: ['First mines (Depth 1–5)', 'Gather Stone & Coal', 'Build basic buildings', 'Learn core mechanics'], done: (S) => S.depth >= 6, prog: (S) => [S.depth, 6, 'depth'] },
+  { name: 'Build & Produce',  goal: 'Active production', items: ['Unlock core factories', 'Start resource production', 'Craft first machines', 'Contribute to your guild'], done: (S) => S.stats.crafted >= 1 && built(S, 'smelter'), prog: (S) => [(S.stats.crafted >= 1 ? 1 : 0) + (built(S, 'smelter') ? 1 : 0), 2, 'of: a crafted machine, the Smelter'] },
+  { name: 'Specialize',       goal: 'Specialization',    items: ['Deeper mines (Depth 11–20)', 'Choose a specialization', 'Advanced equipment', 'First large guild project'], done: (S) => !!S.spec && S.depth >= 20, prog: (S) => [Math.min(S.depth, 20), 20, `depth${S.spec ? '' : ' · and choose a specialization'}`] },
+  { name: 'Expand Territory', goal: 'Territory control', items: ['Guild competitions (PvE/PvP)', 'Rare Earth production', 'World events & expeditions'], done: (S) => S.guild.warPts >= 300, prog: (S) => [S.guild.warPts, 300, 'war points'] },
+  { name: 'The Henium Rush',  goal: 'Henium yield',      items: ['Unlock Henium zones (21–30)', 'Limited Henium vein events', 'Defend against raids', 'Advanced tech'], done: (S) => S.stats.refined >= 500, prog: (S) => [Math.floor(S.stats.refined), 500, 'HENIUM refined'] },
+  { name: 'Mining Empire',    goal: 'Empire status',     items: ['Core Zone (Depth 41+)', 'Guild wars & world rankings', 'Max out your buildings', 'Rent out your Chikns'], done: (S) => S.depth >= 50, prog: (S) => [S.depth, 50, 'depth'] },
 ];
 
 // Live events rotate; hazards pop up at random.
 D.liveEvents = [
-  { id: 'vein',     name: 'Henium Vein Discovered!', desc: 'Depth 29 — limited quantity. Henium Vein output ×1.5 and a special expedition.', dur: 36000, zone: 'henium', mult: 1.5, minDepth: 18 },
-  { id: 'comp',     name: 'Guild Mining Competition', desc: 'Top guilds earn exclusive machines! All mining +20%.', dur: 54000, mult: 1.2 },
+  { id: 'vein',     name: 'Henium Vein Discovered!', desc: 'Depth 29 — limited quantity. Henium Vein output ×1.5 and a special expedition.', dur: 36000, zone: 'henium', mult: 1.5, minDepth: 21 },
+  { id: 'comp',     name: 'Guild Mining Competition', desc: 'All guilds race to mine the most: every floor mines +20% while it lasts.', dur: 54000, mult: 1.2 },
   { id: 'collapse', name: 'Cave Collapse Warning',   desc: 'Increased cave-in risk in depths 21–30!', dur: 28800, minDepth: 21 },
   { id: 'rush',     name: 'Copper Rush',             desc: 'Copper Zone output ×2.', dur: 21600, zone: 'copper', mult: 2, minDepth: 11 },
   { id: 'feast',    name: 'Feed Festival',           desc: 'Fattening Chikns costs 30% less FEED.', dur: 36000 },
@@ -4325,6 +4428,8 @@ G.fmtTime = (s) => {
   return `${x}s`;
 };
 G.dayKey = () => new Date(now()).toISOString().slice(0, 10);
+// a journey month, once reached, stays reached (S.journey), even if the goal later slips (war points decay every day)
+D.journey.forEach((j, i) => { const raw = j.done; j.done = (S) => { if (S && S.journey && S.journey[i]) return true; const d = !!raw(S); if (d && S && S.journey) S.journey[i] = true; return d; }; });
 G.rand = (a, b) => a + Math.random() * (b - a);
 G.randInt = (a, b) => Math.floor(G.rand(a, b + 1));
 G.pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -4332,7 +4437,7 @@ G.pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 // ---------- events ----------
 const handlers = {};
 G.on = (e, fn) => (handlers[e] = handlers[e] || []).push(fn);
-G.emit = (e, d) => (handlers[e] || []).forEach((fn) => { try { fn(d); } catch (err) { console.error(err); } });
+G.emit = (e, ...a) => (handlers[e] || []).forEach((fn) => { try { fn(...a); } catch (err) { console.error(err); } }); // all arguments reach the handlers
 
 // ---------- state ----------
 const allRes = () => Object.fromEntries(Object.keys(D.res).map((k) => [k, 0]));
@@ -4359,7 +4464,7 @@ G.newState = (kind = 'fresh') => {
     hunt: 0, tapEnergy: D.rules.tap.energyMax,
     live: { id: null, until: 0, next: now() + 75e3 },
     hazard: null, hazardNext: now() + 100e3,
-    notes: [], settings: { sound: true, speed: 1 }, saveT: 0, clockOff: 0,
+    notes: [], settings: { sound: true, speed: 1 }, saveT: 0, clockOff: 0, journey: [],
   };
   S.world.mined = D.cumEmission(S.worldT / 86400);
   G.dexInit(S);
@@ -4409,7 +4514,7 @@ function showcase(S) {
   S.factories.feedmill.lv = 3; S.nest = 6;
   S.factories.advanced.con = { t: 600, dur: D.buildTime(3), to: 3 };  // an upgrade under construction
   S.dig = { t: 86400 * 2.5, dur: D.digTime(28), to: 28 };            // digging towards depth 28
-  Object.assign(S.guild, { lv: 7, proj: 0, pts: Math.round(D.guildProjects[0].need * 0.68), contrib: 5200, zoneLv: 3, warPts: 180 });
+  Object.assign(S.guild, { lv: 7, proj: 4, bonus: 36, pts: Math.round(D.guildProjects[4].need * 0.4), contrib: 5200, zoneLv: 3, warPts: 180 }); // Lv. 7 = 4 projects done (+36% mining)
   Object.assign(S.season, { lv: 27, xp: 4200 });
   S.battle.cleared = 4;
   Object.assign(S.stats, { mined: 4.2e6, processed: 260000, crafted: 6, refined: 24, taps: 900, hired: 12, wins: 22, exps: 9, upgrades: 230, ingots: 12000 });
@@ -4556,6 +4661,9 @@ G.recipeOut = (f, rec) => {
   return Object.fromEntries(Object.entries(rec.out).map(([r, v]) => [r, r === 'henium' ? Math.round(v * k * 100) / 100 : Math.max(1, Math.round(v * k))]));
 };
 G.jobSlots = () => 3 + G.S.fup.slots;
+// jobs that take a queue slot: the Feed Mill is capped by its daily quota instead, so it never blocks (or is blocked by) the queue
+G.slotJobs = () => G.S.jobs.filter((j) => j.f !== 'feedmill').length;
+G.queueFull = (fid) => fid !== 'feedmill' && G.slotJobs() >= G.jobSlots();
 G.jobDur = (f, rec) => rec.t * (f.id === 'refinery' ? 1 : G.factorySpeed(f)); // refinery batches have a fixed length
 // building art: 10 looks per building, one per level; the HQ gets a new look every 5 depth levels
 // falls back to the highest look that exists, so a missing image never shows as a blank
@@ -4567,6 +4675,7 @@ G.worldDays = () => (G.S.worldT || 0) / 86400;                          // days 
 G.epoch = () => Math.floor(G.worldDays() / D.supply.halvingDays);
 G.halving = () => (G.S.world.mined >= D.supply.cap ? 0 : Math.pow(0.5, G.epoch())); // 0 once all 21M are mined
 G.nextHalving = () => D.cumEmission((G.epoch() + 1) * D.supply.halvingDays);        // world supply at the next halving
+G.nextHalvingDate = () => new Date(D.supply.genesis + (G.epoch() + 1) * D.supply.halvingDays * 86400e3).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 G.nextHalvingIn = () => ((G.epoch() + 1) * D.supply.halvingDays - G.worldDays()) * 86400; // seconds to the next halving
 // HENIUM emission: the world mints D.supply.daily per game day; you earn a share of it by refining (work),
 // by guild wars (fighting other guilds) and by hunting monsters. Shares shrink as the world grows.
@@ -4610,7 +4719,10 @@ G.tick = (dt, offline = false, mineK = 1) => {
   for (const m of S.machines) {
     if (!m.zone || m.dur <= 0 || mineK <= 0) { m.off = false; continue; }
     const ms = G.machineStats(m), need = ms.energy / 3600 * dt * mineK;
-    if (S.res.coal >= need) { S.res.coal -= need; m.off = false; } else { if (!m.off && !offline) G.emit('noCoal', m); m.off = true; continue; }
+    // a machine that ran dry waits for 10 minutes' worth of Coal before it restarts, so it can't flicker on and off
+    const enough = m.off ? S.res.coal >= Math.max(need, ms.energy / 6) : S.res.coal >= need;
+    if (enough) { S.res.coal -= need; if (m.off) m.offT = 0; m.off = false; }
+    else { if (!m.off) { if (!offline) G.emit('noCoal', m); else G.logAway('coal', `${D.machineById(m.type).name} ran out of Coal and stopped`); } m.off = true; continue; }
     coalPer[m.id] = need;
     if (offline) continue; // machines only wear while you play
     const wear = ms.def.wear / 60 * dt * (1 - Math.min(0.6, G.bonus('machine') * 0.5));
@@ -4647,7 +4759,7 @@ G.tick = (dt, offline = false, mineK = 1) => {
   for (const c of [...S.crafts]) { c.t += dt; if (c.t >= c.dur) G.sys.finishCraft(c, offline); }
   // expeditions
   for (const e of S.exps) if (!e.done) { e.t += dt; if (e.t >= e.dur) { e.done = true; if (!offline) G.emit('expDone', e); } }
-  for (const c of S.chikns) if (c.status === 'injured' && now() >= c.until) c.status = 'idle';
+  for (const c of S.chikns) if (c.status === 'injured' && now() >= c.until) { c.status = 'idle'; if (!offline) G.emit('note', { text: `${c.name} has recovered and is ready to work again.`, icon: 'chikn/' + c.role, good: true }); }
   // pvp tickets
   if (S.battle.tickets < D.pvpTickets) { // a long (offline) tick can refill several tickets
     S.battle.tt += dt;
@@ -4668,7 +4780,7 @@ G.tick = (dt, offline = false, mineK = 1) => {
     G.sys.liveTick();
     G.sys.hazardTick();
     if (S.daily.day !== G.dayKey()) S.daily = { day: G.dayKey(), prog: {}, claimed: {} };
-    if (now() > S.season.ends) { S.season = { lv: 1, xp: 0, claimed: [], ends: now() + R.seasonDays * 86400e3 }; G.emit('note', { text: 'A new Season has begun!', icon: 'ui/trophy' }); }
+    if (now() > S.season.ends) G.sys.seasonEnd();
   }
   S.last = now();
 };
@@ -4676,29 +4788,45 @@ G.tick = (dt, offline = false, mineK = 1) => {
 // Test tool: skip ahead `sec` seconds as if you played the whole time (floors mine all along, no 8 h cap), quietly
 // (no hazards pop up while skipping). The clock moves with it, so every timer stays consistent.
 G.warp = (sec) => {
-  const S = G.S, before = { ...S.res }, step = 60, n = Math.ceil(sec / step);
-  for (let i = 0; i < n; i++) { const dt = Math.min(step, sec - i * step); S.clockOff = (S.clockOff || 0) + dt * 1000; G.tick(dt, true, 1); }
-  const gains = {};
-  for (const r in S.res) { const d = S.res[r] - before[r]; if (d > 0.5) gains[r] = d; }
-  return { sec, gains };
+  const S = G.S, before = { ...S.res }, step = 60, n = Math.ceil(sec / step), a = awaySnap(S), log = [];
+  G.offLog = log;
+  G.sys.awayHazard();
+  try { for (let i = 0; i < n; i++) { const dt = Math.min(step, sec - i * step); S.clockOff = (S.clockOff || 0) + dt * 1000; G.tick(dt, true, 1); } } finally { G.offLog = null; }
+  const gains = {}, spent = {};
+  for (const r in S.res) { const d = S.res[r] - before[r]; if (d > 0.5 || (r === 'henium' && d > 0.005)) gains[r] = d; else if (d < -0.5) spent[r] = -d; }
+  return Object.assign(G.awayReport(a, awaySnap(S), sec, sec), { gains, spent, log, warp: true });
 };
+G.offLog = null;
+G.logAway = (kind, text) => { if (G.offLog && !G.offLog.some((x) => x.text === text)) G.offLog.push({ kind, text }); };
+// what changed while you were away, for the "Welcome back" report
+const awaySnap = (S) => ({ res: { ...S.res }, laid: S.farm.laid || 0, lost: S.farm.lost || 0, war: S.guild.warPts, hunt: S.hunt || 0, rent: S.stats.rentEarned || 0,
+  expsDone: S.exps.filter((e) => e.done).length, hungry: !!S.farm.hungry, kg: S.chikns.filter((c) => c.own !== false).reduce((s, c) => s + (c.kg || 0), 0),
+  names: S.chikns.map((c) => c.name + '#' + c.id) });
+G.awayReport = (a, b, total, mineSec) => ({ sec: total, mineSec, eggsLaid: b.laid - a.laid, eggsLost: b.lost - a.lost, feedUsed: Math.max(0, a.res.feed - b.res.feed),
+  hungry: b.hungry, hungryNew: b.hungry && !a.hungry, kgLost: Math.max(0, a.kg - b.kg), expsBack: b.expsDone - a.expsDone, war: [a.war, b.war], hunt: [a.hunt, b.hunt],
+  rent: b.rent - a.rent, left: a.names.filter((n) => !b.names.includes(n)).map((n) => n.split('#')[0]) });
 G.offline = (sec) => {
   const S = G.S;
   if (!(sec >= 30)) return null;
   const mineSec = Math.min(sec, R.offlineH * 3600);       // the floors mine for at most offlineH hours while you are away
   const total = Math.min(sec, 60 * 86400);                // timers, factories, the farm and the world run the whole time
-  const before = { ...S.res };
+  const before = { ...S.res }, a = awaySnap(S);
   const steps = Math.min(600, Math.max(1, Math.ceil(total / 60)));
   const dt = total / steps;
   let mined = 0;
-  for (let i = 0; i < steps; i++) {
-    const m = Math.max(0, Math.min(dt, mineSec - mined));
-    mined += m;
-    G.tick(dt, true, m / dt);
-  }
-  const gains = {};
-  for (const r in S.res) { const d = S.res[r] - before[r]; if (d > 0.5) gains[r] = d; }
-  return { sec: total, mineSec, gains };
+  let log = [];
+  G.offLog = log;
+  G.sys.awayHazard();
+  try {
+    for (let i = 0; i < steps; i++) {
+      const m = Math.max(0, Math.min(dt, mineSec - mined));
+      mined += m;
+      G.tick(dt, true, m / dt);
+    }
+  } finally { G.offLog = null; }
+  const gains = {}, spent = {};
+  for (const r in S.res) { const d = S.res[r] - before[r]; if (d > 0.5 || (r === 'henium' && d > 0.005)) gains[r] = d; else if (d < -0.5) spent[r] = -d; }
+  return Object.assign(G.awayReport(a, awaySnap(S), total, mineSec), { gains, spent, log });
 };
 })();
 
@@ -4709,7 +4837,9 @@ G.offline = (sec) => {
 const G = window.G, D = G.D, R = D.rules;
 const ok = (extra) => Object.assign({ ok: true }, extra);
 const fail = (msg) => ({ ok: false, msg });
-const lack = (cost) => fail('Not enough ' + G.missing(cost).map((r) => D.res[r].name).join(', '));
+// "Not enough Copper Ingot: need 500, you have 120"
+const lack = (cost) => fail('Not enough ' + G.missing(cost).map((r) => `${D.res[r].name}: need ${G.fmt(cost[r])}, you have ${G.fmt(Math.floor(G.S.res[r]))}`).join(' · '));
+G.lackMsg = (cost) => lack(cost).msg;
 const now = () => G.now(); // the game clock (moves faster in test mode)
 G.sys = {}; G.act = {};
 
@@ -4742,11 +4872,13 @@ G.digGate = (d) => {
   const z = D.zoneOf(d), S = G.S;
   if (z.from !== d || !z.gate) return null;
   const g = z.gate;
-  if (g.factory && S.factories[g.factory].lv < 1) return `Build the ${D.factoryById(g.factory).name} to break into the ${z.name}`;
+  if (g.factory && S.factories[g.factory].lv < 1) { const st = S.factories[g.factory], f = D.factoryById(g.factory);
+    return st.con ? `The ${f.name} is being built (${G.fmtTime(st.con.dur - st.con.t)} left): then you can break into the ${z.name}` : `Build the ${f.name} (Factories) to break into the ${z.name}`; }
   if (g.machine && !S.machines.length) return `Craft your first machine to break into the ${z.name}`;
-  if (g.refineryLv && S.factories.refinery.lv < g.refineryLv) return `Requires Henium Refinery Lv. ${g.refineryLv} & Guild License`;
-  if (g.license && !S.guild.license) return 'Requires a Guild License';
-  return null;
+  const miss = [];
+  if (g.refineryLv && S.factories.refinery.lv < g.refineryLv) miss.push(`Henium Refinery Lv. ${g.refineryLv} (yours: Lv. ${S.factories.refinery.lv})`);
+  if (g.license && !S.guild.license) miss.push(`a Guild License (Guild screen: ${G.fmtFull(D.licenseCost.henium || 0)} HENIUM + ${G.fmtFull(D.licenseCost.egg || 0)} EGG, guild Lv. ${R.licenseGuildLv})`);
+  return miss.length ? `The ${z.name} needs ${miss.join(' and ')}` : null;
 };
 // a working machine on the deepest floor digs faster: half of its speed bonus (Heavy Drill Lv. 10: ×1.75)
 G.digSpeed = () => { const m = G.machineOn(D.zoneOf(G.S.depth).id); return m && G.machineStats(m).working ? 1 + (G.machineStats(m).speed - 1) * 0.5 : 1; };
@@ -4768,7 +4900,7 @@ G.sys.finishDig = (offline) => {
   let newZone = null;
   if (S.zones[z.id].lv === 0) { S.zones[z.id].lv = 1; newZone = z; S.sel = z.id; }
   G.addXP(8 + S.depth * 3);
-  if (!offline) G.emit('dug', { depth: S.depth, newZone });
+  if (!offline) G.emit('dug', { depth: S.depth, newZone }); else G.logAway('dug', `Dug down to depth ${S.depth}${newZone ? `: the ${newZone.name} is open` : ''}`);
 };
 G.act.speedDig = () => {
   const S = G.S;
@@ -4803,6 +4935,7 @@ G.sys.finishBuild = (f, offline) => {
   st.lv = to; st.con = null;
   G.addXP(to === 1 ? 60 : 30 * to);
   if (!offline) G.emit('built', { f, lv: to, from, tierUp: from === 0 || D.tier(to) > D.tier(from) });
+  else G.logAway('built', `${f.name} ${from ? `upgraded to Lv. ${to}` : 'is built'}`);
 };
 G.act.speedBuild = (fid) => {
   const st = G.S.factories[fid];
@@ -4817,18 +4950,28 @@ G.act.queue = (fid, rid, repeat = false) => {
   const S = G.S, f = D.factoryById(fid), st = S.factories[fid];
   if (st.lv < 1) return fail(`Build the ${f.name} first`);
   if (st.con) return fail(`The ${f.name} is under construction`);
-  if (S.jobs.length >= G.jobSlots()) return fail('Production queue is full');
+  if (G.queueFull(fid)) return fail(`Production queue is full (${G.slotJobs()}/${G.jobSlots()}): wait for a job, cancel one, or turn off a repeating job`);
   const rec = f.recipes.find((r) => r.id === (rid || st.recipe)) || f.recipes[0];
-  const cost = G.recipeIn(rec);
-  const feed = fid === 'feedmill' ? G.recipeOut(f, rec).feed : 0;
-  if (feed && S.farm.milled + G.queuedFeed() + feed > G.millQuota()) return fail(`Today's FEED quota is used up (${Math.round(S.farm.milled + G.queuedFeed())}/${G.millQuota()}). Upgrade the Feed Mill for a bigger share.`);
+  let cost = G.recipeIn(rec), feed = 0;
+  if (fid === 'feedmill') { // the last batch of the day is cut to what is left of the quota
+    const full = G.recipeOut(f, rec).feed, room = G.millQuota() - S.farm.milled - G.queuedFeed();
+    if (room < 0.5) { if (repeat) S.farm.millAuto = true; return fail(`Today's FEED quota is used up (${Math.round(S.farm.milled + G.queuedFeed())}/${G.millQuota()}). ${repeat ? 'Auto-grind starts again on the next farm day.' : 'Upgrade the Feed Mill for a bigger share.'}`); }
+    feed = Math.min(full, Math.floor(room * 100) / 100);
+    if (feed < full) cost = G.scale(cost, feed / full);
+    S.farm.millAuto = !!repeat;
+  }
   if (!G.pay(cost)) return lack(cost);
   S.jobs.push({ id: S.nextId++, f: fid, r: rec.id, t: 0, dur: G.jobDur(f, rec), repeat: !!repeat, paid: cost, feed });
   return ok();
 };
+// a new farm day: Feed Mill auto-grind picks up again with the new quota (also while you are away)
+G.on('farmDay', () => {
+  const S = G.S;
+  if (S.farm.millAuto && S.factories.feedmill.lv > 0 && !S.factories.feedmill.con && !S.jobs.some((j) => j.f === 'feedmill')) G.act.queue('feedmill', null, true);
+});
 G.sys.finishJob = (j, offline) => {
   const S = G.S, f = D.factoryById(j.f), rec = f.recipes.find((r) => r.id === j.r);
-  const out = G.recipeOut(f, rec);
+  const out = j.f === 'feedmill' && j.feed ? { feed: j.feed } : G.recipeOut(f, rec); // a cut last batch makes what it was cut to
   G.give(out);
   const units = Object.values(rec.in).reduce((a, b) => a + b, 0);
   G.stat('processed', units);
@@ -4838,12 +4981,15 @@ G.sys.finishJob = (j, offline) => {
   G.addXP(1 + units / 500); // factories run all day (and offline): a little XP per batch
   S.jobs.splice(S.jobs.indexOf(j), 1);
   if (j.repeat) {
-    const cost = G.recipeIn(rec);
-    const feed = j.f === 'feedmill' ? G.recipeOut(f, rec).feed : 0;
-    const quotaOk = !feed || S.farm.milled + G.queuedFeed() + feed <= G.millQuota();
-    if (quotaOk && S.jobs.length < G.jobSlots() && G.pay(cost)) S.jobs.push({ id: S.nextId++, f: j.f, r: j.r, t: 0, dur: G.jobDur(f, rec), repeat: true, paid: cost, feed });
-    else if (!quotaOk) { if (!offline) G.emit('note', { text: 'Feed Mill: daily FEED quota reached. It resumes tomorrow.', icon: 'res/feed' }); }
-    else if (!offline) G.emit('note', { text: `${f.name}: repeat stopped (not enough materials)`, icon: G.bImg(f.id, G.S.factories[f.id].lv), bad: true });
+    if (j.f === 'feedmill') {
+      const r = G.act.queue('feedmill', j.r, true);
+      if (!r.ok && !offline) G.emit('note', { text: /quota/.test(r.msg) ? 'Feed Mill: today\'s FEED quota is reached. Auto-grind starts again on the next farm day.' : `Feed Mill: auto-grind stopped. ${r.msg}`, icon: 'res/feed', bad: !/quota/.test(r.msg) });
+    } else {
+      const cost = G.recipeIn(rec);
+      if (!G.queueFull(j.f) && G.pay(cost)) S.jobs.push({ id: S.nextId++, f: j.f, r: j.r, t: 0, dur: G.jobDur(f, rec), repeat: true, paid: cost, feed: 0 });
+      else if (!offline) G.emit('note', { text: `${f.name}: repeat stopped. ${G.lackMsg(cost)}`, icon: G.bImg(f.id, G.S.factories[f.id].lv), bad: true });
+      else G.logAway('stopped', `${f.name} stopped repeating. ${G.lackMsg(cost)}`);
+    }
   }
   if (!offline) G.emit('jobDone', { j, out, f }); // after re-queueing, so screens never show a stale idle factory
 };
@@ -4863,9 +5009,10 @@ G.act.cancelJob = (id) => {
   if (!j) return fail('Job not found');
   G.give(j.paid || {}, j.t > 0 ? R.refund : 1, true); // a refund, never a mint
   S.jobs.splice(S.jobs.indexOf(j), 1);
+  if (j.f === 'feedmill') S.farm.millAuto = false; // cancelling the mill's job also ends its auto-grind
   return ok();
 };
-G.act.toggleRepeat = (id) => { const j = G.S.jobs.find((x) => x.id === id); if (j) j.repeat = !j.repeat; return ok(); };
+G.act.toggleRepeat = (id) => { const j = G.S.jobs.find((x) => x.id === id); if (j) { j.repeat = !j.repeat; if (j.f === 'feedmill') G.S.farm.millAuto = j.repeat; } return ok(); };
 G.act.fUpgrade = (uid) => {
   const S = G.S, u = D.fUpgrades.find((x) => x.id === uid), lv = S.fup[uid];
   if (lv >= u.max) return fail('Max level');
@@ -4891,7 +5038,7 @@ G.sys.finishCraft = (c, offline) => {
   const m = { id: S.nextId++, type: c.type, lv: 1, dur: 100, zone: null };
   S.machines.push(m);
   G.stat('crafted'); G.addXP(40 + 30 * D.machines.findIndex((x) => x.id === c.type));
-  if (!offline) G.emit('craftDone', m);
+  if (!offline) G.emit('craftDone', m); else G.logAway('craft', `${D.machineById(c.type).name} crafted: deploy it on a floor`);
 };
 G.act.speedCraft = (id) => {
   const c = G.S.crafts.find((x) => x.id === id);
@@ -4926,7 +5073,7 @@ G.act.service = (id) => {
   const m = G.S.machines.find((x) => x.id === id);
   if (!m) return fail('Machine not found');
   if (m.dur >= 99.5) return fail('Already in perfect shape');
-  const cost = D.machineServiceCost(m.dur);
+  const cost = D.machineServiceCost(m.dur, D.machineTier(m.type));
   if (!G.pay(cost)) return lack(cost);
   m.dur = 100; m.off = false;
   return ok();
@@ -5084,7 +5231,7 @@ G.act.toggleSquad = (cid) => {
 G.act.collectNest = () => {
   const n = Math.floor(G.S.nest);
   if (n < 1) return fail('The nest is empty');
-  G.S.res.egg += n; G.S.nest -= n;
+  G.S.res.egg += n; G.S.nest -= n; G.S.farm.fullSaid = false;
   return ok({ n });
 };
 G.act.collectAll = () => {
@@ -5340,6 +5487,21 @@ G.act.claimSeason = (lv) => {
   G.give(r);
   return ok({ rew: r });
 };
+// the season ends: every reward you reached but didn't claim is paid out (a Chikn only if the coop has room), then a new
+// season starts
+G.sys.seasonEnd = () => {
+  const S = G.S, s = S.season, got = {}, missed = [];
+  for (let lv = 1; lv <= Math.min(s.lv, D.seasonMax); lv++) {
+    if (s.claimed.includes(lv)) continue;
+    const r = D.seasonReward(lv, S.depth);
+    if (r.chikn) { if (S.chikns.length < G.coopCap()) G.newChikn(r.chikn, null, { own: true }); else missed.push(D.rarity(r.chikn).name + ' Chikn'); continue; }
+    const g = G.give(r); for (const k in g) got[k] = (got[k] || 0) + g[k];
+  }
+  const no = (s.no || 1) + 1;
+  S.season = { no, lv: 1, xp: 0, claimed: [], ends: now() + R.seasonDays * 86400e3 };
+  const paid = Object.keys(got).length ? ` Your unclaimed rewards were paid out: ${Object.entries(got).map(([k, v]) => `${G.fmt(v)} ${D.res[k].name}`).join(', ')}.` : '';
+  G.emit('note', { text: `Season ${no} has begun!${paid}${missed.length ? ` The coop was full, so ${missed.join(', ')} could not join.` : ''}`, icon: 'ui/trophy', good: true });
+};
 G.act.chooseSpec = (id) => {
   if (G.S.spec) return fail('Specialization already chosen');
   if (G.S.player.lv < R.specLv) return fail(`Unlocks at player Lv. ${R.specLv}`);
@@ -5382,6 +5544,17 @@ G.sys.hazardTick = () => {
   if (type === 'bandits') { h.until = t + B.sec * 1000; h.power = Math.round(P * G.rand(B.power[0], B.power[1])); h.toll = { egg: B.toll(d) }; }
   S.hazard = h;
   G.emit('hazard', h);
+};
+// when you leave (or skip time) the current hazard ends on its own, without a penalty, and a new one waits until you are back
+G.sys.awayHazard = () => {
+  const S = G.S, h = S.hazard;
+  if (h) {
+    const z = D.zoneById(h.zone).name;
+    G.logAway('hazard', { collapse: `The cave-in in the ${z} cleared itself`, bandits: `The bandits in the ${z} gave up and left`, creature: `The creature in the ${z} wandered off`,
+      supply: `The supply crate in the ${z} was lost`, richvein: `The rich vein in the ${z} faded` }[h.type] || 'A hazard ended');
+    S.hazard = null;
+  }
+  S.hazardNext = now() + G.rand(R.hazardGap[0], R.hazardGap[1]) * 1000;
 };
 // raiders go after your HENIUM once you hold a meaningful stash: defend it (Guardians, squad power) or lose a share
 G.sys.stealHenium = (share) => {
@@ -5437,10 +5610,11 @@ G.on('farmDay', (day, offline) => {
   const hunt = Math.round(G.huntPerDay() * 100) / 100;
   if (war > 0) G.give({ henium: war });
   if (hunt > 0) G.give({ henium: hunt });
-  // while away the payouts land in the "while you were away" summary instead of one toast per day
-  if (!offline && (war > 0 || hunt > 0)) G.emit('note', { text: `Daily payout: +${G.fmt(war + hunt, 2)} HENIUM (guild wars ${G.fmt(war, 2)}, monster hunts ${G.fmt(hunt, 2)})`, icon: 'res/henium', good: true });
+  const w0 = S.guild.warPts, h0 = S.hunt || 0;
   S.guild.warPts = Math.round(S.guild.warPts * (1 - R.warDecay));
   S.hunt = Math.floor((S.hunt || 0) * R.huntKeep);
+  // while away the payouts land in the "Welcome back" report instead of one toast per day
+  if (!offline && (war > 0 || hunt > 0 || w0 !== S.guild.warPts || h0 !== S.hunt)) G.emit('note', { text: `New farm day. Daily payout: +${G.fmt(war + hunt, 2)} HENIUM (guild wars ${G.fmt(war, 2)}, monster hunts ${G.fmt(hunt, 2)}). War points cooled down ${G.fmtFull(w0)} → ${G.fmtFull(S.guild.warPts)}, hunt points ${G.fmtFull(h0)} → ${G.fmtFull(S.hunt)}.`, icon: 'res/henium', good: true });
   S.world.war = Math.round(S.world.war * (1 + R.worldWar));
   S.world.hunt = Math.round((S.world.hunt || D.supply.worldHunt0) * (1 + R.worldHunt));
 });
@@ -5487,7 +5661,11 @@ G.farmTick = (dt, offline) => {
   const S = G.S, fm = S.farm;
   fm.dayT += dt;
   while (fm.dayT >= F.day) { fm.dayT -= F.day; fm.day++; fm.milled = 0; G.emit('farmDay', fm.day, offline); } // also while away: daily payouts and decay must not be skipped
-  S.nest = Math.min(G.nestCap(), S.nest + G.eggRate() * dt);
+  // eggs go into the nest up to its capacity; the rest is lost (counted, so the player can be told). The nest never
+  // shrinks on its own: a smaller capacity (lighter or fewer Chikns) only stops new eggs.
+  const add = G.eggRate() * dt, room = Math.max(0, G.nestCap() - S.nest), laid = Math.min(add, room);
+  S.nest += laid; fm.laid = (fm.laid || 0) + laid; if (add > laid) fm.lost = (fm.lost || 0) + (add - laid);
+  if (add > laid && !fm.fullSaid) { fm.fullSaid = true; if (!offline) G.emit('nestFull'); }
   const need = G.upkeepPerDay() * dt / F.day;
   if (S.res.feed >= need) { S.res.feed -= need; fm.hungry = false; return; }
   S.res.feed = 0;
@@ -5726,6 +5904,21 @@ ui.cost = (cost, k = 1, size = 20) => `<span class="cost">${Object.entries(cost)
 ui.rew = (rew, size = 20) => `<span class="cost gain">${Object.entries(rew).filter(([, v]) => v > 0).map(([r, v]) =>
   `<span class="c">${ui.icon(r, size)}+${ui.amt(r, v)}</span>`).join('')}</span>`;
 ui.bar = (pct, cls = '', text = '', attrs = '') => `<div class="bar ${cls}" ${attrs}><i style="width:${Math.max(0, Math.min(100, pct))}%"></i>${text !== '' ? `<b>${text}</b>` : ''}</div>`;
+// where a resource comes from, in a few words (used under costs you can't pay yet)
+G.whereFrom = (r) => {
+  const S = G.S;
+  if (r === 'egg') return 'laid by your Chikns';
+  if (r === 'feed') return 'Feed Mill, or burn EGG';
+  if (r === 'henium') return 'Henium Refinery, guild wars, monster hunts';
+  if (D.res[r] && D.res[r].cat === 'raw') {
+    const z = D.zones.find((x) => x.res === r);
+    return z ? (G.zoneOpen(z) ? `${z.short} floor` : `${z.name}, depth ${z.from}`) : 'the mines';
+  }
+  const f = D.factories.find((x) => x.recipes.some((rec) => rec.out[r]));
+  return f ? (S.factories[f.id].lv > 0 ? f.name : `${f.name}, opens at depth ${f.reqDepth}`) : 'the DEX';
+};
+// a live line under a cost: what you still need and where it comes from (hidden while you can pay)
+ui.miss = (cost, k = 1) => `<div class="cost-miss" data-b="miss:${ui.need(cost, k)}" hidden></div>`;
 ui.btn = (label, a, args = [], cls = '', need = null, extra = '') =>
   `<button class="btn ${cls}" data-a="${a}" data-args='${esc(JSON.stringify(args))}' ${need ? `data-need="${ui.need(need)}"` : ''} ${extra}>${label}</button>`;
 ui.perH = (perSec) => G.fmt(perSec * 3600) + '/h';
@@ -5736,7 +5929,7 @@ ui.rentTag = (c) => (c.rent ? ` <span class="tag o" title="Rented from ${c.rent.
   : c.lease && c.lease.left == null ? ' <span class="tag p" title="Listed on the rental market: it keeps working for you until a renter takes it">For rent</span>' : '');
 ui.chiknCard = (c, opts = {}) => {
   const R = D.rarity(c.rarity), role = D.roles[c.role];
-  const st = { squad: '<span class="tag g">Squad</span>', exp: '<span class="tag o">Expedition</span>', injured: '<span class="tag r">Recovering</span>', idle: '<span class="tag">Idle</span>',
+  const st = { squad: '<span class="tag g">Squad</span>', exp: '<span class="tag o">Expedition</span>', injured: `<span class="tag r">Recovering · <span data-b="until:${c.until}">${G.fmtTime(Math.max(0, (c.until - G.now()) / 1000))}</span></span>`, idle: '<span class="tag">Idle</span>',
     away: '<span class="tag p">Rented out</span>' }[c.status] + ui.rentTag(c);
   return `<div class="ccard rarity-${c.rarity} ${opts.sel ? 'sel' : ''} ${opts.cls || ''}" ${opts.attrs || ''}>
     <div class="ccard-art">${ui.img('chikn/' + c.role, 'ccard-img', role.name)}<span class="ccard-lv">Lv.${c.lv}</span></div>
@@ -5750,6 +5943,22 @@ ui.chiknCard = (c, opts = {}) => {
 // ---------- live bindings ----------
 ui.binders = {
   res: (el, r) => { el.textContent = G.fmtRes(r, G.S.res[r]); },
+  lvRing: (el) => { const S = G.S; el.style.setProperty('--p', Math.min(1, S.player.xp / D.xpNeed(S.player.lv)).toFixed(3)); },
+  nestEta: (el) => {
+    const S = G.S, rate = G.eggRate(), cap = G.nestCap(), n = S.nest;
+    let t;
+    if (rate <= 0) t = S.chikns.length ? 'No eggs while no Chikn is home' : 'Rent a Chikn: it lays about one EGG a day';
+    else if (n >= cap - 1e-6) t = `Full: about ${G.fmt(rate * 86400, 1)} eggs a day are being lost. Collect them!`;
+    else t = `Next egg in ${G.fmtTime((1 - (n % 1)) / rate)} · full in ${G.fmtTime((cap - n) / rate)}`;
+    if (el.textContent !== t) el.textContent = t;
+    el.classList.toggle('nest-full', rate > 0 && n >= cap - 1e-6);
+  },
+  miss: (el, need) => {
+    const m = Object.entries(parseNeed(need)).filter(([r, v]) => G.S.res[r] + 1e-9 < v);
+    const t = m.length ? 'Missing: ' + m.map(([r, v]) => `${G.fmt(Math.ceil(v - G.S.res[r]))} ${D.res[r].name} (${G.whereFrom(r)})`).join(' · ') : '';
+    if (el.textContent !== t) el.textContent = t;
+    el.hidden = !t;
+  },
   rate: (el, r) => { el.textContent = ui.perH(G.rates()[r] || 0); },
   job: (el, id) => {
     const j = G.S.jobs.find((x) => x.id === +id);
@@ -5806,6 +6015,8 @@ ui.go = (name) => {
   if (!ui.views[name]) return;
   ui.cur = name;
   $$('.nav-btn').forEach((b) => b.classList.toggle('on', b.dataset.view === name));
+  const nb = $(`.nav-btn[data-view="${name}"]`); // on a phone the nav scrolls: keep the active screen in view
+  if (nb && nb.parentElement.scrollWidth > nb.parentElement.clientWidth) nb.scrollIntoView({ block: 'nearest', inline: 'center' });
   const el = $('#view');
   el.scrollTop = 0;
   ui.renderView();
@@ -5844,8 +6055,8 @@ ui.renderShell = () => {
     <button class="plus" data-a="exchangeDlg" data-args='["${r}"]' aria-label="Get more ${D.res[r].name}">+</button></div>`;
   const strip = D.barRes.map((r) => `<div class="r" title="${D.res[r].name}"><img src="${G.img('res/' + r)}" alt=""><div><div class="lbl">${D.shortName[r] || D.res[r].name}</div><div class="val num" data-b="res:${r}"></div></div></div>`).join('');
   $('#topbar').innerHTML = `<img class="logo" src="${G.img('ui/logo')}" alt="Chikn Henium Mines" data-a="nav" data-args='["mines"]'>
-    <div class="top-scroll">${pill('egg')}${pill('feed')}${pill('henium')}<div class="pill eth" data-a="nav" data-args='["dex"]' title="Simulated ETH — trade on the DEX"><img src="${G.img('res/eth')}" alt=""><div><div class="lbl">ETH</div><div class="val" data-b="res:eth"></div></div></div><button type="button" class="res-strip" data-a="inventory" title="Inventory: every ore and material you have" aria-label="Open inventory">${strip}<span class="res-more" aria-hidden="true">▾</span></button></div>
-    <div class="top-icons"><button class="icon-btn" data-a="notes" aria-label="Notifications"><img src="${G.img('ui/bell')}" alt=""><span class="badge" id="note-badge" hidden></span></button>
+    <div class="top-scroll">${pill('egg')}${pill('feed')}${pill('henium')}<div class="pill eth" data-a="nav" data-args='["dex"]' title="Simulated ETH — trade on the DEX"><img src="${G.img('res/eth')}" alt=""><div><div class="lbl">ETH</div><div class="val" data-b="res:eth"></div></div></div><button type="button" class="res-strip" data-a="inventory" title="Inventory: every ore and material you have" aria-label="Open inventory"><img class="res-inv-ic" src="${G.img('prop/crate')}" alt="">${strip}<span class="res-more" aria-hidden="true">▾</span></button></div>
+    <div class="top-icons"><button type="button" class="lvl-chip" data-a="profile" aria-label="Your level and profile"><span data-b="lv"></span><i data-b="lvRing"></i><span class="badge" id="spec-badge" hidden>!</span></button><button class="icon-btn" data-a="notes" aria-label="Notifications"><img src="${G.img('ui/bell')}" alt=""><span class="badge" id="note-badge" hidden></span></button>
     <button class="icon-btn" data-a="settings" aria-label="Settings"><img src="${G.img('ui/settings')}" alt=""></button></div>`;
   setTimeout(ui.speedChip, 0);
   $('#sidenav').innerHTML = NAV.map(([id, label]) => `<button class="nav-btn ${ui.cur === id ? 'on' : ''}" data-view="${id}" data-a="nav" data-args='["${id}"]'>
@@ -5858,7 +6069,8 @@ ui.handlers.inventory = () => {
   const item = (r) => `<div class="inv-it" title="${esc(D.res[r].name)}">${ui.icon(r, 34)}<div><b data-b="res:${r}">${G.fmt(S.res[r])}</b><small>${esc(D.res[r].name)}</small>${rates[r] > 0 && r !== 'egg' ? `<i>+${G.fmt(rates[r] * 3600)}/h</i>` : ''}</div></div>`;
   const group = (title, list) => (list.length ? `<h3 class="inv-h">${title}</h3><div class="inv-grid">${list.map(item).join('')}</div>` : '');
   ui.modal({ title: 'Inventory', wide: true, html: group('Ores from the mines', cat('raw')) + group('Processed materials (Factories)', cat('mat'))
-    + `<p class="dim" style="font-size:13px;margin:10px 0 0">Crushed Ore comes from the Ore Crusher; the Ore Separator and the Feed Mill use it. EGG, FEED and HENIUM are in the top bar.</p>`,
+    + group('Currencies', ['egg', 'feed', 'henium'])
+    + `<p class="dim" style="font-size:13px;margin:10px 0 0">Crushed Ore comes from the Ore Crusher; the Ore Separator and the Feed Mill use it.</p>`,
     actions: [{ label: 'Factories', cls: 'purple', fn: () => ui.go('factories') }, { label: 'Close', cls: 'green' }] });
 };
 ui.handlers.nav = (el, e, id) => { if (el.closest('#modal-root')) ui.closeModal(); ui.go(id); };
@@ -5872,6 +6084,7 @@ ui.navBadges = () => {
   set('expeditions', S.exps.filter((e) => e.done).length);
   set('battle', S.battle.tickets >= D.pvpTickets && S.player.lv >= 3 ? 1 : 0);
   set('events', G.missions().filter((m) => m.done && !m.claimed).length + Array.from({ length: S.season.lv }, (_, i) => i + 1).filter((l) => !S.season.claimed.includes(l)).length);
+  const sb = $('#spec-badge'); if (sb) sb.hidden = !(S.player.lv >= D.rules.specLv && !S.spec); // a specialization to choose
   const nb = $('#note-badge'), unread = S.notes.filter((n) => !n.read).length;
   if (nb) { nb.hidden = !unread; nb.textContent = unread > 9 ? '9+' : unread; }
 };
@@ -5939,8 +6152,10 @@ ui.modalEl = () => $('#modal-root').firstElementChild;
 
 // ---------- sounds ----------
 let ac = null;
+let gesture = false; // browsers only allow sound after the player's first tap or key
+['pointerdown', 'keydown'].forEach((ev) => window.addEventListener(ev, () => { gesture = true; }, { once: true, capture: true }));
 G.sfx = (name) => {
-  if (!G.S || !G.S.settings.sound) return;
+  if (!G.S || !G.S.settings.sound || !gesture) return;
   try {
     ac = ac || new (window.AudioContext || window.webkitAudioContext)();
     const notes = { click: [[660, 0.04]], tap: [[520, 0.05], [780, 0.05]], ok: [[700, 0.06], [940, 0.08]], err: [[220, 0.12]],
@@ -5961,18 +6176,27 @@ G.sfx = (name) => {
 
 // ---------- shared dialogs ----------
 ui.handlers.exchangeDlg = (el, e, focus) => {
-  const x = G.exRate(), row = (kind, label, give, get) => `<div class="list-row"><div class="sp"><div class="hx">${label}</div><div class="muted" style="font-size:13px">${give} → ${get}</div></div>
-    ${[1, 10, 100].map((q) => `<button class="btn sm ${kind === 'e2h' ? 'purple' : 'green'}" data-x="${kind}" data-q="${q}">×${q}</button>`).join('')}</div>`;
-  ui.modal({ title: `${ui.img('ui/dex', '', '')} Exchange`, actions: [{ label: 'Done', cls: 'gray' }],
-    html: `<p class="muted" style="margin-top:0">EGG is laid by Chikns only, and no reward ever pays it. Burning EGG for FEED removes it for good, which keeps EGG scarce.</p>
-      ${row('e2f', 'Burn EGG for FEED', `${ui.icon('egg', 18)} ${x.e2f}`, `${ui.icon('feed', 18)} 1`)}
-      <div class="list-row"><div class="sp"><div class="hx">Trade EGG, HENIUM, ores and ETH</div><div class="muted" style="font-size:13px">Swap anything for anything on the DEX</div></div><button class="btn sm purple" data-a="nav" data-args='["dex"]'>Open DEX</button></div>
-      <p class="dim" style="font-size:12px;margin-bottom:0">${focus === 'henium' ? 'HENIUM is earned by refining Henium Ore, guild wars and monster hunts: every HENIUM comes out of the world\'s fixed daily emission.' : focus === 'feed' ? 'FEED is scarce: grind your daily quota in the Feed Mill, or burn EGG for it.' : 'Every Chikn lays about 1 EGG a day; heavier Chikns lay more. Collect them on the Farm.'}</p>` });
+  const S = G.S, x = G.exRate(), have = () => `You have ${ui.icon('egg', 16)} <b>${G.fmtFull(Math.floor(S.res.egg))}</b> EGG · ${ui.icon('feed', 16)} <b>${G.fmt(S.res.feed, 1)}</b> FEED · ${ui.icon('henium', 16)} <b>${G.fmt(S.res.henium, 2)}</b> HENIUM`;
+  const how = {
+    egg: ['How to get EGG', [`Collect the nest: your Chikns lay about one EGG a day each (Farm, Collect All).`, 'Rent your own Chikn NFTs out: rent pays EGG every day.', 'Buy EGG on the DEX with HENIUM, ores or ETH.'], [['farm', 'Egg Farm'], ['chikns', 'Chikn NFT'], ['dex', 'DEX']]],
+    feed: ['How to get FEED', ['Grind it at the Feed Mill (a daily quota).', `Burn EGG for FEED below (${x.e2f} EGG → 1 FEED).`, 'Buy FEED on the DEX.'], [['farm', 'Feed Mill'], ['dex', 'DEX']]],
+    henium: ['How to get HENIUM', ['Refine Henium Ore in the Henium Refinery (your share of the daily world emission).', 'Win guild wars and monster hunts: daily payouts.', 'First clears of battle stages, quests and guild projects.', 'Buy it on the DEX.'], [['factories', 'Factories'], ['battle', 'Battle'], ['dex', 'DEX']]],
+  }[focus] || null;
+  const burn = [1, 10, 100].map((q) => `<button class="btn sm green" data-x="e2f" data-q="${q}" data-need="egg:${q * x.e2f}">Burn ${G.fmtFull(q * x.e2f)} EGG → ${q} FEED</button>`).join('');
+  ui.modal({ title: `${ui.img('ui/dex', '', '')} ${how ? how[0] : 'Exchange'}`, actions: [{ label: 'Done', cls: 'gray' }],
+    html: `<p class="muted" style="margin-top:0" data-b="exHave">${have()}</p>
+      ${how ? `<ul class="ex-how">${how[1].map((t) => `<li>${t}</li>`).join('')}</ul><div class="ex-go">${how[2].map(([v, l]) => `<button class="btn sm purple" data-a="nav" data-args='["${v}"]'>${l}</button>`).join('')}</div>` : ''}
+      ${focus === 'egg' ? '' : `<div class="list-row ex-burn"><div class="sp"><div class="hx">Burn EGG for FEED</div><div class="muted" style="font-size:13px">EGG is gone for good when you burn it (it keeps EGG scarce)</div></div><div class="ex-btns">${burn}</div></div>`}` });
   ui.modalEl().addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-x]');
     if (!b) return;
-    const r = G.act.exchange(b.dataset.x, +b.dataset.q);
-    if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); } else { G.sfx('coin'); ui.refresh(); }
+    const q = +b.dataset.q, cost = q * x.e2f;
+    if (q >= 10 && !confirm(`Burn ${cost} EGG for ${q} FEED? Burned EGG is gone for good.`)) return;
+    const r = G.act.exchange(b.dataset.x, q);
+    if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
+    G.sfx('coin'); ui.toast(`Burned ${cost} EGG → +${q} FEED`, 'good', 'res/feed');
+    const h = ui.modalEl().querySelector('[data-b="exHave"]'); if (h) h.innerHTML = have();
+    ui.refresh();
   });
 };
 ui.handlers.notes = () => {
@@ -5997,6 +6221,8 @@ ui.handlers.settings = () => {
   const S = G.S;
   ui.modal({ title: `${ui.img('ui/settings', '', '')} Settings`, actions: [{ label: 'Close', cls: 'gray' }],
     html: `<div class="list-row"><div class="sp">Sound effects</div><button class="btn sm ${S.settings.sound ? 'green' : 'gray'}" data-set="sound">${S.settings.sound ? 'On' : 'Off'}</button></div>
+      <div class="list-row"><div class="sp">Music</div><input type="range" class="set-vol" min="0" max="1" step="0.05" value="${typeof S.settings.musicVol === 'number' ? S.settings.musicVol : 0.45}" aria-label="Music volume">
+        <button class="btn sm ${S.settings.music !== false ? 'green' : 'gray'}" data-set="music">${S.settings.music !== false ? 'On' : 'Off'}</button></div>
       <div class="set-test"><div class="hx">Test speed</div><div class="muted" style="font-size:13px">The game runs in real time (a day is 24 hours). For testing, make time run faster: at ×60 one real minute is one game hour. Hazards pause above ×10, because you couldn't react to them.</div>
         <div class="tabs set-speeds">${SPEEDS.map((k) => `<button type="button" class="tab ${G.speed() === k ? 'on' : ''}" data-speed="${k}">×${G.fmtFull(k)}</button>`).join('')}</div>
         <div class="hx" style="margin-top:8px;font-size:15px">Skip ahead</div><div class="muted" style="font-size:13px">Jump forward as if you played the whole time (floors mine all along).</div>
@@ -6004,6 +6230,9 @@ ui.handlers.settings = () => {
       <div class="list-row"><div class="sp"><div class="hx">Start a new game</div><div class="muted" style="font-size:13px">Month 1: The Beginning — a small mine at depth 1.</div></div><button class="btn sm red" data-set="fresh">New Game</button></div>
       <div class="list-row"><div class="sp"><div class="hx">Showcase save</div><div class="muted" style="font-size:13px">Jump to the mockup: Lv. 27, depth 27, Heavy Drill on the Henium Vein.</div></div><button class="btn sm purple" data-set="showcase">Load</button></div>
       <p class="dim" style="font-size:12px;margin-bottom:0">Progress saves automatically in this browser. Prototype build: tokens, NFTs and other players are simulated.</p>` });
+  const vr = ui.modalEl().querySelector('.set-vol');
+  if (vr) vr.addEventListener('input', () => { if (G.musicVolume) G.musicVolume(+vr.value); });
+  if (vr) vr.addEventListener('change', () => G.save());
   ui.modalEl().addEventListener('click', (ev) => {
     const sp = ev.target.closest('[data-speed]'), sk = ev.target.closest('[data-skip]');
     if (sp) {
@@ -6014,14 +6243,13 @@ ui.handlers.settings = () => {
     }
     if (sk) {
       const r = G.warp(+sk.dataset.skip); G.save(); ui.closeModal(); ui.render();
-      const rows = Object.entries(r.gains).sort((a, b) => b[1] - a[1]).slice(0, 8);
-      ui.modal({ title: `${ui.img('ui/timer', '', '')} Skipped ${G.fmtTime(r.sec)}`, actions: [{ label: 'OK', cls: 'green' }],
-        html: `<p style="text-align:center;margin-top:0">Your mine, factories, farm and rentals ran for <b>${G.fmtTime(r.sec)}</b>.</p><div style="display:flex;justify-content:center">${ui.rew(Object.fromEntries(rows), 24)}</div>` });
+      G.showAway(r);
       return;
     }
     const b = ev.target.closest('[data-set]');
     if (!b) return;
     const k = b.dataset.set;
+    if (k === 'music') { S.settings.music = S.settings.music === false; b.textContent = S.settings.music ? 'On' : 'Off'; b.className = `btn sm ${S.settings.music ? 'green' : 'gray'}`; if (G.music) G.music(); G.save(); return; }
     if (k === 'sound') { S.settings.sound = !S.settings.sound; b.textContent = S.settings.sound ? 'On' : 'Off'; b.className = `btn sm ${S.settings.sound ? 'green' : 'gray'}`; return; }
     if (k === 'fresh' || k === 'showcase') {
       if (!confirm(k === 'fresh' ? 'Start over from depth 1? Your current progress will be replaced.' : 'Load the showcase save? Your current progress will be replaced.')) return;
@@ -6047,6 +6275,7 @@ ui.handlers.spec = () => {
   ui.modalEl().addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-spec]');
     if (!b) return;
+    if (!confirm(`Become a ${D.specs.find((s) => s.id === b.dataset.spec).name}? The choice is permanent for this mine.`)) return;
     const r = G.act.chooseSpec(b.dataset.spec);
     ui.closeModal();
     if (r.ok) { G.sfx('level'); ui.toast(`You are now a ${D.specs.find((s) => s.id === b.dataset.spec).name}!`, 'good', 'ui/trophy'); ui.render(); } else ui.toast(r.msg, 'bad');
@@ -6081,12 +6310,12 @@ ui.binders.tapen = (el) => {
 function floorHTML(z) {
   const S = G.S, open = G.zoneOpen(z), st = S.zones[z.id], h = S.hazard && S.hazard.zone === z.id ? S.hazard : null;
   const sel = S.sel === z.id ? 'sel' : '';
-  const label = `<div class="plate">${ui.icon(z.res, 30)}<div><div class="pl1">Lv. ${z.from}–${z.to}</div><div class="pl2">${z.name}</div></div></div>`;
+  const label = `<div class="plate">${ui.icon(z.res, 30)}<div><div class="pl1">Depth ${z.from}–${z.to}</div><div class="pl2">${z.name}</div></div></div>`;
   if (!open) {
-    const next = S.depth + 1 === z.from;
-    const gate = next ? G.digGate(z.from) : null;
-    return `<div class="floor locked ${next ? 'next' : ''}" style="background-image:url(${G.img('bg/floor-' + z.id)})">${label}
-      <div class="lockmsg">${ui.img('ui/lock', 'lk', '')}<div><b>${next ? 'Locked' : 'Locked'}</b><div>${esc(gate || (next ? `Dig to depth ${z.from} to open` : `Reach depth ${z.from}`))}</div></div></div></div>`;
+    const next = S.depth + 1 === z.from, upcoming = D.zoneOf(S.depth).to + 1 === z.from; // the zone right after yours
+    const gate = next || upcoming ? G.digGate(z.from) : null;
+    return `<div class="floor locked ${next ? 'next' : ''} ${next || upcoming ? '' : 'far'}" style="background-image:url(${G.img('bg/floor-' + z.id)})">${label}
+      <div class="lockmsg">${ui.img('ui/lock', 'lk', '')}<div><b>Locked</b><div>${esc(next ? gate || `Dig to depth ${z.from} to open` : `Reach depth ${z.from}${gate ? '. ' + gate : ''}`)}</div></div></div></div>`;
   }
   const workers = Math.min(3, 1 + Math.floor(st.lv / 8));
   const m = G.machineOn(z.id), ms = m ? G.machineStats(m) : null;
@@ -6096,19 +6325,22 @@ function floorHTML(z) {
   if (m) stage += `<div class="mach ${ms.working ? 'on' : 'off'}">${ui.img('machine/' + m.type, 'mach-img', ms.def.name)}</div>`;
   let haz = '';
   if (h) {
-    if (h.type === 'collapse') haz = `<div class="haz collapse">${ui.img('prop/rubble', 'haz-img', '')}<div class="haz-box"><b>Cave-in!</b> Production stopped<button class="btn sm gold" data-a="hazardAct" data-args='["clear"]' data-need="${ui.need(h.cost)}">Clear ${ui.cost(h.cost, 1, 16)}</button></div></div>`;
-    if (h.type === 'richvein') haz = `<div class="haz rich"><div class="haz-box pulse"><b>Rich vein!</b> Tap ×10</div></div>`;
-    if (h.type === 'supply') haz = `<div class="haz supply">${ui.img('prop/crate', 'haz-img bob', '')}<div class="haz-box"><b>Supply drop!</b><button class="btn sm green" data-a="hazardAct" data-args='["open"]'>Open</button></div></div>`;
-    if (h.type === 'creature') haz = `<div class="haz creature">${ui.img('monster/' + h.mon, 'haz-img bob', '')}<div class="haz-box"><b>Creature!</b> Power ${G.fmt(h.power)}<button class="btn sm red" data-a="hazardAct" data-args='["fight"]'>Fight</button></div></div>`;
-    if (h.type === 'bandits') haz = `<div class="haz bandits"><div class="haz-box"><b>Bandit raid!</b> Power ${G.fmt(h.power)}<button class="btn sm red" data-a="hazardAct" data-args='["fight"]'>Defend</button><button class="btn sm gray" data-a="hazardAct" data-args='["pay"]' data-need="${ui.need(h.toll)}">Pay ${ui.cost(h.toll, 1, 16)}</button></div></div>`;
+    const P = G.squadPower(), left = `<span class="haz-t" data-b="until:${h.until}"></span>`;
+    const odds = h.power ? `Squad ${G.fmt(P)} vs ${G.fmt(h.power)} · <b>${Math.round(G.winChance(Math.max(1, P), h.power) * 100)}% win</b>` : '';
+    const fight = (label) => (P > 0 ? `<button class="btn sm red" data-a="hazardAct" data-args='["fight"]'>${label}</button>` : `<button class="btn sm gold" data-a="nav" data-args='["chikns"]'>Assign Chikns</button>`);
+    if (h.type === 'collapse') haz = `<div class="haz collapse">${ui.img('prop/rubble', 'haz-img', '')}<div class="haz-box"><b>Cave-in!</b> Production stopped · clears itself in ${left}<button class="btn sm gold" data-a="hazardAct" data-args='["clear"]' data-need="${ui.need(h.cost)}">Clear now ${ui.cost(h.cost, 1, 16)}</button></div></div>`;
+    if (h.type === 'richvein') haz = `<div class="haz rich"><div class="haz-box pulse"><b>Rich vein!</b> Taps ×${D.rules.rich.mult} · ${D.rules.rich.taps - (h.taps || 0)} taps left · ${left}</div></div>`;
+    if (h.type === 'supply') haz = `<div class="haz supply">${ui.img('prop/crate', 'haz-img bob', '')}<div class="haz-box"><b>Supply drop!</b> ${ui.rew(h.reward || {}, 14)} ${left}<button class="btn sm green" data-a="hazardAct" data-args='["open"]'>Open</button></div></div>`;
+    if (h.type === 'creature') haz = `<div class="haz creature">${ui.img('monster/' + h.mon, 'haz-img bob', '')}<div class="haz-box"><b>Creature!</b> ${odds} · win ${ui.rew(h.reward || {}, 14)} ${left}${fight('Fight')}</div></div>`;
+    if (h.type === 'bandits') haz = `<div class="haz bandits"><div class="haz-box"><b>Bandit raid!</b> ${odds} · lose: −${Math.round(D.rules.bandits.lose[0] * 100)}% ore, −${Math.round(D.rules.bandits.lose[1] * 100)}% HENIUM · ${left}${fight('Defend')}<button class="btn sm gray" data-a="hazardAct" data-args='["pay"]' data-need="${ui.need(h.toll)}">Pay ${ui.cost(h.toll, 1, 16)}</button></div></div>`;
   }
   const deepest = D.zoneOf(S.depth) === z;
   return `<div class="floor ${sel} ${h ? 'h-' + h.type : ''}" data-zone="${z.id}" data-a="tapFloor" data-args='["${z.id}"]' style="background-image:url(${G.img('bg/floor-' + z.id)});--glow:${z.glow}">
     ${label}<div class="stage">${stage}</div>
-    ${deepest ? `<div class="depth-chip">Depth <b data-b="depth"></b>${S.dig ? ` <span class="dig-chip">→ ${S.dig.to}</span>${ui.bar(0, 'gold dig-bar', '', 'data-b="dig"')}` : ''}</div>` : ''}
+    ${deepest ? `<div class="depth-chip">Depth <b data-b="depth"></b>${S.dig ? ` <span class="dig-chip">→ ${S.dig.to}</span>${ui.bar(0, 'gold dig-bar', ' ', 'data-b="dig"')}` : ''}</div>` : ''}
     <div class="ratebox"><div class="rb-main"><span class="rb-v">${ui.icon(z.res, 18)}<span data-b="zrate:${z.id}"></span></span>
       <button class="up" data-a="upgradeZone" data-args='["${z.id}"]' data-need="${ui.need(D.floorCost(z, st.lv))}" title="Upgrade to Lv. ${st.lv + 1}" aria-label="Upgrade ${z.name}">▲</button></div>
-      <div class="rb-next" title="Cost of the next floor upgrade (Lv. ${st.lv} → ${st.lv + 1})"><span class="rb-lv">Lv.${st.lv + 1}</span>${ui.cost(D.floorCost(z, st.lv), 1, 13)}</div>
+      <div class="rb-next" title="Cost of the next floor upgrade (Lv. ${st.lv} → ${st.lv + 1})${[10, 25, 50, 100].includes(st.lv + 1) ? ': a milestone level, output ×2!' : ''}"><span class="rb-lv">Lv.${st.lv + 1}${[10, 25, 50, 100].includes(st.lv + 1) ? ' <b class="rb-x2">×2</b>' : ''}</span>${ui.cost(D.floorCost(z, st.lv), 1, 13)}</div>
       ${ui.bar(0, 'green rb-prog', '', `data-b="fprog:${z.id}"`)}</div>
     ${haz}</div>`;
 }
@@ -6128,7 +6360,7 @@ function surfaceHTML() {
     <img class="sf-flag f1" src="${G.img('prop/flag')}" alt=""><img class="sf-flag f2" src="${G.img('prop/flag')}" alt="">
     ${facs}
     <img class="sf-head" src="${G.img('prop/headframe')}" alt="Mine headframe">
-    <div class="sf-sign">My Mine<br><b>Lv. ${S.depth}</b></div>
+    <div class="sf-sign">My Mine<br><b>Depth ${S.depth}</b></div>
     <div class="tap-energy" data-b="tapen" title="Tap energy: every tap on a floor costs 1, and it refills 1 every ${Math.round(1 / D.rules.tap.regen)} s">${ui.img('ui/energy', 'te-ic', '')}<div class="te-bar"><i></i></div><b></b></div>
     <div class="mascot"><div class="bubble" id="bubble">${esc(line)}</div>${ui.img('chikn/explorer', 'mascot-img', '')}</div>
   </div>`;
@@ -6146,10 +6378,11 @@ function sideHTML() {
       <div class="hx" style="font-size:17px">${ms.def.name} <span class="muted">(Lv. ${m.lv})</span></div>
       <div class="kv">Speed <b>${ms.speed.toFixed(1)}x</b></div><div class="kv">Capacity <b>+${G.fmt(ms.cap)}/h</b></div>
       <div class="kv">Energy <b>−${G.fmt(ms.energy)} Coal/h</b></div>
-      <div class="kv">Durability ${ui.bar(m.dur, m.dur < 25 ? 'red' : 'green', '', `data-b="dur:${m.id}"`)}</div>
+      <div class="kv">Durability ${ui.bar(m.dur, m.dur < 25 ? 'red' : 'green', ' ', `data-b="dur:${m.id}"`)}</div>
+      <div class="kv">Breaks in <b>${m.dur <= 0 ? 'broken' : '~' + G.fmtTime(m.dur / Math.max(1e-9, ms.def.wear * (1 - Math.min(0.6, G.bonus('machine') * 0.5))) * 60) + ' of play'}</b></div>
       ${m.off ? '<div class="tag r">No coal — machine idle</div>' : ''}</div></div>
-      <div class="row" style="margin-top:8px">${m.lv < D.machineMaxLv ? ui.btn('Upgrade', 'upgradeMachine', [m.id], 'sm sp', D.machineUpCost(ms.def, m.lv)) : '<button class="btn sm sp cant" disabled>Max Lv.</button>'}${ui.btn('Service', 'service', [m.id], 'sm gray sp', D.machineServiceCost(m.dur))}</div>
-      <div class="dim" style="font-size:12px;margin-top:4px">Upgrade: ${m.lv < D.machineMaxLv ? ui.cost(D.machineUpCost(ms.def, m.lv), 1, 16) : 'max'}</div>`;
+      <div class="row" style="margin-top:8px">${m.lv < D.machineMaxLv ? ui.btn('Upgrade', 'upgradeMachine', [m.id], 'sm sp', D.machineUpCost(ms.def, m.lv)) : '<button class="btn sm sp cant" disabled>Max Lv.</button>'}${ui.btn('Service', 'service', [m.id], 'sm gray sp', D.machineServiceCost(m.dur, D.machineTier(m.type)))}</div>
+      <div class="dim" style="font-size:12px;margin-top:4px">Upgrade: ${m.lv < D.machineMaxLv ? ui.cost(D.machineUpCost(ms.def, m.lv), 1, 16) : 'max'} · Service: ${m.dur >= 99.5 ? 'not needed' : ui.cost(D.machineServiceCost(m.dur, D.machineTier(m.type)), 1, 16)}</div>`;
   } else {
     const spare = S.machines.filter((x) => !x.zone);
     mach = `<div class="muted" style="font-size:14px">No machine on this floor.</div>` + (spare.length
@@ -6157,11 +6390,11 @@ function sideHTML() {
       : `<button class="btn sm" data-a="nav" data-args='["crafting"]' style="margin-top:6px">Craft a machine</button>`);
   }
   const squad = G.squad();
-  const team = squad.length ? squad.map((c) => `<div class="tm rarity-${c.rarity}" data-a="nav" data-args='["chikns"]'>${ui.img('chikn/' + c.role, 'tm-img', '')}<div class="sp"><div class="tm-n">${D.rarity(c.rarity).name} ${D.roles[c.role].name}</div><div class="tm-b">+${G.fmt(G.chiknPct(c), 1)}% ${D.roles[c.role].label}</div></div></div>`).join('')
-    : `<div class="muted" style="font-size:14px">No Chikns yet.</div><button class="btn sm gold" data-a="hire" style="margin-top:6px">Hire your first Chikn (free)</button>`;
+  const team = squad.length ? squad.map((c) => `<div class="tm rarity-${c.rarity}" data-a="nav" data-args='["chikns"]'>${ui.img('chikn/' + c.role, 'tm-img', '')}<div class="sp"><div class="tm-n">${D.rarity(c.rarity).name} ${D.roles[c.role].name}</div><div class="tm-b">+${G.fmt(G.chiknPct(c), 1)}% ${D.roles[c.role].label}${ui.rentTag(c)}</div></div></div>`).join('')
+    : `<div class="muted" style="font-size:14px">No Chikns yet.</div><button class="btn sm gold" data-a="hire" style="margin-top:6px">Rent your first Chikn (free)</button>`;
   const qs = G.questList();
-  const quests = qs.map((q) => `<div class="q ${q.done ? 'done' : ''}"><span class="qc">${q.done ? '✔' : ''}</span><span class="sp">${esc(q.text)}</span>
-    ${q.done ? ui.btn('Claim', 'claimQuest', [q.id], 'sm green') : `<span class="num dim">${G.fmt(q.cur)}/${G.fmt(q.target)}</span>`}</div>`).join('') || '<div class="muted">All quests complete. Legendary!</div>';
+  const quests = qs.map((q) => `<div class="q ${q.done ? 'done' : ''}"><span class="qc">${q.done ? '✔' : ''}</span><span class="sp">${esc(q.text)}<span class="q-rew">${ui.rew(q.r, 14)}</span></span>
+    ${q.done ? ui.btn('Claim', 'mnQuest', [q.id], 'sm green') : `<span class="num dim">${G.fmt(q.cur)}/${G.fmt(q.target)}</span>`}</div>`).join('') || '<div class="muted">All quests complete. Legendary!</div>';
   return `<div class="panel side-floor">
       <div class="panel-h" style="margin-bottom:4px"><span class="sp">Selected Floor</span><button class="btn sm ff" data-a="cycleFloor" data-args='[-1]' aria-label="Previous floor">◀</button><button class="btn sm ff" data-a="cycleFloor" data-args='[1]' aria-label="Next floor">▶</button></div>
       <div class="row">${ui.icon(z.res, 40)}<div class="sp"><div class="hx" style="font-size:20px">${z.name} <span class="muted">(${z.from}–${z.to})</span></div>
@@ -6173,7 +6406,7 @@ function sideHTML() {
     <div class="panel"><div class="panel-h">Production <small>(per hour)</small></div><div class="prod">${prod}</div></div>
     <div class="panel"><div class="panel-h">Active Machine</div>${mach}</div>
     <div class="panel"><div class="panel-h"><span class="sp">Mining Team</span><small>${squad.length}/${G.squadSlots()}</small></div>${team}</div>
-    <div class="panel"><div class="panel-h"><span class="sp">Quests</span><small>${qs.filter((q) => q.done).length}/${qs.length}</small></div>${quests}</div>`;
+    <div class="panel side-quests"><div class="panel-h"><span class="sp">Quests</span><small>${qs.filter((q) => q.done).length}/${qs.length}</small></div>${quests}</div>`;
 }
 
 function actionsHTML() {
@@ -6181,12 +6414,12 @@ function actionsHTML() {
   const ev = G.liveEvent(), h = S.hazard;
   const collectN = (S.nest >= 1 ? 1 : 0) + S.exps.filter((e) => e.done).length + G.missions().filter((m) => m.done && !m.claimed).length;
   const ticker = h ? `<b>${{ collapse: 'Cave-in!', richvein: 'Rich vein spotted!', supply: 'Supply drop!', creature: 'Creature sighted!', bandits: 'Bandit raid!' }[h.type]}</b><span>${D.zoneById(h.zone).name} · <span data-b="until:${h.until}"></span></span>`
-    : ev ? `<b>${esc(ev.name)}</b><span>${esc(ev.desc.split('.')[0])} · <span data-b="until:${S.live.until}"></span></span>` : `<b>All quiet in the mine</b><span>Next event soon…</span>`;
+    : ev ? `<b>${esc(ev.name)}</b><span>${esc(ev.desc.split('.')[0])} · <span data-b="until:${S.live.until}"></span></span>` : `<b>All quiet in the mine</b><span>Next live event in <span data-b="until:${S.live.next}"></span></span>`;
   const digCard = S.dig
     ? `<div class="act digging">${ui.img('ui/mines', 'act-ic bob', '')}<span class="act-l">Digging → ${S.dig.to}</span>
-        <span class="act-c dig-row">${ui.bar(0, 'gold', '', 'data-b="dig"')}<button class="btn sm purple dig-fin" data-a="speedDig" title="Finish the dig now">⚡ ${ui.icon('henium', 14)}<span data-b="digcost"></span></button></span></div>`
-    : `<button class="act ${gate ? 'cant' : ''}" data-a="dig" ${gate ? '' : `data-need="${ui.need(cost)}"`}>${ui.img('ui/mines', 'act-ic', '')}<span class="act-l">Dig Deeper</span><span class="act-c">${gate ? esc(gate.length > 34 ? gate.slice(0, 32) + '…' : gate)
-        : `${ui.cost(cost, 1, 15)} <span class="dig-time">${ui.img('ui/timer', 'ic', '').replace('class="ic"', 'class="ic" width="14" height="14"')}${G.fmtTime(D.digTime(S.depth + 1) / G.digSpeed())}</span>`}</span></button>`;
+        <span class="act-c dig-row">${ui.bar(0, 'gold', ' ', 'data-b="dig"')}</span><button class="btn sm purple dig-fin" data-a="mnFinishDig" title="Finish the dig now for HENIUM">⚡ Finish now ${ui.icon('henium', 14)}<span data-b="digcost"></span></button></div>`
+    : `<button class="act ${gate ? 'cant' : ''}" data-a="dig" ${gate ? '' : `data-need="${ui.need(cost)}"`}>${ui.img('ui/mines', 'act-ic', '')}<span class="act-l">Dig Deeper</span><span class="act-c ${gate ? 'act-gate' : ''}">${gate ? esc(gate)
+        : `${ui.cost(cost, 1, 15)} <span class="dig-time">${ui.img('ui/timer', 'ic', '').replace('class="ic"', 'class="ic" width="14" height="14"')}${G.fmtTime(D.digTime(S.depth + 1) / G.digSpeed())}</span>${ui.miss(cost)}`}</span></button>`;
   return `<div class="mine-actions">
     ${digCard}
     <button class="act" data-a="hire">${ui.img('ui/chikns', 'act-ic', '')}<span class="act-l">Rent a Chikn</span><span class="act-c">${S.stats.hired === 0 ? 'First rental is free!' : `from ${ui.cost({ egg: 1 }, 1, 15)} a day`}</span>${S.stats.hired === 0 ? '<span class="badge">!</span>' : ''}</button>
@@ -6201,7 +6434,7 @@ function dashHTML() {
   const sNeed = D.seasonNeed(S.season.lv);
   return `<div class="dash">
     <div class="panel dash-season" data-a="nav" data-args='["events"]' style="background-image:linear-gradient(90deg,rgba(21,26,70,.95) 30%,rgba(21,26,70,.3)),url(${G.img('bg/floor-henium')})">
-      <div class="panel-h">${ui.img('ui/trophy', '', '')}Season 1: Deep Veins</div>
+      <div class="panel-h">${ui.img('ui/trophy', '', '')}Season ${S.season.no || 1}: Deep Veins</div>
       <div class="muted">Ends in <b data-b="until:${S.season.ends}"></b></div>
       <div class="row" style="margin-top:10px"><span class="lvchip">Lv. ${S.season.lv}</span>${ui.bar(S.season.xp / sNeed * 100, 'blue lg sp', `${G.fmtFull(S.season.xp)} / ${G.fmtFull(sNeed)} XP`)}</div></div>
     <div class="panel" data-a="nav" data-args='["events"]'><div class="panel-h">${ui.img('ui/events', '', '')}Daily Missions</div>
@@ -6209,14 +6442,15 @@ function dashHTML() {
     <div class="panel" data-a="nav" data-args='["guild"]'><div class="panel-h">${ui.img('ui/guild', '', '')}Guild: ${esc(g.name)}</div>
       <div class="muted" style="text-align:center">Members: ${g.members} / ${g.max}</div>
       ${p ? `<div class="hx" style="margin:6px 0 4px">Guild Project: ${esc(p.name)}</div>${ui.bar(g.pts / p.need * 100, 'green lg', Math.floor(g.pts / p.need * 100) + '%')}
-      <div class="muted" style="margin-top:6px;font-size:14px">Reward: <b>+${p.bonus}% Guild Mining Bonus</b> · <b>${ui.icon('henium', 15)}+${G.guildProjectReward(g.proj)}</b></div>` : '<div class="hx">All projects complete!</div>'}</div>
+      <div class="muted" style="margin-top:6px;font-size:14px">Reward: <b>+${Math.round(p.bonus * (G.specIs('gleader') ? 1.25 : 1))}% Guild Mining Bonus</b> · <b>${ui.icon('henium', 15)}+${G.guildProjectReward(g.proj)}</b></div>` : '<div class="hx">All projects complete!</div>'}</div>
     <div class="panel" data-a="nav" data-args='["events"]'><div class="panel-h">${ui.img('ui/bell', '', '')}Live Events</div>
       ${G.liveEvent() ? `<div class="list-row">${ui.icon('heniumOre', 28)}<div class="sp"><b>${esc(G.liveEvent().name)}</b><div class="muted" style="font-size:12px">${esc(G.liveEvent().desc)}</div></div><span class="tchip" data-b="until:${S.live.until}"></span></div>` : ''}
-      <div class="list-row">${ui.img('ui/trophy', 'ic', '').replace('class="ic"', 'class="ic" width="26" height="26"')}<div class="sp"><b>Guild Mining Competition</b><div class="muted" style="font-size:12px">Top guilds earn exclusive machines!</div></div></div>
-      <div class="list-row">${ui.img('ui/energy', 'ic', '').replace('class="ic"', 'class="ic" width="26" height="26"')}<div class="sp"><b>Next HENIUM halving</b><div class="muted" style="font-size:12px">${G.fmt(G.nextHalving() - S.world.mined)} HENIUM left in this epoch</div></div></div></div>
+      <div class="list-row">${ui.img('ui/trophy', 'ic', '').replace('class="ic"', 'class="ic" width="26" height="26"')}<div class="sp"><b>Guild Mining Competition</b><div class="muted" style="font-size:12px">A live event: every floor mines +20% while it runs.</div></div></div>
+      <div class="list-row">${ui.img('ui/energy', 'ic', '').replace('class="ic"', 'class="ic" width="26" height="26"')}<div class="sp"><b>Next HENIUM halving</b><div class="muted" style="font-size:12px">${G.nextHalvingDate()} · ${G.fmt(G.nextHalving() - S.world.mined)} HENIUM left in this epoch</div></div></div></div>
   </div>`;
 }
 
+let mnSig = null; // quests, missions, nest and expeditions shown on the Mines screen
 ui.views.mines = {
   render(el) {
     const S = G.S;
@@ -6224,6 +6458,7 @@ ui.views.mines = {
       <section class="scene">${surfaceHTML()}
         <div class="shaft" style="--open:${D.zones.filter((z) => G.zoneOpen(z)).length}">
           ${D.zones.map(floorHTML).join('')}
+          ${(() => { const far = D.zones.filter((z) => !G.zoneOpen(z) && S.depth + 1 !== z.from && D.zoneOf(S.depth).to + 1 !== z.from); return far.length ? `<div class="floors-more">${ui.img('ui/lock', 'lk', '')} ${far.length} more zone${far.length > 1 ? 's' : ''} below: ${far.map((z) => esc(z.short)).join(', ')}</div>` : ''; })()}
           <div class="elevator"><div class="cabin">${ui.img('prop/lift', 'cabin-img', 'Elevator')}<span class="cabin-lv">L${S.depth}</span></div></div>
         </div>
       </section>
@@ -6231,6 +6466,8 @@ ui.views.mines = {
     </div>${actionsHTML()}${dashHTML()}`;
   },
   update() {
+    const S = G.S, sg = G.questList().map((q) => (q.done ? 1 : 0)).join('') + '|' + G.missions().map((m) => (m.done ? 1 : 0) + (m.claimed ? 2 : 0)).join('') + '|' + Math.floor(S.nest) + '|' + S.exps.filter((x) => x.done).length;
+    if (sg !== mnSig && !ui.modalOpen()) { const first = mnSig === null; mnSig = sg; if (!first) { ui.render(); return; } }
     // production pop-ups every ~3s
     popT++;
     if (popT % 12 !== 0 || ui.modalOpen()) return;
@@ -6249,11 +6486,31 @@ ui.views.mines = {
 };
 
 // ---------- handlers ----------
+ui.handlers.mnFinishDig = () => {
+  const d = G.S.dig;
+  if (!d) return;
+  const c = 2 * G.speedCost((d.dur - d.t) / G.digSpeed()), have = G.S.res.henium;
+  ui.modal({ title: `${ui.img('ui/mines', '', '')} Finish the dig now?`, html: `<p style="margin-top:0">Reach depth <b>${d.to}</b> right away for <b>${G.fmtFull(c)} HENIUM</b> (you have ${G.fmt(have, 2)}). Otherwise it finishes by itself in ${G.fmtTime((d.dur - d.t) / G.digSpeed())}.</p>`,
+    actions: [{ label: 'Keep digging', cls: 'gray' }, { label: `Finish for ${G.fmtFull(c)} HENIUM`, cls: have >= c ? 'purple' : 'purple cant', fn: () => {
+      const r = G.act.speedDig();
+      if (!r.ok) { ui.toast(r.msg, 'bad', 'res/henium'); G.sfx('err'); return; }
+      ui.toast(`−${G.fmtFull(c)} HENIUM: the dig is done`, 'purple', 'res/henium');
+    } }] });
+};
+ui.handlers.mnQuest = (el, e, id) => {
+  const q = D.quests.find((x) => x.id === id), r = G.act.claimQuest(id);
+  if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
+  const [x, y] = ui.centerOf(el);
+  Object.entries(q.r).forEach(([res, v], i) => ui.float(`+${ui.amt(res, v)}${ui.icon(res, 20)}`, x + i * 34, y - 12));
+  ui.toast(`Quest complete: ${Object.entries(q.r).map(([res, v]) => `+${ui.amt(res, v)} ${D.res[res].name}`).join(', ')}`, 'good', 'ui/gift');
+  G.sfx('coin');
+  ui.render();
+};
 ui.handlers.tapFloor = (el, e, zid) => {
   const r = G.act.tap(zid);
   if (G.S.sel !== zid) { G.S.sel = zid; document.querySelectorAll('.floor.sel').forEach((f) => f.classList.remove('sel')); el.classList.add('sel'); document.getElementById('mine-side').innerHTML = sideHTML(); }
   if (!r.ok) {
-    if ((G.S.tapEnergy || 0) < 1) { ui.float('<span style="color:#ff8a95">No energy</span>', e.clientX, e.clientY - 10); G.sfx('err'); return; }
+    if ((G.S.tapEnergy || 0) < 1) { ui.float(`<span style="color:#ff8a95">No energy · +1 in ${Math.ceil((1 - (G.S.tapEnergy || 0)) / D.rules.tap.regen)}s</span>`, e.clientX, e.clientY - 10); G.sfx('err'); return; }
     ui.toast(r.msg, 'bad'); G.sfx('err'); return;
   }
   ui.float(`+${ui.amt(r.res, r.amt)}${ui.icon(r.res, 20)}`, e.clientX, e.clientY - 10, r.rich ? '#ffe27a' : '#fff');
@@ -6305,6 +6562,8 @@ ui.handlers.collectAll = (el) => {
   ui.render();
 };
 ui.handlers.hazardAct = (el, e, choice) => {
+  const h = G.S.hazard;
+  if (h && G.now() - h.at < 700 * G.speed()) return; // it appeared under a tapping finger a moment ago
   const r = G.act.hazard(choice);
   if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
   G.sfx(r.win === false ? 'lose' : 'win');
@@ -6328,7 +6587,7 @@ const rentOfferCard = (o) => {
     <div class="rent-kv"><span>Lays</span><b>${G.fmt(G.chiknEgg(c), 2)} EGG/day</b></div>
     <div class="rent-kv"><span>Eats</span><b>${G.fmt(D.farm.upkeep(o.kg), 2)} FEED/day</b></div>
     <div class="rent-kv"><span>Battle power</span><b>${G.fmt(G.chiknPower(c))}</b></div>
-    <div class="rent-price">${o.free ? '<b>Free</b> first rental' : `<b>${G.fmt(o.price * (D.rent.disc[days] || 1), 2)}</b> EGG a day`}</div>
+    <div class="rent-price">${o.free ? `<b>Free</b> first rental · ${days} days, then it goes home (rent it again or another one)` : `<b>${G.fmt(o.price * (D.rent.disc[days] || 1), 2)}</b> EGG a day`}</div>
     ${btn}</div>`;
 };
 const rentHTML = () => {
@@ -6409,7 +6668,7 @@ const speedOf = (lv) => 1 / D.factorySpeed(lv);
 const recOf = (f, rid) => f.recipes.find((r) => r.id === rid) || f.recipes[0];
 const slotsUp = D.fUpgrades.find((u) => u.id === 'slots');
 const maxSlots = () => G.jobSlots() - G.S.fup.slots + (slotsUp ? slotsUp.max : 0);
-const queueFull = () => G.S.jobs.length >= G.jobSlots();
+const queueFull = (fid) => G.queueFull(fid); // the Feed Mill never takes a slot
 const plainImg = (key, cls = '') => ui.img(key, cls, '');
 const stOf = (fid) => G.S.factories[fid];
 const artLv = (fid) => Math.max(1, stOf(fid).lv); // an unbuilt building shows its Lv. 1 look (dimmed)
@@ -6556,13 +6815,28 @@ function headHTML() {
 }
 
 // ---------- factory cards ----------
+// what a building opens: the zone whose dig gate needs it (the refinery's level also gates the Core Zone)
+function gateNote(f) {
+  const S = G.S, out = [];
+  for (const z of D.zones) {
+    const g = z.gate;
+    if (!g || S.depth >= z.from) continue; // only zones still ahead of you
+    if (g.factory === f.id && S.factories[f.id].lv < 1) out.push(`<div class="fx-gate">🔒 Needed to dig into the ${esc(z.name)} (depth ${z.from})</div>`);
+    if (f.id === 'refinery' && g.refineryLv) {
+      const okLv = S.factories.refinery.lv >= g.refineryLv;
+      out.push(`<div class="fx-gate ${okLv ? 'fx-gate-ok' : ''}">${okLv ? '✔' : '🔒'} Lv. ${g.refineryLv} opens the ${esc(z.name)} (depth ${z.from})${g.license ? `, with a Guild License${S.guild.license ? ' (you have it)' : ' (Guild screen)'}` : ''}${okLv ? '' : ` · yours: Lv. ${S.factories.refinery.lv}`}</div>`);
+    }
+  }
+  return out.join('');
+}
+
 function recChip(f, rec, built, on) {
   const inp = built ? G.recipeIn(rec) : rec.in;
   const out = built ? G.recipeOut(f, rec) : rec.out;
-  const t = built ? rec.t * G.factorySpeed(f) : rec.t;
+  const t = built ? G.jobDur(f, rec) : rec.t; // refinery batches have a fixed length
   const have = (list) => list.map((r) => `<span class="fx-hv" title="${esc(D.res[r].name)} you have">${ui.icon(r, 15)}<b data-b="fxAmt:${r}">${G.fmt(G.S.res[r])}</b></span>`).join('');
   const stock = built || G.S.depth >= f.reqDepth
-    ? `<span class="fx-rc-have"><small>You have</small>${have(Object.keys(inp))}<span class="fx-arr">➜</span>${have(Object.keys(out))}</span>` : '';
+    ? `<span class="fx-rc-have"><small>You have</small>${have(Object.keys(inp))}<span class="fx-arr">➜</span>${have(Object.keys(out))}<small class="fx-batches">· enough for ${G.fmtFull(Math.floor(Math.min(...Object.entries(inp).map(([r, v]) => G.S.res[r] / Math.max(1e-9, v)))))} batch${Math.floor(Math.min(...Object.entries(inp).map(([r, v]) => G.S.res[r] / Math.max(1e-9, v)))) === 1 ? '' : 'es'}</small></span>` : '';
   const body = `<span class="fx-radio"></span><span class="fx-rc-nt"><b class="fx-rc-n">${esc(rec.name)}</b><span class="fx-rc-t" title="Time per batch">${plainImg('ui/timer')}${G.fmtTime(t)}</span></span>
     <span class="fx-rc-io">${ui.cost(inp, 1, 18)}<span class="fx-arr">➜</span>${ui.rew(out, 18)}</span>${stock}`;
   if (!built || f.recipes.length < 2) return `<div class="fx-rc ${built ? 'fx-on' : ''} fx-solo">${body}</div>`;
@@ -6618,7 +6892,7 @@ function supplyHTML() {
   return `<div class="fx-supply" data-b="fxSupply">
     <div class="fx-sup-h">${ui.icon('henium', 22)}<b>HENIUM supply</b><span class="tag p">Epoch ${G.epoch() + 1}</span><span class="fx-yield" ${ref ? `title="The whole world mints ${G.fmt(G.emission())} HENIUM a day in this epoch"` : ''}>${ref ? `${G.fmt(G.emission())}/day` : `Yield ×${G.halving()}`}</span></div>
     <div class="fx-sbar"><i class="fx-sfill" style="width:${w / cap * 100}%"></i>${marks}</div>
-    <div class="fx-sup-f"><span><b data-k="mined">${G.fmt(w)}</b> / ${G.fmt(cap)} mined</span><span>Next halving ${G.fmt(next)} · <b data-k="left">${G.fmt(Math.max(0, next - w))}</b> left</span></div>
+    <div class="fx-sup-f"><span><b data-k="mined">${G.fmt(w)}</b> / ${G.fmt(cap)} mined</span><span>Next halving ${G.nextHalvingDate()} (at ${G.fmt(next)}) · <b data-k="left">${G.fmt(Math.max(0, next - w))}</b> left</span></div>
     ${ref ? `<div class="fx-sup-f fx-sup-me"><span>Your refining share <b>${pctS(G.refShare())}</b></span><span>≈ <b>${G.fmt(G.refPerDay(), 2)}</b> HENIUM a day</span></div>` : ''}
   </div>`;
 }
@@ -6661,7 +6935,8 @@ function upgradeHTML(f, lv) {
       <div class="fx-upg-s">${f.id === 'refinery' && REF() ? `Power <em>${refPowAt(lv)} ➜ ${refPowAt(nx)}</em> · ≈ <em>${G.fmt(refDayAt(nx), 1)}</em> HENIUM/day`
         : `Speed <em>${x2(speedOf(nx))}</em> · Yield <em>${x2(D.factoryYield(nx))}</em>${f.id === 'feedmill' ? ` · Quota <em>${D.farm.millQuota(nx)}/day</em>` : ''}`}</div>
     </div>
-    <div class="fx-upg-f">${ui.cost(cost, 1, 16)}${ui.btn('▲ Upgrade', 'upgradeFactory', [f.id], 'gold sm fx-upbtn', cost, `title="Upgrade the ${esc(f.name)} to Lv. ${nx}: construction takes ${t}"`)}</div>
+    <div class="fx-upg-f">${ui.cost(cost, 1, 16)}${ui.btn('▲ Upgrade', 'upgradeFactory', [f.id], 'gold sm fx-upbtn', cost, `title="Upgrade the ${esc(f.name)} to Lv. ${nx}: construction takes ${t}${G.S.jobs.some((j) => j.f === f.id) ? '; its jobs pause until it is done' : ''}"`)}${ui.miss(cost)}</div>
+    ${G.S.jobs.some((j) => j.f === f.id) ? `<div class="fx-upg-warn">Its jobs pause during the ${t} construction${f.id === 'refinery' ? ', so it refines no HENIUM meanwhile' : ''}.</div>` : ''}
   </div>`;
 }
 
@@ -6670,7 +6945,7 @@ function buildHTML(f) {
   return `<div class="fx-upg fx-upg-build">
     <div class="fx-upg-m"><div class="fx-upg-h"><b>Build Lv. 1</b><span class="fx-bt" title="Construction time">${timer()}${t}</span></div>
       <div class="fx-upg-s">Construction takes time. Jobs can start once it stands.</div></div>
-    <div class="fx-upg-f">${ui.cost(f.build, 1, 16)}${ui.btn('🔨 Build', 'build', [f.id], 'green sm fx-upbtn', f.build, `title="Build the ${esc(f.name)}: construction takes ${t}"`)}</div>
+    <div class="fx-upg-f">${ui.cost(f.build, 1, 16)}${ui.btn('🔨 Build', 'build', [f.id], 'green sm fx-upbtn', f.build, `title="Build the ${esc(f.name)}: construction takes ${t}"`)}${ui.miss(f.build)}</div>
   </div>`;
 }
 
@@ -6703,7 +6978,7 @@ function cardHTML(f) {
       </div>
     </article>`;
   }
-  const built = lv > 0, rec = recOf(f, st.recipe), max = lv >= D.factoryMaxLv, full = queueFull(), j = !con && built && G.activeJob(f.id);
+  const built = lv > 0, rec = recOf(f, st.recipe), max = lv >= D.factoryMaxLv, full = queueFull(f.id), j = !con && built && G.activeJob(f.id);
   const inCost = G.recipeIn(rec), qBlock = built && quotaBlocked(f, rec), stop = !!con || full || qBlock;
   const why = con ? 'Jobs pause while the building is under construction' : full ? 'Production queue is full: wait for a job to finish or unlock a slot'
     : qBlock ? "Today's FEED quota is used up: it resets on the next farm day" : '';
@@ -6716,8 +6991,9 @@ function cardHTML(f) {
       ${stageHTML(f, !!j)}
       <div class="fx-status">${con ? conBox(f) : jobBox(f)}
         ${con ? '' : `<div class="fx-stats">${f.id === 'refinery' && REF()
-          ? stat('Power', G.fmt(G.myRefPower()), 'Refinery power: it decides your share of the HENIUM the world mints each day') + stat('Share', pctS(G.refShare()), 'Your share of the world refinery power')
-          : stat('Speed', x2(speedOf(lv)), 'Production speed from the factory level') + stat('Yield', x2(D.factoryYield(lv)), 'Output multiplier from the factory level')}</div>`}</div></div>
+          ? stat('Power', G.fmtFull(Math.round(G.myRefPower())), 'Refinery power: it decides your share of the HENIUM the world mints each day') + stat('Share', pctS(G.refShare()), 'Your share of the world refinery power')
+          : stat('Speed', x2(1 / G.factorySpeed(f)), 'Production speed: factory level × Efficiency upgrades × Operator Chikns × Industrialist') + stat('Yield', x2(D.factoryYield(lv)), 'Output multiplier from the factory level')}</div>`}</div></div>
+      ${gateNote(f)}
     <div class="fx-body">
       <div class="fx-recs">${f.recipes.map((r) => recChip(f, r, built, built && r.id === rec.id)).join('')}</div>
       ${built && f.id === 'refinery' ? supplyHTML() : ''}${built && f.id === 'feedmill' ? quotaHTML() : ''}
@@ -6755,23 +7031,34 @@ function jobTile(j) {
   const keys = Object.keys(out), single = keys.length === 1;
   const icon = single ? ui.icon(keys[0], 40) : bImg(f.id, artLv(f.id), 'fx-jt-fac', f.name);
   const amt = single ? '+' + ui.amt(keys[0], out[keys[0]]) : keys.length + ' outputs';
+  const waits = !active && !paused ? `Waits for the ${f.name} (one job at a time)` : '';
   const bar = paused ? ui.bar(active ? j.t / j.dur * 100 : 0, 'fx-pbar', '⏸ Paused · building', `title="The ${esc(f.name)} is under construction"`)
-    : ui.bar(active ? j.t / j.dur * 100 : 0, active ? 'green' : 'blue', active ? G.fmtTime(j.dur - j.t) : 'Queued', `data-b="job:${j.id}"`);
+    : ui.bar(active ? j.t / j.dur * 100 : 0, active ? 'green' : 'blue', active ? G.fmtTime(j.dur - j.t) : 'Queued', `data-b="job:${j.id}" ${waits ? `title="${esc(waits)}"` : ''}`);
   return `<div class="fx-jt ${paused ? 'fx-paused-t' : active ? 'fx-on' : 'fx-wait'}" style="--acc:${f.accent}">
     <div class="fx-jt-top"><span class="fx-jt-ic">${icon}</span><div class="fx-jt-name"><b>${esc(rec.name)}</b><small>${esc(f.name)} · ${amt}</small></div>
-      <button type="button" class="fx-x" data-a="cancelJob" data-args='[${j.id}]' title="Cancel job (full refund before it starts, ${Math.round(D.rules.refund * 100)}% after)" aria-label="Cancel ${esc(rec.name)} job">✕</button></div>
+      <button type="button" class="fx-x" data-a="fxCancel" data-args='[${j.id}]' title="Cancel job (full refund before it starts, ${Math.round(D.rules.refund * 100)}% after)" aria-label="Cancel ${esc(rec.name)} job">✕</button></div>
     ${bar}
-    <div class="fx-jt-btns"><button type="button" class="fx-rep ${j.repeat ? 'fx-on' : ''}" data-a="toggleRepeat" data-args='[${j.id}]' aria-pressed="${!!j.repeat}" title="Auto-repeat this job">⟳ <span class="fx-rep-w">Repeat</span> <span class="fx-rep-s">${j.repeat ? 'on' : 'off'}</span></button>${paused ? '' : speedBtn(j)}</div>
+    ${waits ? `<div class="fx-jt-wait">${esc(waits)}</div>` : ''}
+    <div class="fx-jt-btns"><button type="button" class="fx-rep ${j.repeat ? 'fx-on' : ''}" data-a="toggleRepeat" data-args='[${j.id}]' aria-pressed="${!!j.repeat}" title="Auto-repeat this job">⟳ <span class="fx-rep-w">Repeat</span> <span class="fx-rep-s">${j.repeat ? 'on' : 'off'}</span></button>${paused ? '' : speedBtn(j) || (j.f === 'refinery' ? '<span class="fx-norush" title="Refinery batches pay your share of the HENIUM emission for the time they run">1 h batch · can\'t be rushed</span>' : '')}</div>
   </div>`;
 }
 
+ui.handlers.fxCancel = (el, e, id) => {
+  const j = G.S.jobs.find((x) => x.id === id);
+  if (!j) return;
+  const started = j.t > 0, k = started ? D.rules.refund : 1, back = Object.entries(j.paid || {}).map(([r, v]) => `${G.fmt(v * k)} ${D.res[r].name}`).join(', ');
+  if (started && !confirm(`Cancel this job? It already started, so you get back only ${Math.round(k * 100)}% of its inputs (${back}).`)) return;
+  const r = G.act.cancelJob(id);
+  if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
+  ui.toast(`Job cancelled: ${back || 'nothing'} refunded`, '', 'ui/timer'); G.sfx('click'); ui.render();
+};
 function queueHTML() {
   const S = G.S, slots = G.jobSlots();
   let empty = '';
-  for (let i = S.jobs.length; i < slots; i++) empty += `<button type="button" class="fx-add" data-a="fxAddJob"><span class="fx-plus">+</span><span>Add Job</span></button>`;
+  for (let i = G.slotJobs(); i < slots; i++) empty += `<button type="button" class="fx-add" data-a="fxAddJob"><span class="fx-plus">+</span><span>Add Job</span></button>`;
   const lock = slots < maxSlots() ? `<button type="button" class="fx-add fx-add-lock" data-a="fxGoUp" data-args='["slots"]' title="Buy a Queue Slot in Factory Upgrades">${plainImg('ui/lock', 'fx-lk')}<span>Unlock slot</span></button>` : '';
   return `<section class="panel fx-queue" id="fx-queue" aria-label="Production queue">
-    <div class="panel-h">${plainImg('ui/timer')}<span class="sp">Production Queue <span class="fx-cnt">(${S.jobs.length}/${slots})</span></span><small class="fx-qnote">1 job per factory runs at a time</small></div>
+    <div class="panel-h">${plainImg('ui/timer')}<span class="sp">Production Queue <span class="fx-cnt">(${G.slotJobs()}/${slots})</span></span><small class="fx-qnote">One job per factory runs at a time; the others wait their turn. The Feed Mill doesn't take a slot.</small></div>
     <div class="fx-qgrid">${S.jobs.map(jobTile).join('')}${empty}${lock}</div>
   </section>`;
 }
@@ -6992,7 +7279,7 @@ ui.binders.crSpeed = (el, id) => { // speed-up price shrinks as the craft progre
 ui.binders.crSvc = (el, id) => { // service price grows as the machine wears
   const m = G.S.machines.find((x) => x.id === +id);
   if (!m) return;
-  const c = D.machineServiceCost(m.dur), key = ui.need(c);
+  const c = D.machineServiceCost(m.dur, D.machineTier(m.type)), key = ui.need(c);
   if (el.dataset.k === key) return;
   el.dataset.k = key;
   el.innerHTML = ui.cost(c, 1, 15);
@@ -7121,9 +7408,12 @@ function queueHTML() {
   }).join('');
   let empty = '';
   for (let i = S.crafts.length; i < S.craftSlots; i++) {
-    empty += `<button type="button" class="cr-q-add" data-a="craft" data-args='["${m.id}"]' ${isLocked(m) ? '' : `data-need="${ui.need(m.cost)}"`}
+    empty += isLocked(m) ? `<div class="cr-q-add cr-q-lock">${plainImg('ui/lock')}<span>${esc(m.name)} unlocks at player Lv. ${m.lv}</span></div>`
+      : `<button type="button" class="cr-q-add" data-a="craft" data-args='["${m.id}"]' data-need="${ui.need(m.cost)}"
       title="Craft the selected machine"><span class="cr-plus">+</span><span>Add ${esc(m.name)}</span><small>${G.fmtTime(craftTime(m))}</small></button>`;
   }
+  const up = D.fUpgrades.find((u) => u.id === 'craft');
+  if (S.crafts.length >= S.craftSlots && up && S.fup.craft < up.max) empty += `<button type="button" class="cr-q-add cr-q-lock" data-a="nav" data-args='["factories"]' title="Buy a Craft Slot in Factory Upgrades (Factories screen)">${plainImg('ui/lock')}<span>Queue full: unlock a Craft Slot in Factories → Factory Upgrades</span></button>`;
   return `<section class="panel cr-queue" aria-label="Crafting queue">
     <div class="panel-h">${plainImg('ui/timer')}<span class="sp">Crafting Queue <span class="cr-cnt">(${S.crafts.length}/${S.craftSlots})</span></span></div>
     <div class="cr-qlist">${rows}${empty}</div>
@@ -7135,11 +7425,15 @@ function floorsHTML() {
   const open = D.zones.filter((z) => G.zoneOpen(z));
   const rows = open.map((z) => {
     const m = G.machineOn(z.id), d = m ? D.machineById(m.type) : null, ms = m ? G.machineStats(m) : null;
+    const st = !m ? '' : m.dur <= 0 ? ' · <b class="cr-bad">broken</b>' : m.off ? ' · <b class="cr-bad">no coal</b>' : '';
     return `<div class="cr-fl ${m ? '' : 'cr-fl-empty'}" style="--zg:${z.glow}">${ui.icon(z.res, 26)}<div class="cr-fl-t"><b>${esc(z.name)}</b><small>Depth ${z.from}–${z.to}</small></div>
-      ${m ? `<span class="cr-fl-m">${ui.img('machine/' + m.type, 'cr-fl-img', d.name)}<span><b>${esc(d.name)}</b><small>Lv. ${m.lv} · ×${ms.speed.toFixed(2)}</small></span></span>`
+      ${m ? `<span class="cr-fl-m">${ui.img('machine/' + m.type, 'cr-fl-img', d.name)}<span><b>${esc(d.name)}</b><small>Lv. ${m.lv} · ×${ms.speed.toFixed(2)}${st}</small></span></span>`
         : '<span class="cr-fl-none">No machine</span>'}</div>`;
   }).join('') || '<div class="empty">No mine floors open yet.</div>';
-  return `<section class="panel cr-floors" aria-label="Mine floors"><div class="panel-h">${plainImg('ui/mines')}<span class="sp">Mine Floors</span><small>${open.filter((z) => G.machineOn(z.id)).length}/${open.length} equipped</small></div>
+  const working = open.filter((z) => { const m = G.machineOn(z.id); return m && G.machineStats(m).working; }).length;
+  const burn = G.coalUse() * 3600, mined = (G.rates().coal || 0) * 3600;
+  return `<section class="panel cr-floors" aria-label="Mine floors"><div class="panel-h">${plainImg('ui/mines')}<span class="sp">Mine Floors</span><small>${working}/${open.length} working</small></div>
+    ${G.S.machines.some((x) => x.zone) ? `<div class="cr-coal ${burn > mined ? 'cr-bad' : ''}">${ui.icon('coal', 18)} Machines burn <b>${G.fmt(burn)}/h</b> · your Coal floor mines <b>${G.fmt(mined)}/h</b>${burn > mined ? ' · your Coal stock is shrinking' : ''}</div>` : ''}
     <p class="cr-fl-rule"><b>One machine per floor.</b> A second one on the same floor replaces the first (it goes back to storage), so machines don't stack. Its speed multiplies the floor's output together with your Chikn, guild and specialization bonuses. On your deepest floor it also speeds up digging.</p>${rows}</section>`;
 }
 
@@ -7154,7 +7448,9 @@ function machineCard(x) {
     return `<option value="${oz.id}" ${x.zone === oz.id ? 'selected' : ''}>${esc(oz.name)} (${oz.from}–${oz.to})${boost}${swap}</option>`;
   }).join('');
   const up = x.lv < D.machineMaxLv ? D.machineUpCost(d, x.lv) : null;
-  const svc = D.machineServiceCost(x.dur), perfect = x.dur >= 99.5;
+  const svc = D.machineServiceCost(x.dur, D.machineTier(x.type)), perfect = x.dur >= 99.5;
+  const wearMin = ms.def.wear * (1 - Math.min(0.6, G.bonus('machine') * 0.5)), left = wearMin > 0 ? x.dur / wearMin : Infinity; // minutes of play
+  const nx = up ? statsAt(d, x.lv + 1, x.zone) : null;
   return `<article class="cr-mc ${z ? 'cr-mc-dep' : 'cr-mc-stored'}" style="--zg:${z ? z.glow : '#5a63b8'}">
     <div class="cr-mc-top">
       <div class="cr-mc-art" ${z ? `style="background-image:url(${G.img('bg/floor-' + z.id)})"` : ''}>${ui.img('machine/' + x.type, 'cr-mc-img', d.name)}<span class="cr-mc-lv">Lv. ${x.lv}</span></div>
@@ -7163,14 +7459,16 @@ function machineCard(x) {
         <div class="cr-mc-st"><span class="tag ${status[1]}">${status[0]}</span>${z ? `<span class="cr-mc-z">${ui.icon(z.res, 16)}${esc(z.name)}</span>` : ''}</div>
         <div class="cr-kv"><span>Speed</span><b>×${ms.speed.toFixed(2)}</b></div>
         <div class="cr-kv"><span>Capacity</span><b>+${G.fmt(ms.cap)}/h</b></div>
+        <div class="cr-kv"><span>Coal</span><b>−${G.fmt(ms.energy)}/h</b></div>
+        <div class="cr-kv"><span>Breaks in</span><b>${x.dur <= 0 ? 'broken' : `~${G.fmtTime(left * 60)} of play`}</b></div>
         <div class="cr-kv cr-dur"><span>Durability</span>${ui.bar(x.dur, x.dur < 25 ? 'red' : 'green', Math.round(x.dur) + '%', `data-b="dur:${x.id}"`)}</div>
       </div>
     </div>
     <label class="cr-dep"><span>${plainImg('ui/mines')}Floor</span><select data-cr-deploy="${x.id}" aria-label="Deploy ${esc(d.name)} to a mine floor">${opts}</select></label>
     <div class="cr-mc-btns">
-      <div class="cr-mc-b">${up ? ui.btn('▲ Upgrade', 'upgradeMachine', [x.id], 'sm', up, `title="Upgrade to Lv. ${x.lv + 1}"`) + ui.cost(up, 1, 15) : '<button type="button" class="btn sm gray" disabled>★ Max Lv.</button><span class="cr-mc-hint">Fully upgraded</span>'}</div>
+      <div class="cr-mc-b">${up ? ui.btn('▲ Upgrade', 'upgradeMachine', [x.id], 'sm', up, `title="Upgrade to Lv. ${x.lv + 1}"`) + ui.cost(up, 1, 15) + `<span class="cr-mc-hint">Lv. ${x.lv + 1}: ×${nx.speed.toFixed(2)} · +${G.fmt(nx.cap)}/h</span>` + ui.miss(up) : '<button type="button" class="btn sm gray" disabled>★ Max Lv.</button><span class="cr-mc-hint">Fully upgraded</span>'}</div>
       <div class="cr-mc-b">${perfect ? '<button type="button" class="btn sm gray" disabled>Service</button><span class="cr-mc-hint">In perfect shape</span>'
-        : `${ui.btn(`${plainImg('ui/crafting')}Service`, 'service', [x.id], 'sm gold', svc, 'title="Restore durability to 100%"')}<span data-b="crSvc:${x.id}">${ui.cost(svc, 1, 15)}</span>`}</div>
+        : `${ui.btn(`${plainImg('ui/crafting')}Service`, 'service', [x.id], 'sm gold', svc, 'title="Restore durability to 100%"')}<span data-b="crSvc:${x.id}">${ui.cost(svc, 1, 15)}</span>${ui.miss(svc)}`}</div>
     </div>
   </article>`;
 }
@@ -7296,10 +7594,11 @@ function headHTML() {
       <div class="ck-stats">
         <div class="ck-stat ${full ? 'ck-full' : ''}" title="Chikns in the coop / coop capacity">${ui.img(G.coopImg(), 'ck-stat-ic', '')}<div><div class="ck-sl">Coop</div><div class="ck-sv">${n}<small>/${cap}</small></div></div></div>
         <div class="ck-stat">${ui.img('ui/mines', 'ck-stat-ic', '')}<div><div class="ck-sl">Squad</div><div class="ck-sv">${G.squad().length}<small>/${G.squadSlots()}</small></div></div></div>
-        <div class="ck-stat" title="Your flock eats ${G.fmt(G.upkeepPerDay(), 1)} FEED a day">${ui.icon('egg', 34, 'ck-stat-ic')}<div><div class="ck-sl">Eggs / day</div><div class="ck-sv">${fmtEgg(G.eggsPerDay())}</div></div></div>
+        <div class="ck-stat" title="Eggs your Chikns at home lay every day">${ui.icon('egg', 34, 'ck-stat-ic')}<div><div class="ck-sl">Eggs / day</div><div class="ck-sv">${fmtEgg(G.eggsPerDay())}</div></div></div>
+        <div class="ck-stat ${G.feedDaysLeft() < 2 ? 'ck-full' : ''}" title="FEED your flock eats every day, and how long your FEED stock lasts">${ui.icon('feed', 34, 'ck-stat-ic')}<div><div class="ck-sl">FEED / day</div><div class="ck-sv">${G.fmt(G.upkeepPerDay(), 1)}<small> · ${isFinite(G.feedDaysLeft()) ? G.fmt(G.feedDaysLeft(), 1) + ' days left' : 'none needed'}</small></div></div></div>
         ${G.rentIncome() > 0 ? `<div class="ck-stat ck-income" title="Rent from your Chikns that other players are using, after the ${Math.round(D.rent.fee * 100)}% market fee">${ui.icon('egg', 34, 'ck-stat-ic')}<div><div class="ck-sl">Rent income</div><div class="ck-sv">+${fmtEgg(G.rentIncome())}<small>/day</small></div></div></div>` : ''}
         <div class="ck-stat ck-nest">${ui.img('farm/nest', 'ck-stat-ic', '')}<div class="ck-nest-m"><div class="ck-sl">Nest</div>
-          <div class="ck-sv">${ui.icon('egg', 18)}<span data-b="ckNestV"></span></div><div class="bar gold ck-nestbar" data-b="ckNest"><i></i></div></div>
+          <div class="ck-sv">${ui.icon('egg', 18)}<span data-b="ckNestV"></span></div><div class="bar gold ck-nestbar" data-b="ckNest"><i></i></div><span class="nest-eta" data-b="nestEta"></span></div>
           <button class="btn gold sm" data-a="ckCollect" data-b="ckNestBtn">Collect</button></div>
       </div>
       ${notes.join('')}
@@ -7607,6 +7906,7 @@ ui.handlers.ckFarm = () => {
   if (!ui.views.farm) { ui.toast('The Egg Farm is not open yet', '', 'farm/nest'); return; }
   ui.closeModal();
   ui.go('farm');
+  if (coopFull()) setTimeout(() => ui.handlers.fmGoto && ui.handlers.fmGoto(null, null, 'fm-coop'), 60); // straight to the coop upgrade
 };
 document.addEventListener('keydown', (e) => {
   if (ui.cur !== 'chikns' || openId == null || !document.getElementById('ck-det')) return;
@@ -7727,7 +8027,7 @@ const sigOf = () => {
     S.farm.hungry, S.spec, S.player.lv >= D.rules.specLv, S.stats.hired > 0].join('|');
 };
 const millSigOf = () => G.S.jobs.filter((j) => j.f === 'feedmill').map((j) => j.id + (j.repeat ? 'r' : '')).join() +
-  '|' + (G.S.jobs.length >= G.jobSlots());
+  '|' + (G.S.farm.millAuto ? 1 : 0);
 
 // ---------- dial geometry ----------
 const ang = (kg) => -SWEEP + 2 * SWEEP * Math.max(0, Math.min(1, kg / DIAL_MAX));
@@ -7776,7 +8076,7 @@ ui.binders.fmCard = (el, id) => {
   setT(q('.fm-lvv', el), String(c.lv));
   setT(q('.fm-ev', el), one(G.chiknEgg(c)));
   const nx = q('.fm-next', el), next = F.eggsAt(Math.min(cap, c.kg + F.step));
-  const nh = max ? '<b class="fm-star">★ Max weight</b>' : `+${F.step} kg → <b>${two(next)}</b>`;
+  const nh = c.rent ? '<small>rented: its weight stays as it is</small>' : max ? '<b class="fm-star">★ Max weight</b>' : `+${F.step} kg → <b>${two(next)}</b> <small>· eats +${two(F.upkeep(Math.min(cap, c.kg + F.step)) - F.upkeep(c.kg))} FEED/day</small>`;
   if (nx.dataset.h !== nh) { nx.dataset.h = nh; nx.innerHTML = nh; }
   nx.title = max ? '' : `Next feeding: ${two(G.chiknEgg(c))} → ${two(next)} EGG/day`;
   const b1 = q('.fm-f1', el), b5 = q('.fm-f5', el);
@@ -7796,9 +8096,10 @@ ui.binders.fmFatten = (el) => {
   const key = Math.floor(S.res.feed + 1e-9) + '|' + S.chikns.reduce((s, c) => s + c.kg, 0).toFixed(2) + '|' + S.chikns.length + '|' + (ev ? ev.id : '') + S.spec;
   if (key !== fatKey || !fatPlan) { fatKey = key; fatPlan = fattenPlan(); }
   const p = fatPlan;
-  el.disabled = !p.n;
+  el.classList.toggle('cant', !p.n); // stays clickable, so a tap explains why it can't feed
+  const own = S.chikns.some((c) => !c.rent && c.status !== 'away'), need = Math.max(0, Math.ceil(p.reserve + G.feedCost(S.chikns.filter((c) => !c.rent && c.status !== 'away').sort((a, b) => a.kg - b.kg)[0] || { kg: 100, rarity: 'common' }) - S.res.feed));
   setT(q('.fm-fat-s', el), p.n ? `${plural(p.n, 'feeding')} · ${G.fmtFull(p.spent)} FEED`
-    : !S.chikns.length ? 'No Chikns yet' : p.allMax ? 'Everyone is at max weight' : `Keeps ${Math.ceil(p.reserve)} FEED in reserve`);
+    : !own ? 'No Chikns of your own to fatten' : p.allMax ? 'Everyone is at max weight' : `Need ${G.fmtFull(need)} more FEED (keeps ${Math.ceil(p.reserve)} in reserve)`);
 };
 ui.binders.fmScale = (el) => {
   const c = scaleId != null && G.chikn(G.S, scaleId);
@@ -7820,9 +8121,9 @@ ui.binders.fmScale = (el) => {
 };
 ui.binders.fmMill = (el) => {
   const S = G.S, cap = G.millQuota(), m = S.farm.milled, qd = G.queuedFeed(), used = m + qd;
-  const full = S.factories.feedmill.lv > 0 && used + millRun() > cap;
-  const qfull = S.jobs.length >= G.jobSlots(), con = !!S.factories.feedmill.con;
-  const key = `${m}|${qd}|${cap}|${qfull}|${con}`;
+  const full = S.factories.feedmill.lv > 0 && cap - used < 0.5; // the last batch of a day is cut to what is left
+  const con = !!S.factories.feedmill.con, auto = !!S.farm.millAuto;
+  const key = `${m}|${qd}|${cap}|${auto}|${con}`;
   if (el.dataset.k === key) return;
   el.dataset.k = key;
   setT(q('.fm-q-used', el), whole(used));
@@ -7832,8 +8133,7 @@ ui.binders.fmMill = (el) => {
   if (qi) { qi.style.left = Math.min(100, m / cap * 100) + '%'; qi.style.width = Math.max(0, Math.min(100 - m / cap * 100, qd / cap * 100)) + '%'; }
   setT(q('.fm-q-note', el), `${whole(m)} milled · ${whole(qd)} grinding`);
   el.classList.toggle('fm-qfull', full);
-  const why = con ? 'The Feed Mill is under construction' : full ? "Today's quota is used up: it resets at the next farm day"
-    : qfull ? `The production queue is full (${S.jobs.length}/${G.jobSlots()}). Wait for a job or free a slot in Factories.` : '';
+  const why = con ? 'The Feed Mill is under construction' : full ? `Today's quota is used up: it resets at the next farm day${auto ? ', and auto-grind starts again by itself' : ''}` : '';
   for (const b of el.querySelectorAll('.fm-grind')) { b.disabled = !!why; b.title = why || b.dataset.tip || ''; }
   const w = q('.fm-mill-why', el);
   if (w) { w.hidden = !why; setT(w, why); }
@@ -7882,7 +8182,7 @@ function heroHTML() {
       <div class="fm-top">
         <div class="fm-title">${ui.img('farm/nest', 'fm-title-ic', '')}<div class="fm-title-t"><h1>Egg Farm</h1>
           <div class="fm-sub">Fatten your Chikns with FEED. Heavier Chikns lay more EGG.</div></div></div>
-        <div class="fm-day" title="A farm day lasts ${G.fmtTime(F.day)} in this prototype (a real day in the full game)">
+        <div class="fm-day" title="A farm day is a real day (24 hours): eggs, FEED upkeep, the Feed Mill quota and the daily payouts run on it">
           <span class="fm-sun" aria-hidden="true"></span>
           <div class="fm-day-t"><b>Day <span data-b="fmDay">${G.fmtFull(S.farm.day + 1)}</span></b>
             <small>next day in <span data-b="farmday">${G.fmtTime(G.farmDayLeft())}</span></small>
@@ -7895,7 +8195,8 @@ function heroHTML() {
     </div>
     <div class="fm-nestctl" data-b="fmNest">
       <div class="fm-nest-n">${ui.icon('egg', 38)}<div class="fm-nest-t"><span class="fm-sl">Eggs in the nest</span>
-        <b class="fm-nest-v"><span data-b="nest">${whole(S.nest)}</span><small> / <span class="fm-ncap">${whole(G.nestCap())}</span></small></b></div></div>
+        <b class="fm-nest-v"><span data-b="nest">${whole(S.nest)}</span><small> / <span class="fm-ncap">${whole(G.nestCap())}</span></small></b>
+        <span class="nest-eta" data-b="nestEta"></span></div></div>
       <div class="bar gold fm-nbar"><i class="fm-nfill"></i></div>
       <button type="button" class="btn gold lg fm-collect" data-a="fmCollect">${ui.icon('egg', 26)}Collect</button>
       <span class="fm-nest-full">Nest full! New eggs are lost until you collect.</span>
@@ -7920,7 +8221,7 @@ function statsHTML() {
         free > 0 ? `${plural(free, 'space')} free` : 'Full: upgrade to hire more', free > 0 ? '' : 'data-full="1"')}
     </div>
     <p class="fm-explain">${ui.icon('egg', 18)}<span>Every Chikn lays about <b>1 EGG a day</b>; heavier Chikns lay more, with diminishing returns.
-      Chikns eat <b>FEED</b> every day to keep their weight; without it they slowly slim down. A farm day lasts ${G.fmtTime(F.day)} here.</span></p>
+      Chikns eat <b>FEED</b> every day to keep their weight; without it they slowly slim down. A farm day is a real day (24 hours).</span></p>
   </section>`;
 }
 
@@ -8053,7 +8354,7 @@ function coopHTML() {
       ${max ? '' : `<div class="fm-kv"><span>At Lv. ${lv + 1}</span><b>${next}</b><span>Chikns <em>(+${next - cap})</em></span></div>`}
     </div>
     ${max ? '<div class="fm-maxnote">★ Max level: the grandest coop in the land</div>'
-      : `<div class="fm-upbox"><div class="fm-upcost"><small>Upgrade cost</small>${ui.cost(cost, 1, 18)}</div>${ui.btn('Upgrade Coop', 'upgradeCoop', [], 'green', cost)}</div>`}
+      : `<div class="fm-upbox"><div class="fm-upcost"><small>Upgrade cost</small>${ui.cost(cost, 1, 18)}</div>${ui.btn('Upgrade Coop', 'upgradeCoop', [], 'green', cost)}${ui.miss(cost)}</div>`}
   </section>`;
 }
 function celebrateCoop(from, to) {
@@ -8426,7 +8727,7 @@ const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h
 const mix = (h) => { h ^= h >>> 16; h = Math.imul(h, 0x45d9f3b); h ^= h >>> 16; h = Math.imul(h, 0x45d9f3b); h ^= h >>> 16; return h >>> 0; };
 const rival = (name, i) => {
   const a = mix(hash(name)), b = mix(a), c = mix(b), d = mix(c);
-  return { i, name, base: 1500 + a % 9500, rate: 20 + b % 80, lv: 3 + c % 9, members: 96 + d % 104, hue: 25 + i * 43 };
+  return { i, name, base: 1500 + a % 9500, rate: 2 + b % 9, lv: 3 + c % 9, members: 96 + d % 104, hue: 25 + i * 43 }; // points per hour
 };
 const RIVALS = D.rivals.map(rival);
 const rivalScore = (r) => Math.floor(r.base + r.rate * Math.max(0, (G.now() - G.S.created) / 3600e3)); // grows slowly over time
@@ -8484,6 +8785,7 @@ function projectsHTML() {
     const d = G.donation(i);
     return `<div class="gd-don">${ui.icon(d.res, 46)}<div class="gd-don-amt">${G.fmtFull(d.amt)}</div><div class="gd-don-res">${D.res[d.res].name}</div>
       <div class="gd-pill pts">+${G.fmtFull(d.pts)} pts</div>
+      <div class="gd-have">You have ${G.fmt(Math.floor(G.S.res[d.res]))}</div>
       <button class="btn green sm block" data-a="gdDonate" data-args='[${i}]' data-need="${ui.need({ [d.res]: d.amt })}">Donate</button></div>`;
   }).join('');
   return `<div class="gd-proj">
@@ -8493,7 +8795,7 @@ function projectsHTML() {
         <div class="gd-proj-n">${esc(p.name)}</div>
         <div class="bar green lg gd-proj-bar" data-b="gdProj"><i></i><b></b></div>
         <div class="gd-proj-meta"><span>Reward <span class="gd-pill good">+${projBonus(p)}% Guild Mining Bonus</span><span class="gd-pill h">${ui.icon('henium', 16)} +${projHenium(g.proj)}</span></span>
-          <span class="dim">Guildmates add ~${G.fmt(memberRate(p) * 60)} pts/min · <span data-b="gdEta"></span></span></div>
+          <span class="dim">Guildmates add ~${G.fmt(memberRate(p) * 86400)} pts/day · <span data-b="gdEta"></span></span></div>
       </div>
     </div>
     <div class="gd-sec"><span>Donate</span><small>Donations add project points and count as your contribution</small></div>
@@ -8527,11 +8829,11 @@ function warsHTML() {
   return `<div class="gd-war" style="--bg:url(${G.img('bg/arena')})">
       ${ui.img('ui/battle', 'gd-war-ic', '')}
       <div class="gd-war-t"><div class="gd-kicker">Guild Wars</div><div class="gd-war-pts"><b>${num(g.warPts)}</b> war points</div>
-        <div class="gd-war-s">Win PvP battles in the Arena to raise ${esc(g.name)}'s war score.</div></div>
+        <div class="gd-war-s">Your share ${G.fmt(G.warShare() * 100, 2)}% of the war pool → <b>≈ ${G.fmt(G.warPerDay(), 2)} HENIUM</b> at the next farm day (in <b data-b="farmday">${G.fmtTime(G.farmDayLeft())}</b>). Win PvP battles in the Arena to raise it.</div></div>
       <button class="btn red lg gd-war-btn" data-a="gdBattle">${ui.img('ui/battle', '', '')}Battle</button>
     </div>
     <div class="gd-cards">
-      <div class="gd-card"><span>Battle Tickets</span><b>${S.battle.tickets} / ${D.pvpTickets}</b><small>refill over time</small></div>
+      <div class="gd-card"><span>Battle Tickets</span><b>${S.battle.tickets} / ${D.pvpTickets}</b><small>${S.battle.tickets < D.pvpTickets ? `next in <span data-b="btTicket">${G.fmtTime(D.pvpTicketTime - S.battle.tt)}</span>` : 'full'}</small></div>
       <div class="gd-card"><span>Squad Power</span><b>${num(G.squadPower())}</b><small>from your Mining Team</small></div>
       <div class="gd-card"><span>Battles Won</span><b>${num(S.stats.wins)}</b><small>PvE and PvP</small></div>
     </div>
@@ -8542,7 +8844,7 @@ function warsHTML() {
     <div class="gd-rules">
       <div class="gd-rule win"><b>Win</b><span>+${D.rules.pvp.pts[0]} to +${D.rules.pvp.pts[1]} war points per PvP victory. They also count as your guild contribution, and pay your share of the daily HENIUM war pool.</span></div>
       <div class="gd-rule lose"><b>Lose</b><span>−${D.rules.pvp.lose} war points. Build a stronger Mining Team before you attack.</span></div>
-      <div class="gd-rule"><b>Cool-down</b><span>War points drop ${Math.round(D.rules.warDecay * 100)}% at every game-day rollover, so keep fighting to hold your share.</span></div>
+      <div class="gd-rule"><b>Cool-down</b><span>War points drop ${Math.round(D.rules.warDecay * 100)}% at every farm day (next in <span data-b="farmday">${G.fmtTime(G.farmDayLeft())}</span>), so keep fighting to hold your share.</span></div>
       <div class="gd-rule"><b>Tickets</b><span>Each PvP battle costs a ticket. You hold up to ${D.pvpTickets}; one refills every ${G.fmtTime(D.pvpTicketTime)}.</span></div>
     </div>`;
 }
@@ -8567,8 +8869,9 @@ function zoneHTML() {
     <div class="gd-zone-art" style="background-image:url(${G.img('bg/map')})"><div class="gd-zone-tag">${ui.img('ui/guild', '', '')}<div><div class="gd-kicker">Guild Zone</div><b>Deep Core</b></div><span class="gd-zone-lv">Lv. ${lv}</span></div></div>
     <div class="gd-zb">${ui.icon('heniumOre', 30)}<span class="gd-zb-t">Henium Ore yield</span><b class="good">+${h}%</b><span class="gd-zb-n">→ +${h2}%</span></div>
     <div class="gd-zb">${ui.icon('rareEarth', 30)}<span class="gd-zb-t">Rare Earth yield</span><b class="good">+${r}%</b><span class="gd-zb-n">→ +${r2}%</span></div>
+    <div class="gd-zb">${ui.icon('henium', 30)}<span class="gd-zb-t">Refinery power</span><b class="good">+${Math.round(D.rules.guildZone.refine * 100 * (lv - 1))}%</b><span class="gd-zb-n">→ +${Math.round(D.rules.guildZone.refine * 100 * lv)}%</span></div>
     <div class="gd-zone-foot"><div class="gd-zone-cost"><span class="dim">Expand to Lv. ${lv + 1}</span>${ui.cost(cost, 1, 18)}</div>
-      <button class="btn green" data-a="gdExpand" data-need="${ui.need(cost)}">Expand</button></div>
+      <button class="btn green" data-a="gdExpand" data-need="${ui.need(cost)}">Expand</button>${ui.miss(cost)}</div>
   </section>`;
 }
 
@@ -8580,10 +8883,11 @@ function licenseHTML() {
     <div class="gd-lic-t">Required to break into the <b>${CORE.name}</b> (depth ${CORE.from}–${CORE.to}).</div>
     ${chk(lvOk, `Guild Lv. ${LICENSE_LV} <span class="dim">(yours: Lv. ${g.lv})</span>`)}
     ${chk(own, 'Guild License')}
-    ${refLv ? chk(refOk, `Henium Refinery Lv. ${refLv} <span class="dim">(also needed to dig)</span>`) : ''}
+    ${refLv ? chk(refOk, `Henium Refinery Lv. ${refLv} <span class="dim">(also needed to dig · yours: Lv. ${S.factories.refinery.lv})</span>`) : ''}
+    ${!lvOk ? `<div class="gd-lic-how">Your guild levels up by completing guild projects (Projects tab): donate to finish them faster.</div>` : ''}
     ${own ? `<div class="gd-lic-ok">Your mine is licensed for the ${CORE.name}.</div>`
       : `<div class="gd-lic-buy"><div class="gd-zone-cost"><span class="dim">Price</span>${ui.cost(D.licenseCost, 1, 18)}</div>
-        <button class="btn gold ${lvOk ? '' : 'cant'}" data-a="gdLicense" ${lvOk ? `data-need="${ui.need(D.licenseCost)}"` : ''}>Buy License</button></div>`}
+        <button class="btn gold ${lvOk ? '' : 'cant'}" data-a="gdLicense" ${lvOk ? `data-need="${ui.need(D.licenseCost)}"` : ''}>Buy License</button>${ui.miss(D.licenseCost)}</div>`}
   </section>`;
 }
 
@@ -8611,15 +8915,16 @@ ui.handlers.gdLicense = (el) => {
   const r = G.act.buyLicense();
   if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
   G.sfx('level');
-  ui.toast('Guild License acquired! The Core Zone can be opened.', 'good', 'ui/trophy');
+  const ref = G.S.factories.refinery.lv, need = CORE.gate.refineryLv || 0;
+  ui.toast(ref >= need ? 'Guild License acquired! You can now dig into the Core Zone.' : `Guild License acquired! The Core Zone also needs the Henium Refinery at Lv. ${need} (yours: Lv. ${ref}).`, 'good', 'ui/trophy', 4);
   ui.render();
 };
 ui.handlers.gdBattle = () => {
-  if (ui.views.battle) ui.go('battle');
+  if (ui.views.battle) { G.battleMode = 'pvp'; ui.go('battle'); }
   else { ui.toast('The Battle arena is not open yet', 'bad', 'ui/battle'); G.sfx('err'); }
 };
 
-const sigOf = () => { const g = G.S.guild; return [g.proj, g.lv, g.members, g.bonus, g.license, g.zoneLv].join(); };
+const sigOf = () => { const g = G.S.guild; return [g.proj, g.lv, g.members, g.bonus, g.license, g.zoneLv, g.warPts, Math.floor(g.contrib), G.S.battle.tickets].join(); };
 ui.views.guild = {
   render(el) {
     sig = sigOf();
@@ -9095,7 +9400,7 @@ function earnHTML() {
       ui.bar(0, 'gold dx-sb', ' ', 'data-b="dxBar:war"'),
       `<b class="dx-pur">+<span data-b="dxE:warDay"></span></b> HENIUM at the next day rollover`,
       `War points cool down ${Math.round(D.rules.warDecay * 100)}% every day: keep raiding rival guilds to hold your share.`,
-      `<button class="btn sm red" data-a="nav" data-args='["battle"]'>${ui.img('ui/battle', '', '')}Raid rival guilds</button>`) +
+      `<button class="btn sm red" data-a="gdBattle">${ui.img('ui/battle', '', '')}Raid rival guilds</button>`) +
     card('hunt', ui.img(nb ? 'monster/' + nb.mon : 'ui/trophy', 'dx-earn-art', ''), 'Monster hunts', '10% · fighting', '',
       `<span>Your hunt points <b data-b="dxE:hunt"></b></span><span>Other hunters <b data-b="dxE:worldHunt"></b></span>`,
       ui.bar(0, 'green dx-sb', ' ', 'data-b="dxBar:hunt"'),
@@ -9109,10 +9414,10 @@ function sinksHTML() {
     : `From depth 21 on, every new level costs HENIUM (${D.digCost(21).henium}+)`;
   const rows = [
     ['ui/mines', 'Digging below depth 21', dig, 'mines'],
-    ['ui/factories', 'Building levels 5+', `Lv. 5 → 6 costs ${D.factoryUpCost(f, 5).henium}, Lv. 9 → 10 costs ${D.factoryUpCost(f, 9).henium} HENIUM`, 'factories'],
+    ['ui/factories', 'Building upgrades', `the Henium Refinery from Lv. 1 → 2 (${D.factoryUpCost(f, 1).henium} HENIUM, up to ${G.fmtFull(D.factoryUpCost(f, 9).henium)} for Lv. 10); other buildings from Lv. 5 → 6 (${D.factoryUpCost(D.factories[0], 5).henium}, up to ${D.factoryUpCost(D.factories[0], 9).henium})`, 'factories'],
     ['ui/chikns', 'Buying Chikn NFTs', `${D.buyNft.cost.henium} HENIUM per NFT, rare or better`, 'chikns'],
     ['ui/guild', 'Guild license & zone', `${g.license ? 'License owned' : `License ${D.licenseCost.henium} HENIUM`} · zone Lv. ${g.zoneLv + 1}: ${D.guildZoneCost(g.zoneLv).henium} HENIUM`, 'guild'],
-    ['ui/timer', 'Speed-ups', `${G.speedCost(60)} HENIUM per minute skipped (digs and builds cost double; refinery batches can't be rushed)`, 'factories'],
+    ['ui/timer', 'Speed-ups', `1 HENIUM per started 10 minutes skipped (digs and builds cost double; refinery batches can't be rushed)`, 'factories'],
     ['ui/dex', 'Every DEX swap', `A third of the ${pct(G.dexFee(), 3)} fee is burned`, null],
   ];
   return rows.map(([ic, t, s, v]) => `<${v ? `button class="dx-sink" data-a="nav" data-args='["${v}"]'` : 'div class="dx-sink"'}>${ui.img(ic, 'dx-sink-ic', '')}
@@ -9133,7 +9438,7 @@ function heniumHTML() {
           <div class="dx-fact"><span>Hard cap</span><b>21M</b></div>
           <div class="dx-fact"><span>Mined so far</span><b data-b="dxH:minedS"></b></div>
           <div class="dx-fact"><span>World emission</span><b data-b="dxH:emis"></b></div>
-          <div class="dx-fact"><span>Next halving in</span><b data-b="dxH:toNextS"></b></div>
+          <div class="dx-fact"><span>Next halving</span><b data-b="dxH:toNextS"></b></div>
         </div></div>
       <div class="dx-hp"><div class="dx-hp-h">1 HENIUM is worth</div>
         <div class="dx-hp-r">${ui.icon('eth', 26)}<b data-b="dxPx:henium,eth"></b><span>ETH</span></div>
@@ -9262,8 +9567,8 @@ ui.binders.dxH = (el, k) => {
     emis: () => `${G.fmt(E, 1)} / day`,
     epoch: () => `${e + 1} of ${D.supply.halvings.length + 1}`,
     toNext: () => (last ? `${G.fmtFull(Math.floor(cap - w))} left to mine` : `${G.fmtFull(Math.ceil(next - w))} HENIUM to go`),
-    toNextS: () => (last ? 'final epoch' : G.fmt(next - w)),
-    eta: () => (w >= cap ? 'All 21M are mined: no new HENIUM, ever' : E > 0 ? `≈ ${G.fmtFull(Math.ceil((next - w) / E))} game days at today's emission` : ''),
+    toNextS: () => (last ? 'final epoch' : `${G.nextHalvingDate()} · in ${G.fmtFull(Math.ceil(G.nextHalvingIn() / 86400))} days`),
+    eta: () => (w >= cap ? 'All 21M are mined: no new HENIUM, ever' : `on ${G.nextHalvingDate()}, in ${G.fmtFull(Math.ceil(G.nextHalvingIn() / 86400))} days (every ${G.fmtFull(D.supply.halvingDays)} days)`),
     sr: () => G.fmt(E * sp.refinery, 1), sw: () => G.fmt(E * sp.war, 1), sh: () => G.fmt(E * sp.boss, 1),
   }[k];
   if (k === 'next') setH(el, last ? 'Final epoch: <b>no more halvings</b>' : `Next halving at <b>${G.fmtFull(next)}</b>`);
@@ -9504,7 +9809,7 @@ function titleHTML() {
     <div class="ex-chips">
       <span class="ex-chip">${ui.img('ui/chikns', '', '')}Idle <b>${idle}</b></span>
       <span class="ex-chip">${ui.img('ui/timer', '', '')}Exploring <b>${out}</b></span>
-      ${ready ? `<span class="ex-chip ex-chip-gold">${ui.img('prop/chest', '', '')}Ready <b>${ready}</b></span>` : ''}
+      ${ready ? `<button type="button" class="ex-chip ex-chip-gold" data-a="exClaim" data-args='[${S.exps.find((e) => e.done).id}]' title="Claim the loot">${ui.img('prop/chest', '', '')}Ready <b>${ready}</b> · Claim</button>` : ''}
     </div>
   </div>`;
 }
@@ -9534,7 +9839,9 @@ function mapHTML() {
 
 function siteHTML(s) {
   const lk = isLocked(s), rc = RISK_C[s.riskName] || '#fff', ri = RISKS.indexOf(s.riskName);
-  const rew = Object.entries(s.r).map(([r, [a, b]]) => `<div class="ex-rw">${ui.icon(r, 32)}<div class="ex-rw-t"><span>${D.res[r].name}</span><b>${ui.amt(r, a)}–${ui.amt(r, b)}</b></div></div>`).join('');
+  const X = D.rules.exp, k1 = X.base + X.per; // a lone Chikn's loot multiplier (more Chikns, power and Explorers raise it)
+  const rew = Object.entries(s.r).map(([r, [a, b]]) => `<div class="ex-rw">${ui.icon(r, 32)}<div class="ex-rw-t"><span>${D.res[r].name}</span><b>${ui.amt(r, Math.max(1, Math.round(a * k1)))}–${ui.amt(r, Math.round(b * k1))}+</b></div></div>`).join('')
+    + `<div class="ex-rw">${ui.icon('feed', 32)}<div class="ex-rw-t"><span>FEED, ${Math.round(X.feed * 100)}%+ chance</span><b>${X.feedAmt[0]}–${X.feedAmt[1]}</b></div></div>`;
   return `<section class="panel ex-site ${s.event ? 'ex-site-ev' : ''}" style="--rc:${rc}">
     ${s.event ? `<div class="ex-ribbon">${ui.img('ui/timer', '', '')}${veinLive() ? `Limited event · ends in <b data-b="until:${G.S.live.until}"></b>` : 'Limited event · ended'}</div>` : ''}
     <div class="ex-site-top">
@@ -9549,7 +9856,7 @@ function siteHTML(s) {
       <div class="ex-fact ${lk ? 'ex-fact-bad' : ''}">${ui.img(lk ? 'ui/lock' : 'ui/trophy', '', '')}<span>Requires</span><b>Lv. ${s.lv}</b></div>
       <div class="ex-fact"><i class="ex-cross" aria-hidden="true">✚</i><span>Injury</span><b style="color:${riskColor(s.risk)}">${pctTxt(s.risk)}</b></div>
     </div>
-    <div class="ex-sub">Possible rewards <small>(more with a bigger, stronger team)</small></div>
+    <div class="ex-sub">Possible rewards <small>(for one Chikn; a bigger, stronger team and Explorers bring more)</small></div>
     <div class="ex-rws">${rew}</div>
   </section>`;
 }
@@ -9729,7 +10036,7 @@ const G = window.G, D = G.D, ui = G.ui, esc = ui.esc;
 const now = () => G.now(); // the game clock (moves faster in test mode)
 const STEP = 450; // ms per battle round
 
-let mode = 'pve'; // 'pve' | 'pvp'
+let mode = 'pve'; // 'pve' | 'pvp' (G.battleMode = 'pvp' before ui.go('battle') opens the PvP tab)
 let sig = '';     // state signature of the last render
 let run = null;   // running battle animation
 
@@ -9761,7 +10068,9 @@ function titleHTML() {
     <div class="bt-chips">
       <span class="bt-chip">${ui.img('ui/trophy', '', '')}Wins <b>${G.fmtFull(S.stats.wins)}</b></span>
       <span class="bt-chip">${ui.img('monster/golem', '', '')}Stages <b>${S.battle.cleared}/${D.stages.length}</b></span>
-      <span class="bt-chip">${ui.img('ui/guild', '', '')}War pts <b>${G.fmtFull(S.guild.warPts)}</b></span>
+      <span class="bt-chip" title="Your share of the daily guild-war pool (paid at the next farm day)">${ui.img('ui/guild', '', '')}War pts <b>${G.fmtFull(S.guild.warPts)}</b> <small>≈ ${G.fmt(G.warPerDay(), 2)} HENIUM/day</small></span>
+      <span class="bt-chip" title="Hunt points from PvE wins, creatures and bandits: your share of the daily monster-hunt pool">${ui.img('monster/bat', '', '')}Hunt pts <b>${G.fmtFull(S.hunt || 0)}</b> <small>≈ ${G.fmt(G.huntPerDay(), 2)} HENIUM/day</small></span>
+      <span class="bt-chip" title="War and hunt payouts arrive at every farm day; points cool down then">${ui.img('ui/timer', '', '')}Payout in <b data-b="farmday">${G.fmtTime(G.farmDayLeft())}</b></span>
     </div>
   </div>`;
 }
@@ -9840,7 +10149,7 @@ function stageHTML(st, i) {
       <div class="bt-st-name">${esc(st.name)}</div>
       <div class="bt-st-row"><span class="bt-st-pow">${sw()}${G.fmtFull(st.power)}</span><span class="bt-ch ${tier(ch)}">${pct(ch)} win</span></div>
       <div class="bt-chbar ${tier(ch)}"><i style="width:${ch * 100}%"></i></div>
-      <div class="bt-st-rew">${ui.rew(st.r, 18)}${next ? '<span class="bt-x2">×2 first clear</span>' : ''}</div>
+      <div class="bt-st-rew">${ui.rew(st.r, 18)}${next ? '<span class="bt-x2">×2 first clear</span>' : ''}${next && st.first ? ui.rew(st.first, 18) : ''}<span class="bt-hunt" title="Hunt points: your share of the daily monster-hunt HENIUM">+${D.rules.pveHunt(i)} hunt pts</span></div>
       ${foot}
     </div>
   </article>`;
@@ -9872,7 +10181,8 @@ function pvpHTML() {
     <div class="bt-pvp-top">
       <div class="bt-box"><div class="bt-lbl">Battle tickets</div><div class="bt-tks">${tk}<b>${B.tickets}/${D.pvpTickets}</b></div>
         <div class="bt-refill">${B.tickets < D.pvpTickets ? `${ui.img('ui/timer', '', '')}Next ticket in <b data-b="btTicket">${G.fmtTime(D.pvpTicketTime - B.tt)}</b>` : 'Tickets full. Go fight!'}</div></div>
-      <div class="bt-box"><div class="bt-lbl">War points</div><div class="bt-wp">${ui.img('ui/trophy', '', '')}<b>${G.fmtFull(S.guild.warPts)}</b></div><div class="bt-refill">Earned for ${esc(S.guild.name)}</div></div>
+      <div class="bt-box"><div class="bt-lbl">War points</div><div class="bt-wp">${ui.img('ui/trophy', '', '')}<b>${G.fmtFull(S.guild.warPts)}</b></div>
+        <div class="bt-refill">Share ${G.fmt(G.warShare() * 100, 2)}% → <b>≈ ${G.fmt(G.warPerDay(), 2)} HENIUM</b> in <b data-b="farmday">${G.fmtTime(G.farmDayLeft())}</b>, then −${Math.round(D.rules.warDecay * 100)}%</div></div>
       <div class="bt-box bt-terms"><div class="bt-lbl">Victory</div><div class="bt-tw"><b class="gain">+${pv.pts[0]}–${pv.pts[1]} war pts</b> ${Object.entries({ henium: pv.henium, ...pv.loot(S.depth) }).map(([r, v]) => `${ui.icon(r, 18)}${ui.amt(r, v)}`).join(' ')}</div>
         <div class="bt-lbl">Defeat</div><div class="bt-tl">−${pv.lose} war pts</div></div>
     </div>
@@ -9987,6 +10297,7 @@ function finish(R) {
 // ---------- view ----------
 ui.views.battle = {
   render(el) {
+    if (G.battleMode) { mode = G.battleMode; G.battleMode = null; }
     el.innerHTML = `${titleHTML()}
       <div class="bt-head">${heroHTML()}${squadHTML()}</div>
       ${modesHTML()}
@@ -10013,7 +10324,7 @@ ui.handlers.btDone = () => ui.closeModal();
 })();
 
 // ---- view-events.js ----
-// Events screen: Season 1 pass + reward track, daily missions, live events & hazards, and the 6-month journey.
+// Events screen: the season pass + reward track, daily missions, live events & hazards, and the 6-month journey.
 (() => {
 const G = window.G, D = G.D, ui = G.ui, esc = ui.esc;
 const now = () => G.now(); // the game clock (moves faster in test mode)
@@ -10087,9 +10398,9 @@ function seasonHTML() {
   const next = max ? null : rewOf(s.lv + 1);
   return `<section class="ev-season" style="background-image:linear-gradient(90deg,rgba(21,26,70,.15) 0%,rgba(21,26,70,.82) 34%,rgba(21,26,70,.95) 70%,rgba(21,26,70,.6) 100%),url(${G.img('bg/floor-henium')})">
     <div class="ev-s-name">
-      <div class="ev-s-kick">${ui.img('ui/trophy', '', '')}Season 1</div>
+      <div class="ev-s-kick">${ui.img('ui/trophy', '', '')}Season ${s.no || 1}</div>
       <h2 class="ev-s-title">Deep Veins</h2>
-      <div class="ev-s-ends">${ui.img('ui/timer', '', '')}Ends in <b data-b="until:${s.ends}">${G.fmtTime((s.ends - now()) / 1000)}</b></div>
+      <div class="ev-s-ends">${ui.img('ui/timer', '', '')}Ends in <b data-b="until:${s.ends}">${G.fmtTime((s.ends - now()) / 1000)}</b>${cl.length ? ` · <span class="ev-s-unc" title="Unclaimed rewards are paid out automatically when the season ends">${cl.length} unclaimed</span>` : ''}</div>
     </div>
     <div class="ev-s-prog">
       <div class="ev-s-row"><span class="ev-lv"><small>Lv.</small>${s.lv}</span>${ui.bar(seasonFrac() * 100, 'blue lg sp', ' ', 'data-b="evSXp"')}<span class="ev-lv ev-lv-next">${max ? '★' : `<small>Lv.</small>${s.lv + 1}`}</span></div>
@@ -10217,8 +10528,8 @@ function journeyHTML() {
       <header class="ev-mo-h"><span class="ev-mo-n">Month ${i + 1}</span><span class="ev-mo-name">${esc(j.name)}</span></header>
       <div class="ev-mo-art" style="background-image:url(${G.img(bg)})">${ui.img(art, 'ev-mo-sp', '')}
         ${st === 'done' ? '<span class="ev-mo-badge ev-mo-badge-done">✔ Complete</span>' : st === 'cur' ? '<span class="ev-mo-badge ev-mo-badge-cur">You are here</span>' : `${ui.img('ui/lock', 'ev-mo-lock', 'Locked')}`}</div>
-      <ul class="ev-mo-items">${j.items.map((t) => `<li><span class="ev-mo-cb">${st === 'done' ? '✔' : ''}</span>${esc(t)}</li>`).join('')}</ul>
-      <div class="ev-mo-goal">${ui.img(goal, '', '')}<span>Goal: ${esc(j.goal)}</span>${st === 'done' ? '<b>✔</b>' : ''}</div>
+      <ul class="ev-mo-items">${j.items.map((t) => `<li><span class="ev-mo-cb">${st === 'done' ? '✔' : '·'}</span>${esc(t)}</li>`).join('')}</ul>
+      <div class="ev-mo-goal">${ui.img(goal, '', '')}<span>Goal: ${esc(j.goal)}${j.prog && st !== 'done' ? (() => { const [a, b, w] = j.prog(S); return `<small class="ev-mo-prog">${G.fmtFull(Math.min(a, b))} / ${G.fmtFull(b)} ${esc(w)}</small>`; })() : ''}</span>${st === 'done' ? '<b>✔</b>' : ''}</div>
       ${i < D.journey.length - 1 ? '<span class="ev-mo-arrow" aria-hidden="true">❯</span>' : ''}
     </article>`;
   }).join('');
@@ -11712,12 +12023,61 @@ document.addEventListener('scroll', (e) => {
 }, { passive: true, capture: true });
 })();
 
+// ---- music.js ----
+// Background music: one track per screen group, crossfaded on screen changes. The MP3s live next to the page
+// (music/*.mp3, copied by build.mjs), load only when music plays, and start after the first tap or key (browsers block
+// autoplay). Settings: S.settings.music (on/off) and S.settings.musicVol (0–1).
+(() => {
+const G = window.G, ui = G.ui;
+const TRACKS = {
+  mines: 'music/main-theme.mp3',          // the playful marimba & banjo main theme
+  mines2: 'music/playful-mines-2.mp3',
+  farm: 'music/playful-farm-2.mp3',
+  factories: 'music/playful-factories.mp3',
+};
+const BY_VIEW = { mines: 'mines', factories: 'factories', crafting: 'factories', chikns: 'farm', farm: 'farm', guild: 'mines2', dex: 'mines2',
+  expeditions: 'mines2', battle: 'mines2', events: 'mines', wiki: 'mines' };
+const FADE = 1.4; // seconds
+let ready = false, cur = null, curKey = '';
+const on = () => !!(G.S && G.S.settings && G.S.settings.music !== false);
+const vol = () => (G.S && G.S.settings && typeof G.S.settings.musicVol === 'number' ? G.S.settings.musicVol : 0.45);
+
+function fade(a, to, done) {
+  const from = a.volume, t0 = performance.now();
+  const step = (t) => {
+    const k = Math.min(1, (t - t0) / (FADE * 1000));
+    a.volume = Math.max(0, Math.min(1, from + (to - from) * k));
+    if (k < 1) requestAnimationFrame(step); else if (done) done();
+  };
+  requestAnimationFrame(step);
+}
+// play the track for this screen (crossfade from the one that is playing)
+G.music = (view = ui.cur) => {
+  if (!ready || G.WIKI_ONLY) return;
+  const key = BY_VIEW[view] || 'mines';
+  if (!on()) { if (cur) { const old = cur; cur = null; curKey = ''; fade(old, 0, () => old.pause()); } return; }
+  if (key === curKey && cur) { cur.volume = vol(); return; }
+  const old = cur, a = new Audio(TRACKS[key]);
+  a.loop = true; a.volume = 0; cur = a; curKey = key;
+  a.play().then(() => fade(a, vol())).catch(() => { /* blocked or missing file: stay silent */ });
+  if (old) fade(old, 0, () => old.pause());
+};
+G.musicState = () => ({ ready, track: curKey, playing: !!cur && !cur.paused, volume: cur ? cur.volume : 0 }); // for tests
+G.musicVolume = (v) => { if (G.S) G.S.settings.musicVol = v; if (cur) cur.volume = on() ? v : 0; };
+// start after the first tap or key, then follow the screens
+['pointerdown', 'keydown'].forEach((ev) => window.addEventListener(ev, () => { if (!ready) { ready = true; G.music(); } }, { capture: true }));
+const go = ui.go;
+ui.go = (name) => { go(name); G.music(name); };
+document.addEventListener('visibilitychange', () => { if (cur) { if (document.hidden) cur.pause(); else if (on()) cur.play().catch(() => {}); } });
+})();
+
 // ---- main.js ----
 // Boot: load or create a save, offline progress, main loop, global event feedback.
 (() => {
 const G = window.G, D = G.D, ui = G.ui;
 
 G.start = (S) => {
+  if (G.S && G.S.settings) S.settings = { ...S.settings, ...G.S.settings }; // keep sound and test speed
   G.S = S;
   G.save();
   ui.renderShell();
@@ -11725,19 +12085,24 @@ G.start = (S) => {
 };
 
 const note = (n) => {
-  const S = G.S;
-  S.notes.unshift({ text: n.text, icon: n.icon || null, t: G.now(), read: false });
+  const S = G.S, t = G.now(), last = S.notes[0];
+  if (G.offLog) { S.notes.unshift({ text: n.text, icon: n.icon || null, t, read: false }); if (S.notes.length > 40) S.notes.length = 40; return; } // while catching up: the bell only, the report tells the story
+  // the same message again within a minute: count it instead of flooding the bell and the screen
+  if (last && last.text === n.text && t - last.t < 60e3) { last.n = (last.n || 1) + 1; last.t = t; last.read = false; return; }
+  S.notes.unshift({ text: n.text, icon: n.icon || null, t, read: false });
   if (S.notes.length > 40) S.notes.length = 40;
   ui.toast(n.text, n.bad ? 'bad' : n.good ? 'good' : '', n.icon || null, 3.4);
 };
+G.on('nestFull', () => note({ text: 'The nest is full: new eggs are being lost. Collect them!', icon: 'farm/nest', bad: true }));
 G.on('note', note);
 G.on('levelUp', (lv) => {
+  if (G.offLog) return; // levelled up while away: no toasts over the report
   G.sfx('level');
   ui.toast(`Level up! You reached Lv. ${lv} (+${D.rules.levelFeed(lv)} FEED)`, 'good', 'ui/gift', 3.6);
   if (lv === 15 || lv === 30) ui.toast('A new Mining Team slot is open!', 'good', 'ui/chikns');
   if (lv === D.rules.specLv && !G.S.spec) setTimeout(() => ui.handlers.spec(), 700);
 });
-G.on('seasonUp', (lv) => ui.toast(`Season level ${lv}! Claim your reward in Events.`, 'purple', 'ui/trophy'));
+G.on('seasonUp', (lv) => !G.offLog && ui.toast(`Season level ${lv}! Claim your reward in Events.`, 'purple', 'ui/trophy'));
 G.on('craftDone', (m) => {
   const d = D.machineById(m.type);
   note({ text: `${d.name} crafted! Deploy it on a mine floor.`, icon: 'machine/' + m.type, good: true });
@@ -11766,6 +12131,8 @@ G.on('hazard', (h) => {
 });
 G.on('hazardEnd', () => { if ((ui.cur === 'mines' || ui.cur === 'events') && !ui.modalOpen()) ui.render(); });
 G.on('built', () => { if (['mines', 'farm'].includes(ui.cur) && !ui.modalOpen()) ui.render(); });
+G.on('dug', (d) => G.S.notes.unshift({ text: `Reached depth ${d.depth}${d.newZone ? `: the ${d.newZone.name} is open` : ''}`, icon: 'ui/mines', t: G.now(), read: false }));
+G.on('built', (b) => G.S.notes.unshift({ text: `${b.f.name} ${b.from ? `upgraded to Lv. ${b.lv}` : 'is built'}`, icon: 'ui/factories', t: G.now(), read: false }));
 G.on('hungry', () => note({ text: 'Your Chikns are hungry and losing weight! Grind FEED in the Feed Mill or burn EGG for FEED.', icon: 'res/feed', bad: true }));
 G.on('farmDay', (day, offline) => { if (!offline && ui.cur === 'farm' && !ui.modalOpen()) ui.render(); });
 
@@ -11781,13 +12148,36 @@ function welcome() {
       { label: 'Load Showcase (Lv. 27)', cls: 'purple', fn: () => { G.start(G.newState('showcase')); ui.toast('Showcase save loaded: your mining empire at Lv. 27', 'good', 'ui/trophy'); } },
       { label: 'Start Mining!', cls: 'green lg' }] });
 }
-function showOffline(off) {
-  const rows = Object.entries(off.gains).sort((a, b) => b[1] - a[1]).slice(0, 8);
-  ui.modal({ title: 'Welcome back, MineMaster!', hero: 'chikn/miner',
-    html: `<p style="text-align:center;margin-top:0">Your chikns kept working for <b>${G.fmtTime(off.sec)}</b> while you were away.</p>
-      <div style="display:flex;justify-content:center">${ui.rew(Object.fromEntries(rows), 24)}</div>`,
-    actions: [{ label: 'Collect', cls: 'green lg', fn: () => G.sfx('coin') }] });
-}
+// "Welcome back": everything that happened while you were away, the farm and the problems first
+const FIRST = ['egg', 'feed', 'henium'];
+G.showAway = function showOffline(off) {
+  const S = G.S, row = (icon, html, btn = '') => `<div class="away-row">${icon}<div class="sp">${html}</div>${btn}</div>`;
+  const ic = (r) => ui.icon(r, 26), img = (k) => ui.img(k, 'ic', '').replace('class="ic"', 'class="ic" width="26" height="26"');
+  const rows = [];
+  if (!off.warp) rows.push(row(img('ui/timer'), off.sec > off.mineSec + 60
+    ? `You were away <b>${G.fmtTime(off.sec)}</b>. Your floors mined for <b>${G.fmtTime(off.mineSec)}</b> (they stop after ${D.rules.offlineH} hours away); factories, digs, the farm, rentals and the daily payouts ran the whole time.`
+    : `You were away <b>${G.fmtTime(off.sec)}</b>. Your mine, factories and farm kept working.`));
+  if (off.hungry) rows.push(row(ic('feed'), `<b class="away-bad">FEED ran out: your Chikns are hungry</b>${off.kgLost >= 0.5 ? ` and lost ${G.fmt(off.kgLost)} kg in total` : ''}. Grind FEED at the Feed Mill or burn EGG for FEED.`,
+    '<button class="btn sm green" data-a="exchangeDlg" data-args=\'["feed"]\'>Get FEED</button>'));
+  const nest = Math.floor(S.nest);
+  if (off.eggsLaid >= 0.5 || nest >= 1) rows.push(row(ic('egg'), `Your Chikns laid <b>${G.fmt(off.eggsLaid, 1)} EGG</b> into the nest${off.eggsLost >= 0.5 ? `. <b class="away-bad">The nest was full, so ${G.fmt(off.eggsLost, 1)} eggs were lost</b>: collect more often or upgrade the coop` : ''}.`));
+  if (off.feedUsed >= 0.5) rows.push(row(ic('feed'), `Your flock ate ${G.fmt(off.feedUsed, 1)} FEED.`));
+  if (off.expsBack > 0) rows.push(row(img('ui/expeditions'), `<b>${off.expsBack} expedition${off.expsBack > 1 ? 's are' : ' is'} back</b>: claim the loot.`, '<button class="btn sm gold" data-a="nav" data-args=\'["expeditions"]\'>Expeditions</button>'));
+  for (const l of off.log || []) rows.push(row(img(l.kind === 'built' ? 'ui/factories' : l.kind === 'dug' ? 'ui/mines' : l.kind === 'craft' ? 'ui/crafting' : l.kind === 'coal' ? 'res/coal' : 'ui/settings'),
+    l.kind === 'stopped' || l.kind === 'coal' ? `<span class="away-bad">${ui.esc(l.text)}</span>` : ui.esc(l.text)));
+  if (off.rent >= 0.05) rows.push(row(ic('egg'), `Your Chikns on rent earned you <b>${G.fmt(off.rent, 1)} EGG</b>.`));
+  if (off.left && off.left.length) rows.push(row(img('ui/chikns'), `${off.left.map(ui.esc).join(', ')} went back to ${off.left.length > 1 ? 'their owners' : 'its owner'} (rental ended).`, '<button class="btn sm green" data-a="hire">Rent a Chikn</button>'));
+  if (off.war[0] !== off.war[1] || off.hunt[0] !== off.hunt[1]) rows.push(row(img('ui/battle'), `War points ${G.fmtFull(off.war[0])} → <b>${G.fmtFull(off.war[1])}</b>, hunt points ${G.fmtFull(off.hunt[0])} → <b>${G.fmtFull(off.hunt[1])}</b> (they cool down every day: fight to keep your share of the daily HENIUM).`));
+  const gains = Object.entries(off.gains).sort((a, b) => (FIRST.indexOf(a[0]) + 1 || 99) - (FIRST.indexOf(b[0]) + 1 || 99) || b[1] - a[1]);
+  const chips = gains.map(([r, v]) => `<span class="away-g">${ui.icon(r, 22)}<b>+${ui.amt(r, v)}</b><small>${D.res[r].name}</small></span>`).join('');
+  if (off.hungry) G.emit('note', { text: 'Your Chikns are hungry and losing weight! Grind FEED in the Feed Mill or burn EGG for FEED.', icon: 'res/feed', bad: true });
+  ui.modal({ title: off.warp ? `Skipped ${G.fmtTime(off.sec)}` : 'Welcome back, MineMaster!', hero: off.warp ? '' : 'chikn/miner', wide: true,
+    html: `<div class="away">${rows.join('')}${chips ? `<div class="away-h">You got</div><div class="away-gains">${chips}</div>` : ''}</div>`,
+    actions: nest >= 1 ? [{ label: `Collect ${nest} EGG from the nest`, cls: 'green lg', fn: () => { if (G.act.collectNest().ok) G.sfx('coin'); ui.render(); } }] : [{ label: 'Continue', cls: 'green lg' }] });
+};
+const showOffline = G.showAway;
+// a short tab switch only gets a report when something notable happened
+const worthTelling = (o) => !!o && (o.sec >= 300 || (o.log && o.log.length) || o.hungry || o.expsBack > 0 || o.eggsLost >= 0.5 || (o.left && o.left.length));
 
 function bootWiki() {
   G.save = () => {};
@@ -11805,7 +12195,7 @@ function boot() {
   if (saved) off = G.offline((G.now() - G.S.last) / 1000);
   ui.go('mines');
   if (!saved) welcome();
-  else if (off && Object.keys(off.gains).length) showOffline(off);
+  else if (worthTelling(off)) showOffline(off);
 
   let last = performance.now(), acc = 0, saveAcc = 0;
   const loop = (t) => {
@@ -11823,7 +12213,7 @@ function boot() {
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { G.save(); return; }
     const gap = (G.now() - G.S.last) / 1000;
-    if (gap >= 30) { const o = G.offline(gap); if (o && Object.keys(o.gains).length) showOffline(o); ui.render(); }
+    if (gap >= 30) { const o = G.offline(gap); if (worthTelling(o)) showOffline(o); ui.render(); }
     else if (gap > 1) G.tick(gap);
     last = performance.now();
   });
