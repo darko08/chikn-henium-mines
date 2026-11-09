@@ -23,7 +23,7 @@ const speedOf = (lv) => 1 / D.factorySpeed(lv);
 const recOf = (f, rid) => f.recipes.find((r) => r.id === rid) || f.recipes[0];
 const slotsUp = D.fUpgrades.find((u) => u.id === 'slots');
 const maxSlots = () => G.jobSlots() - G.S.fup.slots + (slotsUp ? slotsUp.max : 0);
-const queueFull = () => G.S.jobs.length >= G.jobSlots();
+const queueFull = (fid) => G.queueFull(fid); // the Feed Mill never takes a slot
 const plainImg = (key, cls = '') => ui.img(key, cls, '');
 const stOf = (fid) => G.S.factories[fid];
 const artLv = (fid) => Math.max(1, stOf(fid).lv); // an unbuilt building shows its Lv. 1 look (dimmed)
@@ -170,13 +170,28 @@ function headHTML() {
 }
 
 // ---------- factory cards ----------
+// what a building opens: the zone whose dig gate needs it (the refinery's level also gates the Core Zone)
+function gateNote(f) {
+  const S = G.S, out = [];
+  for (const z of D.zones) {
+    const g = z.gate;
+    if (!g || S.depth >= z.from) continue; // only zones still ahead of you
+    if (g.factory === f.id && S.factories[f.id].lv < 1) out.push(`<div class="fx-gate">🔒 Needed to dig into the ${esc(z.name)} (depth ${z.from})</div>`);
+    if (f.id === 'refinery' && g.refineryLv) {
+      const okLv = S.factories.refinery.lv >= g.refineryLv;
+      out.push(`<div class="fx-gate ${okLv ? 'fx-gate-ok' : ''}">${okLv ? '✔' : '🔒'} Lv. ${g.refineryLv} opens the ${esc(z.name)} (depth ${z.from})${g.license ? `, with a Guild License${S.guild.license ? ' (you have it)' : ' (Guild screen)'}` : ''}${okLv ? '' : ` · yours: Lv. ${S.factories.refinery.lv}`}</div>`);
+    }
+  }
+  return out.join('');
+}
+
 function recChip(f, rec, built, on) {
   const inp = built ? G.recipeIn(rec) : rec.in;
   const out = built ? G.recipeOut(f, rec) : rec.out;
-  const t = built ? rec.t * G.factorySpeed(f) : rec.t;
+  const t = built ? G.jobDur(f, rec) : rec.t; // refinery batches have a fixed length
   const have = (list) => list.map((r) => `<span class="fx-hv" title="${esc(D.res[r].name)} you have">${ui.icon(r, 15)}<b data-b="fxAmt:${r}">${G.fmt(G.S.res[r])}</b></span>`).join('');
   const stock = built || G.S.depth >= f.reqDepth
-    ? `<span class="fx-rc-have"><small>You have</small>${have(Object.keys(inp))}<span class="fx-arr">➜</span>${have(Object.keys(out))}</span>` : '';
+    ? `<span class="fx-rc-have"><small>You have</small>${have(Object.keys(inp))}<span class="fx-arr">➜</span>${have(Object.keys(out))}<small class="fx-batches">· enough for ${G.fmtFull(Math.floor(Math.min(...Object.entries(inp).map(([r, v]) => G.S.res[r] / Math.max(1e-9, v)))))} batch${Math.floor(Math.min(...Object.entries(inp).map(([r, v]) => G.S.res[r] / Math.max(1e-9, v)))) === 1 ? '' : 'es'}</small></span>` : '';
   const body = `<span class="fx-radio"></span><span class="fx-rc-nt"><b class="fx-rc-n">${esc(rec.name)}</b><span class="fx-rc-t" title="Time per batch">${plainImg('ui/timer')}${G.fmtTime(t)}</span></span>
     <span class="fx-rc-io">${ui.cost(inp, 1, 18)}<span class="fx-arr">➜</span>${ui.rew(out, 18)}</span>${stock}`;
   if (!built || f.recipes.length < 2) return `<div class="fx-rc ${built ? 'fx-on' : ''} fx-solo">${body}</div>`;
@@ -232,7 +247,7 @@ function supplyHTML() {
   return `<div class="fx-supply" data-b="fxSupply">
     <div class="fx-sup-h">${ui.icon('henium', 22)}<b>HENIUM supply</b><span class="tag p">Epoch ${G.epoch() + 1}</span><span class="fx-yield" ${ref ? `title="The whole world mints ${G.fmt(G.emission())} HENIUM a day in this epoch"` : ''}>${ref ? `${G.fmt(G.emission())}/day` : `Yield ×${G.halving()}`}</span></div>
     <div class="fx-sbar"><i class="fx-sfill" style="width:${w / cap * 100}%"></i>${marks}</div>
-    <div class="fx-sup-f"><span><b data-k="mined">${G.fmt(w)}</b> / ${G.fmt(cap)} mined</span><span>Next halving ${G.fmt(next)} · <b data-k="left">${G.fmt(Math.max(0, next - w))}</b> left</span></div>
+    <div class="fx-sup-f"><span><b data-k="mined">${G.fmt(w)}</b> / ${G.fmt(cap)} mined</span><span>Next halving ${G.nextHalvingDate()} (at ${G.fmt(next)}) · <b data-k="left">${G.fmt(Math.max(0, next - w))}</b> left</span></div>
     ${ref ? `<div class="fx-sup-f fx-sup-me"><span>Your refining share <b>${pctS(G.refShare())}</b></span><span>≈ <b>${G.fmt(G.refPerDay(), 2)}</b> HENIUM a day</span></div>` : ''}
   </div>`;
 }
@@ -275,7 +290,8 @@ function upgradeHTML(f, lv) {
       <div class="fx-upg-s">${f.id === 'refinery' && REF() ? `Power <em>${refPowAt(lv)} ➜ ${refPowAt(nx)}</em> · ≈ <em>${G.fmt(refDayAt(nx), 1)}</em> HENIUM/day`
         : `Speed <em>${x2(speedOf(nx))}</em> · Yield <em>${x2(D.factoryYield(nx))}</em>${f.id === 'feedmill' ? ` · Quota <em>${D.farm.millQuota(nx)}/day</em>` : ''}`}</div>
     </div>
-    <div class="fx-upg-f">${ui.cost(cost, 1, 16)}${ui.btn('▲ Upgrade', 'upgradeFactory', [f.id], 'gold sm fx-upbtn', cost, `title="Upgrade the ${esc(f.name)} to Lv. ${nx}: construction takes ${t}"`)}</div>
+    <div class="fx-upg-f">${ui.cost(cost, 1, 16)}${ui.btn('▲ Upgrade', 'upgradeFactory', [f.id], 'gold sm fx-upbtn', cost, `title="Upgrade the ${esc(f.name)} to Lv. ${nx}: construction takes ${t}${G.S.jobs.some((j) => j.f === f.id) ? '; its jobs pause until it is done' : ''}"`)}${ui.miss(cost)}</div>
+    ${G.S.jobs.some((j) => j.f === f.id) ? `<div class="fx-upg-warn">Its jobs pause during the ${t} construction${f.id === 'refinery' ? ', so it refines no HENIUM meanwhile' : ''}.</div>` : ''}
   </div>`;
 }
 
@@ -284,7 +300,7 @@ function buildHTML(f) {
   return `<div class="fx-upg fx-upg-build">
     <div class="fx-upg-m"><div class="fx-upg-h"><b>Build Lv. 1</b><span class="fx-bt" title="Construction time">${timer()}${t}</span></div>
       <div class="fx-upg-s">Construction takes time. Jobs can start once it stands.</div></div>
-    <div class="fx-upg-f">${ui.cost(f.build, 1, 16)}${ui.btn('🔨 Build', 'build', [f.id], 'green sm fx-upbtn', f.build, `title="Build the ${esc(f.name)}: construction takes ${t}"`)}</div>
+    <div class="fx-upg-f">${ui.cost(f.build, 1, 16)}${ui.btn('🔨 Build', 'build', [f.id], 'green sm fx-upbtn', f.build, `title="Build the ${esc(f.name)}: construction takes ${t}"`)}${ui.miss(f.build)}</div>
   </div>`;
 }
 
@@ -317,7 +333,7 @@ function cardHTML(f) {
       </div>
     </article>`;
   }
-  const built = lv > 0, rec = recOf(f, st.recipe), max = lv >= D.factoryMaxLv, full = queueFull(), j = !con && built && G.activeJob(f.id);
+  const built = lv > 0, rec = recOf(f, st.recipe), max = lv >= D.factoryMaxLv, full = queueFull(f.id), j = !con && built && G.activeJob(f.id);
   const inCost = G.recipeIn(rec), qBlock = built && quotaBlocked(f, rec), stop = !!con || full || qBlock;
   const why = con ? 'Jobs pause while the building is under construction' : full ? 'Production queue is full: wait for a job to finish or unlock a slot'
     : qBlock ? "Today's FEED quota is used up: it resets on the next farm day" : '';
@@ -330,8 +346,9 @@ function cardHTML(f) {
       ${stageHTML(f, !!j)}
       <div class="fx-status">${con ? conBox(f) : jobBox(f)}
         ${con ? '' : `<div class="fx-stats">${f.id === 'refinery' && REF()
-          ? stat('Power', G.fmt(G.myRefPower()), 'Refinery power: it decides your share of the HENIUM the world mints each day') + stat('Share', pctS(G.refShare()), 'Your share of the world refinery power')
-          : stat('Speed', x2(speedOf(lv)), 'Production speed from the factory level') + stat('Yield', x2(D.factoryYield(lv)), 'Output multiplier from the factory level')}</div>`}</div></div>
+          ? stat('Power', G.fmtFull(Math.round(G.myRefPower())), 'Refinery power: it decides your share of the HENIUM the world mints each day') + stat('Share', pctS(G.refShare()), 'Your share of the world refinery power')
+          : stat('Speed', x2(1 / G.factorySpeed(f)), 'Production speed: factory level × Efficiency upgrades × Operator Chikns × Industrialist') + stat('Yield', x2(D.factoryYield(lv)), 'Output multiplier from the factory level')}</div>`}</div></div>
+      ${gateNote(f)}
     <div class="fx-body">
       <div class="fx-recs">${f.recipes.map((r) => recChip(f, r, built, built && r.id === rec.id)).join('')}</div>
       ${built && f.id === 'refinery' ? supplyHTML() : ''}${built && f.id === 'feedmill' ? quotaHTML() : ''}
@@ -369,23 +386,34 @@ function jobTile(j) {
   const keys = Object.keys(out), single = keys.length === 1;
   const icon = single ? ui.icon(keys[0], 40) : bImg(f.id, artLv(f.id), 'fx-jt-fac', f.name);
   const amt = single ? '+' + ui.amt(keys[0], out[keys[0]]) : keys.length + ' outputs';
+  const waits = !active && !paused ? `Waits for the ${f.name} (one job at a time)` : '';
   const bar = paused ? ui.bar(active ? j.t / j.dur * 100 : 0, 'fx-pbar', '⏸ Paused · building', `title="The ${esc(f.name)} is under construction"`)
-    : ui.bar(active ? j.t / j.dur * 100 : 0, active ? 'green' : 'blue', active ? G.fmtTime(j.dur - j.t) : 'Queued', `data-b="job:${j.id}"`);
+    : ui.bar(active ? j.t / j.dur * 100 : 0, active ? 'green' : 'blue', active ? G.fmtTime(j.dur - j.t) : 'Queued', `data-b="job:${j.id}" ${waits ? `title="${esc(waits)}"` : ''}`);
   return `<div class="fx-jt ${paused ? 'fx-paused-t' : active ? 'fx-on' : 'fx-wait'}" style="--acc:${f.accent}">
     <div class="fx-jt-top"><span class="fx-jt-ic">${icon}</span><div class="fx-jt-name"><b>${esc(rec.name)}</b><small>${esc(f.name)} · ${amt}</small></div>
-      <button type="button" class="fx-x" data-a="cancelJob" data-args='[${j.id}]' title="Cancel job (full refund before it starts, ${Math.round(D.rules.refund * 100)}% after)" aria-label="Cancel ${esc(rec.name)} job">✕</button></div>
+      <button type="button" class="fx-x" data-a="fxCancel" data-args='[${j.id}]' title="Cancel job (full refund before it starts, ${Math.round(D.rules.refund * 100)}% after)" aria-label="Cancel ${esc(rec.name)} job">✕</button></div>
     ${bar}
-    <div class="fx-jt-btns"><button type="button" class="fx-rep ${j.repeat ? 'fx-on' : ''}" data-a="toggleRepeat" data-args='[${j.id}]' aria-pressed="${!!j.repeat}" title="Auto-repeat this job">⟳ <span class="fx-rep-w">Repeat</span> <span class="fx-rep-s">${j.repeat ? 'on' : 'off'}</span></button>${paused ? '' : speedBtn(j)}</div>
+    ${waits ? `<div class="fx-jt-wait">${esc(waits)}</div>` : ''}
+    <div class="fx-jt-btns"><button type="button" class="fx-rep ${j.repeat ? 'fx-on' : ''}" data-a="toggleRepeat" data-args='[${j.id}]' aria-pressed="${!!j.repeat}" title="Auto-repeat this job">⟳ <span class="fx-rep-w">Repeat</span> <span class="fx-rep-s">${j.repeat ? 'on' : 'off'}</span></button>${paused ? '' : speedBtn(j) || (j.f === 'refinery' ? '<span class="fx-norush" title="Refinery batches pay your share of the HENIUM emission for the time they run">1 h batch · can\'t be rushed</span>' : '')}</div>
   </div>`;
 }
 
+ui.handlers.fxCancel = (el, e, id) => {
+  const j = G.S.jobs.find((x) => x.id === id);
+  if (!j) return;
+  const started = j.t > 0, k = started ? D.rules.refund : 1, back = Object.entries(j.paid || {}).map(([r, v]) => `${G.fmt(v * k)} ${D.res[r].name}`).join(', ');
+  if (started && !confirm(`Cancel this job? It already started, so you get back only ${Math.round(k * 100)}% of its inputs (${back}).`)) return;
+  const r = G.act.cancelJob(id);
+  if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
+  ui.toast(`Job cancelled: ${back || 'nothing'} refunded`, '', 'ui/timer'); G.sfx('click'); ui.render();
+};
 function queueHTML() {
   const S = G.S, slots = G.jobSlots();
   let empty = '';
-  for (let i = S.jobs.length; i < slots; i++) empty += `<button type="button" class="fx-add" data-a="fxAddJob"><span class="fx-plus">+</span><span>Add Job</span></button>`;
+  for (let i = G.slotJobs(); i < slots; i++) empty += `<button type="button" class="fx-add" data-a="fxAddJob"><span class="fx-plus">+</span><span>Add Job</span></button>`;
   const lock = slots < maxSlots() ? `<button type="button" class="fx-add fx-add-lock" data-a="fxGoUp" data-args='["slots"]' title="Buy a Queue Slot in Factory Upgrades">${plainImg('ui/lock', 'fx-lk')}<span>Unlock slot</span></button>` : '';
   return `<section class="panel fx-queue" id="fx-queue" aria-label="Production queue">
-    <div class="panel-h">${plainImg('ui/timer')}<span class="sp">Production Queue <span class="fx-cnt">(${S.jobs.length}/${slots})</span></span><small class="fx-qnote">1 job per factory runs at a time</small></div>
+    <div class="panel-h">${plainImg('ui/timer')}<span class="sp">Production Queue <span class="fx-cnt">(${G.slotJobs()}/${slots})</span></span><small class="fx-qnote">One job per factory runs at a time; the others wait their turn. The Feed Mill doesn't take a slot.</small></div>
     <div class="fx-qgrid">${S.jobs.map(jobTile).join('')}${empty}${lock}</div>
   </section>`;
 }

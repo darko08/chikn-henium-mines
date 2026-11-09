@@ -204,3 +204,24 @@
   .rb-lv { display: none; }
   .tap-energy { left: 6px; top: 6px; font-size: 12px; } .te-bar { width: 46px; }
 }
+
+/* quests show their reward */
+.q-rew { display: block; margin-top: 2px; }
+.q-rew .cost { font-size: 12px; }
+/* the dig card: time on the bar, Finish now on its own line, gate text wraps */
+.act.digging { flex-wrap: wrap; }
+.act.digging .dig-row { flex: 1 1 100%; }
+.act.digging .dig-row .bar { min-width: 110px; flex: 1; }
+.dig-fin { margin-top: 4px; }
+.act-c.act-gate { white-space: normal; overflow: visible; line-height: 1.25; font-size: 12px; }
+/* hazards: countdown and odds */
+.haz-t { font-weight: 700; color: #ffe27a; }
+.haz-box .cost { font-size: 12px; }
+.rb-x2 { color: #8dff9b; font-weight: 700; }
+.floors-more { display: none; align-items: center; gap: 8px; padding: 8px 12px; margin: 4px 0; border-radius: 12px; background: rgba(9, 12, 42, .7); color: var(--muted); font-size: 13px; }
+.floors-more .lk { width: 18px; height: 18px; }
+@media (max-width: 600px) {
+  .floor.locked.far { display: none; }
+  .floors-more { display: flex; }
+  .side .side-quests { order: -1; }
+}

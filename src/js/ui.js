@@ -20,6 +20,21 @@ ui.cost = (cost, k = 1, size = 20) => `<span class="cost">${Object.entries(cost)
 ui.rew = (rew, size = 20) => `<span class="cost gain">${Object.entries(rew).filter(([, v]) => v > 0).map(([r, v]) =>
   `<span class="c">${ui.icon(r, size)}+${ui.amt(r, v)}</span>`).join('')}</span>`;
 ui.bar = (pct, cls = '', text = '', attrs = '') => `<div class="bar ${cls}" ${attrs}><i style="width:${Math.max(0, Math.min(100, pct))}%"></i>${text !== '' ? `<b>${text}</b>` : ''}</div>`;
+// where a resource comes from, in a few words (used under costs you can't pay yet)
+G.whereFrom = (r) => {
+  const S = G.S;
+  if (r === 'egg') return 'laid by your Chikns';
+  if (r === 'feed') return 'Feed Mill, or burn EGG';
+  if (r === 'henium') return 'Henium Refinery, guild wars, monster hunts';
+  if (D.res[r] && D.res[r].cat === 'raw') {
+    const z = D.zones.find((x) => x.res === r);
+    return z ? (G.zoneOpen(z) ? `${z.short} floor` : `${z.name}, depth ${z.from}`) : 'the mines';
+  }
+  const f = D.factories.find((x) => x.recipes.some((rec) => rec.out[r]));
+  return f ? (S.factories[f.id].lv > 0 ? f.name : `${f.name}, opens at depth ${f.reqDepth}`) : 'the DEX';
+};
+// a live line under a cost: what you still need and where it comes from (hidden while you can pay)
+ui.miss = (cost, k = 1) => `<div class="cost-miss" data-b="miss:${ui.need(cost, k)}" hidden></div>`;
 ui.btn = (label, a, args = [], cls = '', need = null, extra = '') =>
   `<button class="btn ${cls}" data-a="${a}" data-args='${esc(JSON.stringify(args))}' ${need ? `data-need="${ui.need(need)}"` : ''} ${extra}>${label}</button>`;
 ui.perH = (perSec) => G.fmt(perSec * 3600) + '/h';
@@ -30,7 +45,7 @@ ui.rentTag = (c) => (c.rent ? ` <span class="tag o" title="Rented from ${c.rent.
   : c.lease && c.lease.left == null ? ' <span class="tag p" title="Listed on the rental market: it keeps working for you until a renter takes it">For rent</span>' : '');
 ui.chiknCard = (c, opts = {}) => {
   const R = D.rarity(c.rarity), role = D.roles[c.role];
-  const st = { squad: '<span class="tag g">Squad</span>', exp: '<span class="tag o">Expedition</span>', injured: '<span class="tag r">Recovering</span>', idle: '<span class="tag">Idle</span>',
+  const st = { squad: '<span class="tag g">Squad</span>', exp: '<span class="tag o">Expedition</span>', injured: `<span class="tag r">Recovering · <span data-b="until:${c.until}">${G.fmtTime(Math.max(0, (c.until - G.now()) / 1000))}</span></span>`, idle: '<span class="tag">Idle</span>',
     away: '<span class="tag p">Rented out</span>' }[c.status] + ui.rentTag(c);
   return `<div class="ccard rarity-${c.rarity} ${opts.sel ? 'sel' : ''} ${opts.cls || ''}" ${opts.attrs || ''}>
     <div class="ccard-art">${ui.img('chikn/' + c.role, 'ccard-img', role.name)}<span class="ccard-lv">Lv.${c.lv}</span></div>
@@ -44,6 +59,22 @@ ui.chiknCard = (c, opts = {}) => {
 // ---------- live bindings ----------
 ui.binders = {
   res: (el, r) => { el.textContent = G.fmtRes(r, G.S.res[r]); },
+  lvRing: (el) => { const S = G.S; el.style.setProperty('--p', Math.min(1, S.player.xp / D.xpNeed(S.player.lv)).toFixed(3)); },
+  nestEta: (el) => {
+    const S = G.S, rate = G.eggRate(), cap = G.nestCap(), n = S.nest;
+    let t;
+    if (rate <= 0) t = S.chikns.length ? 'No eggs while no Chikn is home' : 'Rent a Chikn: it lays about one EGG a day';
+    else if (n >= cap - 1e-6) t = `Full: about ${G.fmt(rate * 86400, 1)} eggs a day are being lost. Collect them!`;
+    else t = `Next egg in ${G.fmtTime((1 - (n % 1)) / rate)} · full in ${G.fmtTime((cap - n) / rate)}`;
+    if (el.textContent !== t) el.textContent = t;
+    el.classList.toggle('nest-full', rate > 0 && n >= cap - 1e-6);
+  },
+  miss: (el, need) => {
+    const m = Object.entries(parseNeed(need)).filter(([r, v]) => G.S.res[r] + 1e-9 < v);
+    const t = m.length ? 'Missing: ' + m.map(([r, v]) => `${G.fmt(Math.ceil(v - G.S.res[r]))} ${D.res[r].name} (${G.whereFrom(r)})`).join(' · ') : '';
+    if (el.textContent !== t) el.textContent = t;
+    el.hidden = !t;
+  },
   rate: (el, r) => { el.textContent = ui.perH(G.rates()[r] || 0); },
   job: (el, id) => {
     const j = G.S.jobs.find((x) => x.id === +id);
@@ -100,6 +131,8 @@ ui.go = (name) => {
   if (!ui.views[name]) return;
   ui.cur = name;
   $$('.nav-btn').forEach((b) => b.classList.toggle('on', b.dataset.view === name));
+  const nb = $(`.nav-btn[data-view="${name}"]`); // on a phone the nav scrolls: keep the active screen in view
+  if (nb && nb.parentElement.scrollWidth > nb.parentElement.clientWidth) nb.scrollIntoView({ block: 'nearest', inline: 'center' });
   const el = $('#view');
   el.scrollTop = 0;
   ui.renderView();
@@ -138,8 +171,8 @@ ui.renderShell = () => {
     <button class="plus" data-a="exchangeDlg" data-args='["${r}"]' aria-label="Get more ${D.res[r].name}">+</button></div>`;
   const strip = D.barRes.map((r) => `<div class="r" title="${D.res[r].name}"><img src="${G.img('res/' + r)}" alt=""><div><div class="lbl">${D.shortName[r] || D.res[r].name}</div><div class="val num" data-b="res:${r}"></div></div></div>`).join('');
   $('#topbar').innerHTML = `<img class="logo" src="${G.img('ui/logo')}" alt="Chikn Henium Mines" data-a="nav" data-args='["mines"]'>
-    <div class="top-scroll">${pill('egg')}${pill('feed')}${pill('henium')}<div class="pill eth" data-a="nav" data-args='["dex"]' title="Simulated ETH — trade on the DEX"><img src="${G.img('res/eth')}" alt=""><div><div class="lbl">ETH</div><div class="val" data-b="res:eth"></div></div></div><button type="button" class="res-strip" data-a="inventory" title="Inventory: every ore and material you have" aria-label="Open inventory">${strip}<span class="res-more" aria-hidden="true">▾</span></button></div>
-    <div class="top-icons"><button class="icon-btn" data-a="notes" aria-label="Notifications"><img src="${G.img('ui/bell')}" alt=""><span class="badge" id="note-badge" hidden></span></button>
+    <div class="top-scroll">${pill('egg')}${pill('feed')}${pill('henium')}<div class="pill eth" data-a="nav" data-args='["dex"]' title="Simulated ETH — trade on the DEX"><img src="${G.img('res/eth')}" alt=""><div><div class="lbl">ETH</div><div class="val" data-b="res:eth"></div></div></div><button type="button" class="res-strip" data-a="inventory" title="Inventory: every ore and material you have" aria-label="Open inventory"><img class="res-inv-ic" src="${G.img('prop/crate')}" alt="">${strip}<span class="res-more" aria-hidden="true">▾</span></button></div>
+    <div class="top-icons"><button type="button" class="lvl-chip" data-a="profile" aria-label="Your level and profile"><span data-b="lv"></span><i data-b="lvRing"></i><span class="badge" id="spec-badge" hidden>!</span></button><button class="icon-btn" data-a="notes" aria-label="Notifications"><img src="${G.img('ui/bell')}" alt=""><span class="badge" id="note-badge" hidden></span></button>
     <button class="icon-btn" data-a="settings" aria-label="Settings"><img src="${G.img('ui/settings')}" alt=""></button></div>`;
   setTimeout(ui.speedChip, 0);
   $('#sidenav').innerHTML = NAV.map(([id, label]) => `<button class="nav-btn ${ui.cur === id ? 'on' : ''}" data-view="${id}" data-a="nav" data-args='["${id}"]'>
@@ -152,7 +185,8 @@ ui.handlers.inventory = () => {
   const item = (r) => `<div class="inv-it" title="${esc(D.res[r].name)}">${ui.icon(r, 34)}<div><b data-b="res:${r}">${G.fmt(S.res[r])}</b><small>${esc(D.res[r].name)}</small>${rates[r] > 0 && r !== 'egg' ? `<i>+${G.fmt(rates[r] * 3600)}/h</i>` : ''}</div></div>`;
   const group = (title, list) => (list.length ? `<h3 class="inv-h">${title}</h3><div class="inv-grid">${list.map(item).join('')}</div>` : '');
   ui.modal({ title: 'Inventory', wide: true, html: group('Ores from the mines', cat('raw')) + group('Processed materials (Factories)', cat('mat'))
-    + `<p class="dim" style="font-size:13px;margin:10px 0 0">Crushed Ore comes from the Ore Crusher; the Ore Separator and the Feed Mill use it. EGG, FEED and HENIUM are in the top bar.</p>`,
+    + group('Currencies', ['egg', 'feed', 'henium'])
+    + `<p class="dim" style="font-size:13px;margin:10px 0 0">Crushed Ore comes from the Ore Crusher; the Ore Separator and the Feed Mill use it.</p>`,
     actions: [{ label: 'Factories', cls: 'purple', fn: () => ui.go('factories') }, { label: 'Close', cls: 'green' }] });
 };
 ui.handlers.nav = (el, e, id) => { if (el.closest('#modal-root')) ui.closeModal(); ui.go(id); };
@@ -166,6 +200,7 @@ ui.navBadges = () => {
   set('expeditions', S.exps.filter((e) => e.done).length);
   set('battle', S.battle.tickets >= D.pvpTickets && S.player.lv >= 3 ? 1 : 0);
   set('events', G.missions().filter((m) => m.done && !m.claimed).length + Array.from({ length: S.season.lv }, (_, i) => i + 1).filter((l) => !S.season.claimed.includes(l)).length);
+  const sb = $('#spec-badge'); if (sb) sb.hidden = !(S.player.lv >= D.rules.specLv && !S.spec); // a specialization to choose
   const nb = $('#note-badge'), unread = S.notes.filter((n) => !n.read).length;
   if (nb) { nb.hidden = !unread; nb.textContent = unread > 9 ? '9+' : unread; }
 };
@@ -233,8 +268,10 @@ ui.modalEl = () => $('#modal-root').firstElementChild;
 
 // ---------- sounds ----------
 let ac = null;
+let gesture = false; // browsers only allow sound after the player's first tap or key
+['pointerdown', 'keydown'].forEach((ev) => window.addEventListener(ev, () => { gesture = true; }, { once: true, capture: true }));
 G.sfx = (name) => {
-  if (!G.S || !G.S.settings.sound) return;
+  if (!G.S || !G.S.settings.sound || !gesture) return;
   try {
     ac = ac || new (window.AudioContext || window.webkitAudioContext)();
     const notes = { click: [[660, 0.04]], tap: [[520, 0.05], [780, 0.05]], ok: [[700, 0.06], [940, 0.08]], err: [[220, 0.12]],
@@ -255,18 +292,27 @@ G.sfx = (name) => {
 
 // ---------- shared dialogs ----------
 ui.handlers.exchangeDlg = (el, e, focus) => {
-  const x = G.exRate(), row = (kind, label, give, get) => `<div class="list-row"><div class="sp"><div class="hx">${label}</div><div class="muted" style="font-size:13px">${give} → ${get}</div></div>
-    ${[1, 10, 100].map((q) => `<button class="btn sm ${kind === 'e2h' ? 'purple' : 'green'}" data-x="${kind}" data-q="${q}">×${q}</button>`).join('')}</div>`;
-  ui.modal({ title: `${ui.img('ui/dex', '', '')} Exchange`, actions: [{ label: 'Done', cls: 'gray' }],
-    html: `<p class="muted" style="margin-top:0">EGG is laid by Chikns only, and no reward ever pays it. Burning EGG for FEED removes it for good, which keeps EGG scarce.</p>
-      ${row('e2f', 'Burn EGG for FEED', `${ui.icon('egg', 18)} ${x.e2f}`, `${ui.icon('feed', 18)} 1`)}
-      <div class="list-row"><div class="sp"><div class="hx">Trade EGG, HENIUM, ores and ETH</div><div class="muted" style="font-size:13px">Swap anything for anything on the DEX</div></div><button class="btn sm purple" data-a="nav" data-args='["dex"]'>Open DEX</button></div>
-      <p class="dim" style="font-size:12px;margin-bottom:0">${focus === 'henium' ? 'HENIUM is earned by refining Henium Ore, guild wars and monster hunts: every HENIUM comes out of the world\'s fixed daily emission.' : focus === 'feed' ? 'FEED is scarce: grind your daily quota in the Feed Mill, or burn EGG for it.' : 'Every Chikn lays about 1 EGG a day; heavier Chikns lay more. Collect them on the Farm.'}</p>` });
+  const S = G.S, x = G.exRate(), have = () => `You have ${ui.icon('egg', 16)} <b>${G.fmtFull(Math.floor(S.res.egg))}</b> EGG · ${ui.icon('feed', 16)} <b>${G.fmt(S.res.feed, 1)}</b> FEED · ${ui.icon('henium', 16)} <b>${G.fmt(S.res.henium, 2)}</b> HENIUM`;
+  const how = {
+    egg: ['How to get EGG', [`Collect the nest: your Chikns lay about one EGG a day each (Farm, Collect All).`, 'Rent your own Chikn NFTs out: rent pays EGG every day.', 'Buy EGG on the DEX with HENIUM, ores or ETH.'], [['farm', 'Egg Farm'], ['chikns', 'Chikn NFT'], ['dex', 'DEX']]],
+    feed: ['How to get FEED', ['Grind it at the Feed Mill (a daily quota).', `Burn EGG for FEED below (${x.e2f} EGG → 1 FEED).`, 'Buy FEED on the DEX.'], [['farm', 'Feed Mill'], ['dex', 'DEX']]],
+    henium: ['How to get HENIUM', ['Refine Henium Ore in the Henium Refinery (your share of the daily world emission).', 'Win guild wars and monster hunts: daily payouts.', 'First clears of battle stages, quests and guild projects.', 'Buy it on the DEX.'], [['factories', 'Factories'], ['battle', 'Battle'], ['dex', 'DEX']]],
+  }[focus] || null;
+  const burn = [1, 10, 100].map((q) => `<button class="btn sm green" data-x="e2f" data-q="${q}" data-need="egg:${q * x.e2f}">Burn ${G.fmtFull(q * x.e2f)} EGG → ${q} FEED</button>`).join('');
+  ui.modal({ title: `${ui.img('ui/dex', '', '')} ${how ? how[0] : 'Exchange'}`, actions: [{ label: 'Done', cls: 'gray' }],
+    html: `<p class="muted" style="margin-top:0" data-b="exHave">${have()}</p>
+      ${how ? `<ul class="ex-how">${how[1].map((t) => `<li>${t}</li>`).join('')}</ul><div class="ex-go">${how[2].map(([v, l]) => `<button class="btn sm purple" data-a="nav" data-args='["${v}"]'>${l}</button>`).join('')}</div>` : ''}
+      ${focus === 'egg' ? '' : `<div class="list-row ex-burn"><div class="sp"><div class="hx">Burn EGG for FEED</div><div class="muted" style="font-size:13px">EGG is gone for good when you burn it (it keeps EGG scarce)</div></div><div class="ex-btns">${burn}</div></div>`}` });
   ui.modalEl().addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-x]');
     if (!b) return;
-    const r = G.act.exchange(b.dataset.x, +b.dataset.q);
-    if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); } else { G.sfx('coin'); ui.refresh(); }
+    const q = +b.dataset.q, cost = q * x.e2f;
+    if (q >= 10 && !confirm(`Burn ${cost} EGG for ${q} FEED? Burned EGG is gone for good.`)) return;
+    const r = G.act.exchange(b.dataset.x, q);
+    if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
+    G.sfx('coin'); ui.toast(`Burned ${cost} EGG → +${q} FEED`, 'good', 'res/feed');
+    const h = ui.modalEl().querySelector('[data-b="exHave"]'); if (h) h.innerHTML = have();
+    ui.refresh();
   });
 };
 ui.handlers.notes = () => {
@@ -291,6 +337,8 @@ ui.handlers.settings = () => {
   const S = G.S;
   ui.modal({ title: `${ui.img('ui/settings', '', '')} Settings`, actions: [{ label: 'Close', cls: 'gray' }],
     html: `<div class="list-row"><div class="sp">Sound effects</div><button class="btn sm ${S.settings.sound ? 'green' : 'gray'}" data-set="sound">${S.settings.sound ? 'On' : 'Off'}</button></div>
+      <div class="list-row"><div class="sp">Music</div><input type="range" class="set-vol" min="0" max="1" step="0.05" value="${typeof S.settings.musicVol === 'number' ? S.settings.musicVol : 0.45}" aria-label="Music volume">
+        <button class="btn sm ${S.settings.music !== false ? 'green' : 'gray'}" data-set="music">${S.settings.music !== false ? 'On' : 'Off'}</button></div>
       <div class="set-test"><div class="hx">Test speed</div><div class="muted" style="font-size:13px">The game runs in real time (a day is 24 hours). For testing, make time run faster: at ×60 one real minute is one game hour. Hazards pause above ×10, because you couldn't react to them.</div>
         <div class="tabs set-speeds">${SPEEDS.map((k) => `<button type="button" class="tab ${G.speed() === k ? 'on' : ''}" data-speed="${k}">×${G.fmtFull(k)}</button>`).join('')}</div>
         <div class="hx" style="margin-top:8px;font-size:15px">Skip ahead</div><div class="muted" style="font-size:13px">Jump forward as if you played the whole time (floors mine all along).</div>
@@ -298,6 +346,9 @@ ui.handlers.settings = () => {
       <div class="list-row"><div class="sp"><div class="hx">Start a new game</div><div class="muted" style="font-size:13px">Month 1: The Beginning — a small mine at depth 1.</div></div><button class="btn sm red" data-set="fresh">New Game</button></div>
       <div class="list-row"><div class="sp"><div class="hx">Showcase save</div><div class="muted" style="font-size:13px">Jump to the mockup: Lv. 27, depth 27, Heavy Drill on the Henium Vein.</div></div><button class="btn sm purple" data-set="showcase">Load</button></div>
       <p class="dim" style="font-size:12px;margin-bottom:0">Progress saves automatically in this browser. Prototype build: tokens, NFTs and other players are simulated.</p>` });
+  const vr = ui.modalEl().querySelector('.set-vol');
+  if (vr) vr.addEventListener('input', () => { if (G.musicVolume) G.musicVolume(+vr.value); });
+  if (vr) vr.addEventListener('change', () => G.save());
   ui.modalEl().addEventListener('click', (ev) => {
     const sp = ev.target.closest('[data-speed]'), sk = ev.target.closest('[data-skip]');
     if (sp) {
@@ -308,14 +359,13 @@ ui.handlers.settings = () => {
     }
     if (sk) {
       const r = G.warp(+sk.dataset.skip); G.save(); ui.closeModal(); ui.render();
-      const rows = Object.entries(r.gains).sort((a, b) => b[1] - a[1]).slice(0, 8);
-      ui.modal({ title: `${ui.img('ui/timer', '', '')} Skipped ${G.fmtTime(r.sec)}`, actions: [{ label: 'OK', cls: 'green' }],
-        html: `<p style="text-align:center;margin-top:0">Your mine, factories, farm and rentals ran for <b>${G.fmtTime(r.sec)}</b>.</p><div style="display:flex;justify-content:center">${ui.rew(Object.fromEntries(rows), 24)}</div>` });
+      G.showAway(r);
       return;
     }
     const b = ev.target.closest('[data-set]');
     if (!b) return;
     const k = b.dataset.set;
+    if (k === 'music') { S.settings.music = S.settings.music === false; b.textContent = S.settings.music ? 'On' : 'Off'; b.className = `btn sm ${S.settings.music ? 'green' : 'gray'}`; if (G.music) G.music(); G.save(); return; }
     if (k === 'sound') { S.settings.sound = !S.settings.sound; b.textContent = S.settings.sound ? 'On' : 'Off'; b.className = `btn sm ${S.settings.sound ? 'green' : 'gray'}`; return; }
     if (k === 'fresh' || k === 'showcase') {
       if (!confirm(k === 'fresh' ? 'Start over from depth 1? Your current progress will be replaced.' : 'Load the showcase save? Your current progress will be replaced.')) return;
@@ -341,6 +391,7 @@ ui.handlers.spec = () => {
   ui.modalEl().addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-spec]');
     if (!b) return;
+    if (!confirm(`Become a ${D.specs.find((s) => s.id === b.dataset.spec).name}? The choice is permanent for this mine.`)) return;
     const r = G.act.chooseSpec(b.dataset.spec);
     ui.closeModal();
     if (r.ok) { G.sfx('level'); ui.toast(`You are now a ${D.specs.find((s) => s.id === b.dataset.spec).name}!`, 'good', 'ui/trophy'); ui.render(); } else ui.toast(r.msg, 'bad');

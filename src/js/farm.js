@@ -36,7 +36,11 @@ G.farmTick = (dt, offline) => {
   const S = G.S, fm = S.farm;
   fm.dayT += dt;
   while (fm.dayT >= F.day) { fm.dayT -= F.day; fm.day++; fm.milled = 0; G.emit('farmDay', fm.day, offline); } // also while away: daily payouts and decay must not be skipped
-  S.nest = Math.min(G.nestCap(), S.nest + G.eggRate() * dt);
+  // eggs go into the nest up to its capacity; the rest is lost (counted, so the player can be told). The nest never
+  // shrinks on its own: a smaller capacity (lighter or fewer Chikns) only stops new eggs.
+  const add = G.eggRate() * dt, room = Math.max(0, G.nestCap() - S.nest), laid = Math.min(add, room);
+  S.nest += laid; fm.laid = (fm.laid || 0) + laid; if (add > laid) fm.lost = (fm.lost || 0) + (add - laid);
+  if (add > laid && !fm.fullSaid) { fm.fullSaid = true; if (!offline) G.emit('nestFull'); }
   const need = G.upkeepPerDay() * dt / F.day;
   if (S.res.feed >= need) { S.res.feed -= need; fm.hungry = false; return; }
   S.res.feed = 0;

@@ -256,6 +256,53 @@ check(rt.noFatten && rt.noSublet, 'rented Chikns cannot be fattened or rented ou
 check(rt.listed && rt.back && Math.abs(rt.earned - rt.expect) < 0.05, `your Chikn rented out earns ${rt.earned.toFixed(2)} EGG over 3 days while away (expected ${rt.expect.toFixed(2)}) and comes back`);
 check(rt.warp, 'skipping 1 h moves the game clock and every timer by 1 h');
 
+// UX audit fixes: events reach handlers with all arguments, machines don't flicker without coal, the Feed Mill restarts
+// by itself and never blocks the queue, season rewards are paid out, journey months stay done, the nest counts lost
+// eggs, hazards end when you leave, and the away report tells the farm story
+const ux = await page.evaluate(() => {
+  const D = G.D, keep = G.S, out = {}, fresh = () => (G.S = G.newState('fresh'));
+  // events: every argument reaches the handlers
+  let got = null; G.on('uxProbe', (a, b) => { got = [a, b]; }); G.emit('uxProbe', 1, true); out.emit = got && got[0] === 1 && got[1] === true;
+  // coal: a dry machine waits for 10 minutes of coal and reports it once
+  let S = fresh(); S.depth = 6; S.zones.coal.lv = 0; S.player.lv = 9;
+  S.machines.push({ id: 900, type: 'improved', lv: 1, dur: 100, zone: 'stone' });
+  const ms = G.machineStats(S.machines[0]); S.res.coal = ms.energy / 3600 * 0.5; let n = 0; G.on('noCoal', () => n++);
+  for (let i = 0; i < 20; i++) { G.tick(1); S.res.coal += ms.energy / 3600 * 0.6; } // a trickle below its use
+  out.flicker = n <= 1 && S.machines[0].off === true;
+  S.res.coal = ms.energy; G.tick(1); out.restart = S.machines[0].off === false;
+  // Feed Mill: auto-grind comes back on the next farm day; it never takes a queue slot
+  S = fresh(); S.depth = 4; S.factories.feedmill.lv = 1; S.factories.crusher.lv = 1; S.res.stone = 1e7; S.res.crushedOre = 1e6;
+  for (let i = 0; i < 3; i++) G.act.queue('crusher', 'crush', true);
+  const qm = G.act.queue('feedmill', 'feed', true); out.millSlot = qm.ok;
+  for (let i = 0; i < 48; i++) G.tick(1800, true);
+  out.millAuto = S.jobs.some((j) => j.f === 'feedmill') && S.farm.milled > 0 && S.farm.day >= 1;
+  // season end pays unclaimed rewards
+  S = fresh(); S.season.lv = 3; S.season.claimed = []; const st0 = S.res.stone; S.season.ends = G.now() - 1; G.tick(1);
+  out.season = S.season.lv === 1 && (S.season.no || 1) === 2 && S.res.stone > st0;
+  // journey: a reached month stays reached
+  S = fresh(); S.guild.warPts = 400; const m4 = D.journey[3].done(S); S.guild.warPts = 10; out.journey = m4 && D.journey[3].done(S);
+  // nest: full nest counts lost eggs and never shrinks
+  S = fresh(); G.newChikn('common', 'miner', { own: true }); S.nest = G.nestCap(); const n0 = S.nest; G.tick(86400, true);
+  out.nest = S.nest >= n0 - 1e-9 && (S.farm.lost || 0) > 0.5;
+  // hazards end when you leave, without a penalty
+  S = fresh(); S.player.lv = 30; S.res.henium = 500; S.hazard = { type: 'bandits', zone: 'stone', at: G.now(), until: G.now() + 45e3, power: 50, toll: { egg: 1 } };
+  const off = G.offline(3600); out.hazard = !S.hazard && S.res.henium >= 500 && off.log.some((l) => l.kind === 'hazard');
+  // the away report: eggs laid, hunger, expeditions back
+  S = fresh(); const c = G.newChikn('common', 'miner', { own: true }); S.res.feed = 0.1;
+  S.exps.push({ id: 901, site: D.expeditions[0].id, ids: [], t: 0, dur: 600, done: false });
+  const rep = G.offline(2 * 86400); out.report = rep.eggsLaid > 1 && rep.hungry && rep.expsBack === 1 && rep.eggsLost >= 0;
+  G.S = keep;
+  return out;
+});
+check(ux.emit, 'events pass every argument to their handlers');
+check(ux.flicker && ux.restart, `a machine short of coal stops once and restarts with 10 minutes of coal (${ux.flicker}, ${ux.restart})`);
+check(ux.millSlot && ux.millAuto, `the Feed Mill takes no queue slot and its auto-grind resumes on the next farm day (${ux.millSlot}, ${ux.millAuto})`);
+check(ux.season, 'a season ending pays out unclaimed rewards and starts season 2');
+check(ux.journey, 'a journey month stays complete after its goal slips');
+check(ux.nest, 'a full nest counts lost eggs and never shrinks');
+check(ux.hazard, 'a hazard ends without a penalty when you go away, and the report says so');
+check(ux.report, 'the away report tells eggs laid, hunger and returned expeditions');
+
 // tapping is limited by energy (no infinite clicking)
 const tap = await page.evaluate(() => {
   G.S.tapEnergy = G.D.rules.tap.energyMax; let n = 0;

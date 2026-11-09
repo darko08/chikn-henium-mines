@@ -27,6 +27,8 @@ G.fmtTime = (s) => {
   return `${x}s`;
 };
 G.dayKey = () => new Date(now()).toISOString().slice(0, 10);
+// a journey month, once reached, stays reached (S.journey), even if the goal later slips (war points decay every day)
+D.journey.forEach((j, i) => { const raw = j.done; j.done = (S) => { if (S && S.journey && S.journey[i]) return true; const d = !!raw(S); if (d && S && S.journey) S.journey[i] = true; return d; }; });
 G.rand = (a, b) => a + Math.random() * (b - a);
 G.randInt = (a, b) => Math.floor(G.rand(a, b + 1));
 G.pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -34,7 +36,7 @@ G.pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 // ---------- events ----------
 const handlers = {};
 G.on = (e, fn) => (handlers[e] = handlers[e] || []).push(fn);
-G.emit = (e, d) => (handlers[e] || []).forEach((fn) => { try { fn(d); } catch (err) { console.error(err); } });
+G.emit = (e, ...a) => (handlers[e] || []).forEach((fn) => { try { fn(...a); } catch (err) { console.error(err); } }); // all arguments reach the handlers
 
 // ---------- state ----------
 const allRes = () => Object.fromEntries(Object.keys(D.res).map((k) => [k, 0]));
@@ -61,7 +63,7 @@ G.newState = (kind = 'fresh') => {
     hunt: 0, tapEnergy: D.rules.tap.energyMax,
     live: { id: null, until: 0, next: now() + 75e3 },
     hazard: null, hazardNext: now() + 100e3,
-    notes: [], settings: { sound: true, speed: 1 }, saveT: 0, clockOff: 0,
+    notes: [], settings: { sound: true, speed: 1 }, saveT: 0, clockOff: 0, journey: [],
   };
   S.world.mined = D.cumEmission(S.worldT / 86400);
   G.dexInit(S);
@@ -111,7 +113,7 @@ function showcase(S) {
   S.factories.feedmill.lv = 3; S.nest = 6;
   S.factories.advanced.con = { t: 600, dur: D.buildTime(3), to: 3 };  // an upgrade under construction
   S.dig = { t: 86400 * 2.5, dur: D.digTime(28), to: 28 };            // digging towards depth 28
-  Object.assign(S.guild, { lv: 7, proj: 0, pts: Math.round(D.guildProjects[0].need * 0.68), contrib: 5200, zoneLv: 3, warPts: 180 });
+  Object.assign(S.guild, { lv: 7, proj: 4, bonus: 36, pts: Math.round(D.guildProjects[4].need * 0.4), contrib: 5200, zoneLv: 3, warPts: 180 }); // Lv. 7 = 4 projects done (+36% mining)
   Object.assign(S.season, { lv: 27, xp: 4200 });
   S.battle.cleared = 4;
   Object.assign(S.stats, { mined: 4.2e6, processed: 260000, crafted: 6, refined: 24, taps: 900, hired: 12, wins: 22, exps: 9, upgrades: 230, ingots: 12000 });
@@ -258,6 +260,9 @@ G.recipeOut = (f, rec) => {
   return Object.fromEntries(Object.entries(rec.out).map(([r, v]) => [r, r === 'henium' ? Math.round(v * k * 100) / 100 : Math.max(1, Math.round(v * k))]));
 };
 G.jobSlots = () => 3 + G.S.fup.slots;
+// jobs that take a queue slot: the Feed Mill is capped by its daily quota instead, so it never blocks (or is blocked by) the queue
+G.slotJobs = () => G.S.jobs.filter((j) => j.f !== 'feedmill').length;
+G.queueFull = (fid) => fid !== 'feedmill' && G.slotJobs() >= G.jobSlots();
 G.jobDur = (f, rec) => rec.t * (f.id === 'refinery' ? 1 : G.factorySpeed(f)); // refinery batches have a fixed length
 // building art: 10 looks per building, one per level; the HQ gets a new look every 5 depth levels
 // falls back to the highest look that exists, so a missing image never shows as a blank
@@ -269,6 +274,7 @@ G.worldDays = () => (G.S.worldT || 0) / 86400;                          // days 
 G.epoch = () => Math.floor(G.worldDays() / D.supply.halvingDays);
 G.halving = () => (G.S.world.mined >= D.supply.cap ? 0 : Math.pow(0.5, G.epoch())); // 0 once all 21M are mined
 G.nextHalving = () => D.cumEmission((G.epoch() + 1) * D.supply.halvingDays);        // world supply at the next halving
+G.nextHalvingDate = () => new Date(D.supply.genesis + (G.epoch() + 1) * D.supply.halvingDays * 86400e3).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 G.nextHalvingIn = () => ((G.epoch() + 1) * D.supply.halvingDays - G.worldDays()) * 86400; // seconds to the next halving
 // HENIUM emission: the world mints D.supply.daily per game day; you earn a share of it by refining (work),
 // by guild wars (fighting other guilds) and by hunting monsters. Shares shrink as the world grows.
@@ -312,7 +318,10 @@ G.tick = (dt, offline = false, mineK = 1) => {
   for (const m of S.machines) {
     if (!m.zone || m.dur <= 0 || mineK <= 0) { m.off = false; continue; }
     const ms = G.machineStats(m), need = ms.energy / 3600 * dt * mineK;
-    if (S.res.coal >= need) { S.res.coal -= need; m.off = false; } else { if (!m.off && !offline) G.emit('noCoal', m); m.off = true; continue; }
+    // a machine that ran dry waits for 10 minutes' worth of Coal before it restarts, so it can't flicker on and off
+    const enough = m.off ? S.res.coal >= Math.max(need, ms.energy / 6) : S.res.coal >= need;
+    if (enough) { S.res.coal -= need; if (m.off) m.offT = 0; m.off = false; }
+    else { if (!m.off) { if (!offline) G.emit('noCoal', m); else G.logAway('coal', `${D.machineById(m.type).name} ran out of Coal and stopped`); } m.off = true; continue; }
     coalPer[m.id] = need;
     if (offline) continue; // machines only wear while you play
     const wear = ms.def.wear / 60 * dt * (1 - Math.min(0.6, G.bonus('machine') * 0.5));
@@ -349,7 +358,7 @@ G.tick = (dt, offline = false, mineK = 1) => {
   for (const c of [...S.crafts]) { c.t += dt; if (c.t >= c.dur) G.sys.finishCraft(c, offline); }
   // expeditions
   for (const e of S.exps) if (!e.done) { e.t += dt; if (e.t >= e.dur) { e.done = true; if (!offline) G.emit('expDone', e); } }
-  for (const c of S.chikns) if (c.status === 'injured' && now() >= c.until) c.status = 'idle';
+  for (const c of S.chikns) if (c.status === 'injured' && now() >= c.until) { c.status = 'idle'; if (!offline) G.emit('note', { text: `${c.name} has recovered and is ready to work again.`, icon: 'chikn/' + c.role, good: true }); }
   // pvp tickets
   if (S.battle.tickets < D.pvpTickets) { // a long (offline) tick can refill several tickets
     S.battle.tt += dt;
@@ -370,7 +379,7 @@ G.tick = (dt, offline = false, mineK = 1) => {
     G.sys.liveTick();
     G.sys.hazardTick();
     if (S.daily.day !== G.dayKey()) S.daily = { day: G.dayKey(), prog: {}, claimed: {} };
-    if (now() > S.season.ends) { S.season = { lv: 1, xp: 0, claimed: [], ends: now() + R.seasonDays * 86400e3 }; G.emit('note', { text: 'A new Season has begun!', icon: 'ui/trophy' }); }
+    if (now() > S.season.ends) G.sys.seasonEnd();
   }
   S.last = now();
 };
@@ -378,28 +387,44 @@ G.tick = (dt, offline = false, mineK = 1) => {
 // Test tool: skip ahead `sec` seconds as if you played the whole time (floors mine all along, no 8 h cap), quietly
 // (no hazards pop up while skipping). The clock moves with it, so every timer stays consistent.
 G.warp = (sec) => {
-  const S = G.S, before = { ...S.res }, step = 60, n = Math.ceil(sec / step);
-  for (let i = 0; i < n; i++) { const dt = Math.min(step, sec - i * step); S.clockOff = (S.clockOff || 0) + dt * 1000; G.tick(dt, true, 1); }
-  const gains = {};
-  for (const r in S.res) { const d = S.res[r] - before[r]; if (d > 0.5) gains[r] = d; }
-  return { sec, gains };
+  const S = G.S, before = { ...S.res }, step = 60, n = Math.ceil(sec / step), a = awaySnap(S), log = [];
+  G.offLog = log;
+  G.sys.awayHazard();
+  try { for (let i = 0; i < n; i++) { const dt = Math.min(step, sec - i * step); S.clockOff = (S.clockOff || 0) + dt * 1000; G.tick(dt, true, 1); } } finally { G.offLog = null; }
+  const gains = {}, spent = {};
+  for (const r in S.res) { const d = S.res[r] - before[r]; if (d > 0.5 || (r === 'henium' && d > 0.005)) gains[r] = d; else if (d < -0.5) spent[r] = -d; }
+  return Object.assign(G.awayReport(a, awaySnap(S), sec, sec), { gains, spent, log, warp: true });
 };
+G.offLog = null;
+G.logAway = (kind, text) => { if (G.offLog && !G.offLog.some((x) => x.text === text)) G.offLog.push({ kind, text }); };
+// what changed while you were away, for the "Welcome back" report
+const awaySnap = (S) => ({ res: { ...S.res }, laid: S.farm.laid || 0, lost: S.farm.lost || 0, war: S.guild.warPts, hunt: S.hunt || 0, rent: S.stats.rentEarned || 0,
+  expsDone: S.exps.filter((e) => e.done).length, hungry: !!S.farm.hungry, kg: S.chikns.filter((c) => c.own !== false).reduce((s, c) => s + (c.kg || 0), 0),
+  names: S.chikns.map((c) => c.name + '#' + c.id) });
+G.awayReport = (a, b, total, mineSec) => ({ sec: total, mineSec, eggsLaid: b.laid - a.laid, eggsLost: b.lost - a.lost, feedUsed: Math.max(0, a.res.feed - b.res.feed),
+  hungry: b.hungry, hungryNew: b.hungry && !a.hungry, kgLost: Math.max(0, a.kg - b.kg), expsBack: b.expsDone - a.expsDone, war: [a.war, b.war], hunt: [a.hunt, b.hunt],
+  rent: b.rent - a.rent, left: a.names.filter((n) => !b.names.includes(n)).map((n) => n.split('#')[0]) });
 G.offline = (sec) => {
   const S = G.S;
   if (!(sec >= 30)) return null;
   const mineSec = Math.min(sec, R.offlineH * 3600);       // the floors mine for at most offlineH hours while you are away
   const total = Math.min(sec, 60 * 86400);                // timers, factories, the farm and the world run the whole time
-  const before = { ...S.res };
+  const before = { ...S.res }, a = awaySnap(S);
   const steps = Math.min(600, Math.max(1, Math.ceil(total / 60)));
   const dt = total / steps;
   let mined = 0;
-  for (let i = 0; i < steps; i++) {
-    const m = Math.max(0, Math.min(dt, mineSec - mined));
-    mined += m;
-    G.tick(dt, true, m / dt);
-  }
-  const gains = {};
-  for (const r in S.res) { const d = S.res[r] - before[r]; if (d > 0.5) gains[r] = d; }
-  return { sec: total, mineSec, gains };
+  let log = [];
+  G.offLog = log;
+  G.sys.awayHazard();
+  try {
+    for (let i = 0; i < steps; i++) {
+      const m = Math.max(0, Math.min(dt, mineSec - mined));
+      mined += m;
+      G.tick(dt, true, m / dt);
+    }
+  } finally { G.offLog = null; }
+  const gains = {}, spent = {};
+  for (const r in S.res) { const d = S.res[r] - before[r]; if (d > 0.5 || (r === 'henium' && d > 0.005)) gains[r] = d; else if (d < -0.5) spent[r] = -d; }
+  return Object.assign(G.awayReport(a, awaySnap(S), total, mineSec), { gains, spent, log });
 };
 })();

@@ -200,3 +200,5 @@
   .ex-chip { padding: 2px 9px 2px 4px; } .ex-chip img { width: 24px; height: 24px; } .ex-chip b { font-size: 16px; }
 }
 @media (max-width: 380px) { .ex-rws { grid-template-columns: 1fr; } }
+
+button.ex-chip { font: inherit; color: inherit; cursor: pointer; border: inherit; }

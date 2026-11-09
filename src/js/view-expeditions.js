@@ -53,7 +53,7 @@ function titleHTML() {
     <div class="ex-chips">
       <span class="ex-chip">${ui.img('ui/chikns', '', '')}Idle <b>${idle}</b></span>
       <span class="ex-chip">${ui.img('ui/timer', '', '')}Exploring <b>${out}</b></span>
-      ${ready ? `<span class="ex-chip ex-chip-gold">${ui.img('prop/chest', '', '')}Ready <b>${ready}</b></span>` : ''}
+      ${ready ? `<button type="button" class="ex-chip ex-chip-gold" data-a="exClaim" data-args='[${S.exps.find((e) => e.done).id}]' title="Claim the loot">${ui.img('prop/chest', '', '')}Ready <b>${ready}</b> · Claim</button>` : ''}
     </div>
   </div>`;
 }
@@ -83,7 +83,9 @@ function mapHTML() {
 
 function siteHTML(s) {
   const lk = isLocked(s), rc = RISK_C[s.riskName] || '#fff', ri = RISKS.indexOf(s.riskName);
-  const rew = Object.entries(s.r).map(([r, [a, b]]) => `<div class="ex-rw">${ui.icon(r, 32)}<div class="ex-rw-t"><span>${D.res[r].name}</span><b>${ui.amt(r, a)}–${ui.amt(r, b)}</b></div></div>`).join('');
+  const X = D.rules.exp, k1 = X.base + X.per; // a lone Chikn's loot multiplier (more Chikns, power and Explorers raise it)
+  const rew = Object.entries(s.r).map(([r, [a, b]]) => `<div class="ex-rw">${ui.icon(r, 32)}<div class="ex-rw-t"><span>${D.res[r].name}</span><b>${ui.amt(r, Math.max(1, Math.round(a * k1)))}–${ui.amt(r, Math.round(b * k1))}+</b></div></div>`).join('')
+    + `<div class="ex-rw">${ui.icon('feed', 32)}<div class="ex-rw-t"><span>FEED, ${Math.round(X.feed * 100)}%+ chance</span><b>${X.feedAmt[0]}–${X.feedAmt[1]}</b></div></div>`;
   return `<section class="panel ex-site ${s.event ? 'ex-site-ev' : ''}" style="--rc:${rc}">
     ${s.event ? `<div class="ex-ribbon">${ui.img('ui/timer', '', '')}${veinLive() ? `Limited event · ends in <b data-b="until:${G.S.live.until}"></b>` : 'Limited event · ended'}</div>` : ''}
     <div class="ex-site-top">
@@ -98,7 +100,7 @@ function siteHTML(s) {
       <div class="ex-fact ${lk ? 'ex-fact-bad' : ''}">${ui.img(lk ? 'ui/lock' : 'ui/trophy', '', '')}<span>Requires</span><b>Lv. ${s.lv}</b></div>
       <div class="ex-fact"><i class="ex-cross" aria-hidden="true">✚</i><span>Injury</span><b style="color:${riskColor(s.risk)}">${pctTxt(s.risk)}</b></div>
     </div>
-    <div class="ex-sub">Possible rewards <small>(more with a bigger, stronger team)</small></div>
+    <div class="ex-sub">Possible rewards <small>(for one Chikn; a bigger, stronger team and Explorers bring more)</small></div>
     <div class="ex-rws">${rew}</div>
   </section>`;
 }

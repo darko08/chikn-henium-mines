@@ -21,7 +21,7 @@ const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h
 const mix = (h) => { h ^= h >>> 16; h = Math.imul(h, 0x45d9f3b); h ^= h >>> 16; h = Math.imul(h, 0x45d9f3b); h ^= h >>> 16; return h >>> 0; };
 const rival = (name, i) => {
   const a = mix(hash(name)), b = mix(a), c = mix(b), d = mix(c);
-  return { i, name, base: 1500 + a % 9500, rate: 20 + b % 80, lv: 3 + c % 9, members: 96 + d % 104, hue: 25 + i * 43 };
+  return { i, name, base: 1500 + a % 9500, rate: 2 + b % 9, lv: 3 + c % 9, members: 96 + d % 104, hue: 25 + i * 43 }; // points per hour
 };
 const RIVALS = D.rivals.map(rival);
 const rivalScore = (r) => Math.floor(r.base + r.rate * Math.max(0, (G.now() - G.S.created) / 3600e3)); // grows slowly over time
@@ -79,6 +79,7 @@ function projectsHTML() {
     const d = G.donation(i);
     return `<div class="gd-don">${ui.icon(d.res, 46)}<div class="gd-don-amt">${G.fmtFull(d.amt)}</div><div class="gd-don-res">${D.res[d.res].name}</div>
       <div class="gd-pill pts">+${G.fmtFull(d.pts)} pts</div>
+      <div class="gd-have">You have ${G.fmt(Math.floor(G.S.res[d.res]))}</div>
       <button class="btn green sm block" data-a="gdDonate" data-args='[${i}]' data-need="${ui.need({ [d.res]: d.amt })}">Donate</button></div>`;
   }).join('');
   return `<div class="gd-proj">
@@ -88,7 +89,7 @@ function projectsHTML() {
         <div class="gd-proj-n">${esc(p.name)}</div>
         <div class="bar green lg gd-proj-bar" data-b="gdProj"><i></i><b></b></div>
         <div class="gd-proj-meta"><span>Reward <span class="gd-pill good">+${projBonus(p)}% Guild Mining Bonus</span><span class="gd-pill h">${ui.icon('henium', 16)} +${projHenium(g.proj)}</span></span>
-          <span class="dim">Guildmates add ~${G.fmt(memberRate(p) * 60)} pts/min · <span data-b="gdEta"></span></span></div>
+          <span class="dim">Guildmates add ~${G.fmt(memberRate(p) * 86400)} pts/day · <span data-b="gdEta"></span></span></div>
       </div>
     </div>
     <div class="gd-sec"><span>Donate</span><small>Donations add project points and count as your contribution</small></div>
@@ -122,11 +123,11 @@ function warsHTML() {
   return `<div class="gd-war" style="--bg:url(${G.img('bg/arena')})">
       ${ui.img('ui/battle', 'gd-war-ic', '')}
       <div class="gd-war-t"><div class="gd-kicker">Guild Wars</div><div class="gd-war-pts"><b>${num(g.warPts)}</b> war points</div>
-        <div class="gd-war-s">Win PvP battles in the Arena to raise ${esc(g.name)}'s war score.</div></div>
+        <div class="gd-war-s">Your share ${G.fmt(G.warShare() * 100, 2)}% of the war pool → <b>≈ ${G.fmt(G.warPerDay(), 2)} HENIUM</b> at the next farm day (in <b data-b="farmday">${G.fmtTime(G.farmDayLeft())}</b>). Win PvP battles in the Arena to raise it.</div></div>
       <button class="btn red lg gd-war-btn" data-a="gdBattle">${ui.img('ui/battle', '', '')}Battle</button>
     </div>
     <div class="gd-cards">
-      <div class="gd-card"><span>Battle Tickets</span><b>${S.battle.tickets} / ${D.pvpTickets}</b><small>refill over time</small></div>
+      <div class="gd-card"><span>Battle Tickets</span><b>${S.battle.tickets} / ${D.pvpTickets}</b><small>${S.battle.tickets < D.pvpTickets ? `next in <span data-b="btTicket">${G.fmtTime(D.pvpTicketTime - S.battle.tt)}</span>` : 'full'}</small></div>
       <div class="gd-card"><span>Squad Power</span><b>${num(G.squadPower())}</b><small>from your Mining Team</small></div>
       <div class="gd-card"><span>Battles Won</span><b>${num(S.stats.wins)}</b><small>PvE and PvP</small></div>
     </div>
@@ -137,7 +138,7 @@ function warsHTML() {
     <div class="gd-rules">
       <div class="gd-rule win"><b>Win</b><span>+${D.rules.pvp.pts[0]} to +${D.rules.pvp.pts[1]} war points per PvP victory. They also count as your guild contribution, and pay your share of the daily HENIUM war pool.</span></div>
       <div class="gd-rule lose"><b>Lose</b><span>−${D.rules.pvp.lose} war points. Build a stronger Mining Team before you attack.</span></div>
-      <div class="gd-rule"><b>Cool-down</b><span>War points drop ${Math.round(D.rules.warDecay * 100)}% at every game-day rollover, so keep fighting to hold your share.</span></div>
+      <div class="gd-rule"><b>Cool-down</b><span>War points drop ${Math.round(D.rules.warDecay * 100)}% at every farm day (next in <span data-b="farmday">${G.fmtTime(G.farmDayLeft())}</span>), so keep fighting to hold your share.</span></div>
       <div class="gd-rule"><b>Tickets</b><span>Each PvP battle costs a ticket. You hold up to ${D.pvpTickets}; one refills every ${G.fmtTime(D.pvpTicketTime)}.</span></div>
     </div>`;
 }
@@ -162,8 +163,9 @@ function zoneHTML() {
     <div class="gd-zone-art" style="background-image:url(${G.img('bg/map')})"><div class="gd-zone-tag">${ui.img('ui/guild', '', '')}<div><div class="gd-kicker">Guild Zone</div><b>Deep Core</b></div><span class="gd-zone-lv">Lv. ${lv}</span></div></div>
     <div class="gd-zb">${ui.icon('heniumOre', 30)}<span class="gd-zb-t">Henium Ore yield</span><b class="good">+${h}%</b><span class="gd-zb-n">→ +${h2}%</span></div>
     <div class="gd-zb">${ui.icon('rareEarth', 30)}<span class="gd-zb-t">Rare Earth yield</span><b class="good">+${r}%</b><span class="gd-zb-n">→ +${r2}%</span></div>
+    <div class="gd-zb">${ui.icon('henium', 30)}<span class="gd-zb-t">Refinery power</span><b class="good">+${Math.round(D.rules.guildZone.refine * 100 * (lv - 1))}%</b><span class="gd-zb-n">→ +${Math.round(D.rules.guildZone.refine * 100 * lv)}%</span></div>
     <div class="gd-zone-foot"><div class="gd-zone-cost"><span class="dim">Expand to Lv. ${lv + 1}</span>${ui.cost(cost, 1, 18)}</div>
-      <button class="btn green" data-a="gdExpand" data-need="${ui.need(cost)}">Expand</button></div>
+      <button class="btn green" data-a="gdExpand" data-need="${ui.need(cost)}">Expand</button>${ui.miss(cost)}</div>
   </section>`;
 }
 
@@ -175,10 +177,11 @@ function licenseHTML() {
     <div class="gd-lic-t">Required to break into the <b>${CORE.name}</b> (depth ${CORE.from}–${CORE.to}).</div>
     ${chk(lvOk, `Guild Lv. ${LICENSE_LV} <span class="dim">(yours: Lv. ${g.lv})</span>`)}
     ${chk(own, 'Guild License')}
-    ${refLv ? chk(refOk, `Henium Refinery Lv. ${refLv} <span class="dim">(also needed to dig)</span>`) : ''}
+    ${refLv ? chk(refOk, `Henium Refinery Lv. ${refLv} <span class="dim">(also needed to dig · yours: Lv. ${S.factories.refinery.lv})</span>`) : ''}
+    ${!lvOk ? `<div class="gd-lic-how">Your guild levels up by completing guild projects (Projects tab): donate to finish them faster.</div>` : ''}
     ${own ? `<div class="gd-lic-ok">Your mine is licensed for the ${CORE.name}.</div>`
       : `<div class="gd-lic-buy"><div class="gd-zone-cost"><span class="dim">Price</span>${ui.cost(D.licenseCost, 1, 18)}</div>
-        <button class="btn gold ${lvOk ? '' : 'cant'}" data-a="gdLicense" ${lvOk ? `data-need="${ui.need(D.licenseCost)}"` : ''}>Buy License</button></div>`}
+        <button class="btn gold ${lvOk ? '' : 'cant'}" data-a="gdLicense" ${lvOk ? `data-need="${ui.need(D.licenseCost)}"` : ''}>Buy License</button>${ui.miss(D.licenseCost)}</div>`}
   </section>`;
 }
 
@@ -206,15 +209,16 @@ ui.handlers.gdLicense = (el) => {
   const r = G.act.buyLicense();
   if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
   G.sfx('level');
-  ui.toast('Guild License acquired! The Core Zone can be opened.', 'good', 'ui/trophy');
+  const ref = G.S.factories.refinery.lv, need = CORE.gate.refineryLv || 0;
+  ui.toast(ref >= need ? 'Guild License acquired! You can now dig into the Core Zone.' : `Guild License acquired! The Core Zone also needs the Henium Refinery at Lv. ${need} (yours: Lv. ${ref}).`, 'good', 'ui/trophy', 4);
   ui.render();
 };
 ui.handlers.gdBattle = () => {
-  if (ui.views.battle) ui.go('battle');
+  if (ui.views.battle) { G.battleMode = 'pvp'; ui.go('battle'); }
   else { ui.toast('The Battle arena is not open yet', 'bad', 'ui/battle'); G.sfx('err'); }
 };
 
-const sigOf = () => { const g = G.S.guild; return [g.proj, g.lv, g.members, g.bonus, g.license, g.zoneLv].join(); };
+const sigOf = () => { const g = G.S.guild; return [g.proj, g.lv, g.members, g.bonus, g.license, g.zoneLv, g.warPts, Math.floor(g.contrib), G.S.battle.tickets].join(); };
 ui.views.guild = {
   render(el) {
     sig = sigOf();

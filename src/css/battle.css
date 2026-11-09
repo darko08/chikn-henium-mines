@@ -276,3 +276,6 @@
   .bt-dmg { font-size: 26px; } .bt-dmg-crit { font-size: 34px; }
   .bt-res-h { font-size: 46px; }
 }
+
+.bt-chip small { font-size: 11px; color: var(--muted); font-weight: 600; }
+.bt-hunt { font-size: 11px; color: #c9d2ff; background: rgba(60, 70, 160, .45); border-radius: 999px; padding: 1px 7px; align-self: center; }

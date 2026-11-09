@@ -238,3 +238,5 @@
 .ev-n-multi .ic { width: 38px; height: 38px; }
 .ev-n-sub { display: inline-flex; align-items: center; gap: 2px; font: 400 13px/1 var(--font-h); color: #e8ecff; text-shadow: 0 1px 0 rgba(0, 0, 0, .5); }
 .ev-n-sub .ic { width: 18px; height: 18px; }
+
+.ev-mo-prog { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; }

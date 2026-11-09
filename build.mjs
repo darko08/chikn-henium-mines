@@ -1,7 +1,7 @@
 // Builds one self-contained HTML file: inlines CSS, JS and every image in assets/web as data URIs.
 // usage: node build.mjs [output.html]
-import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, copyFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
 
 const root = new URL('.', import.meta.url).pathname;
 const wikiOnly = process.argv.includes('--wiki');
@@ -9,7 +9,9 @@ const outArg = process.argv.slice(2).find((a) => !a.startsWith('--'));
 const out = outArg || join(root, wikiOnly ? 'dist/chikn-wiki.html' : 'dist/chikn-henium-mines.html');
 const CSS = ['base', 'mines', 'factories', 'crafting', 'chikns', 'farm', 'guild', 'dex', 'expeditions', 'battle', 'events', 'wiki'];
 const JS = ['data', 'state', 'systems', 'farm', 'dex', 'ui', 'view-mines', 'view-factories', 'view-crafting', 'view-chikns', 'view-farm',
-  'view-guild', 'view-dex', 'view-expeditions', 'view-battle', 'view-events', 'view-wiki', 'main'];
+  'view-guild', 'view-dex', 'view-expeditions', 'view-battle', 'view-events', 'view-wiki', 'music', 'main'];
+// background music (src/js/music.js) plays these, served next to the page as music/*.mp3
+const MUSIC = ['main-theme', 'playful-mines-2', 'playful-farm-2', 'playful-factories'];
 
 const read = (p) => readFileSync(join(root, p), 'utf8');
 const opt = (p) => (existsSync(join(root, p)) ? read(p) : `/* missing ${p} */`);
@@ -31,4 +33,9 @@ let html = read('src/index.html')
   .replace('<!--JS-->', () => `<script>\n${js}\n</script>`);
 if (wikiOnly) html = html.replace('<title>Chikn Henium Mines</title>', '<title>Chikn Henium Mines Wiki</title>');
 writeFileSync(out, html);
+if (!wikiOnly) { // the music files go next to the page
+  const md = join(dirname(out), 'music');
+  mkdirSync(md, { recursive: true });
+  for (const m of MUSIC) if (existsSync(join(root, `assets/music/${m}.mp3`))) copyFileSync(join(root, `assets/music/${m}.mp3`), join(md, `${m}.mp3`));
+}
 console.log(`built ${out}  ${(html.length / 1048576).toFixed(2)} MB, ${Object.keys(assets).length} images`);

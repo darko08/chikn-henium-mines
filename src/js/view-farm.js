@@ -97,7 +97,7 @@ const sigOf = () => {
     S.farm.hungry, S.spec, S.player.lv >= D.rules.specLv, S.stats.hired > 0].join('|');
 };
 const millSigOf = () => G.S.jobs.filter((j) => j.f === 'feedmill').map((j) => j.id + (j.repeat ? 'r' : '')).join() +
-  '|' + (G.S.jobs.length >= G.jobSlots());
+  '|' + (G.S.farm.millAuto ? 1 : 0);
 
 // ---------- dial geometry ----------
 const ang = (kg) => -SWEEP + 2 * SWEEP * Math.max(0, Math.min(1, kg / DIAL_MAX));
@@ -146,7 +146,7 @@ ui.binders.fmCard = (el, id) => {
   setT(q('.fm-lvv', el), String(c.lv));
   setT(q('.fm-ev', el), one(G.chiknEgg(c)));
   const nx = q('.fm-next', el), next = F.eggsAt(Math.min(cap, c.kg + F.step));
-  const nh = max ? '<b class="fm-star">★ Max weight</b>' : `+${F.step} kg → <b>${two(next)}</b>`;
+  const nh = c.rent ? '<small>rented: its weight stays as it is</small>' : max ? '<b class="fm-star">★ Max weight</b>' : `+${F.step} kg → <b>${two(next)}</b> <small>· eats +${two(F.upkeep(Math.min(cap, c.kg + F.step)) - F.upkeep(c.kg))} FEED/day</small>`;
   if (nx.dataset.h !== nh) { nx.dataset.h = nh; nx.innerHTML = nh; }
   nx.title = max ? '' : `Next feeding: ${two(G.chiknEgg(c))} → ${two(next)} EGG/day`;
   const b1 = q('.fm-f1', el), b5 = q('.fm-f5', el);
@@ -166,9 +166,10 @@ ui.binders.fmFatten = (el) => {
   const key = Math.floor(S.res.feed + 1e-9) + '|' + S.chikns.reduce((s, c) => s + c.kg, 0).toFixed(2) + '|' + S.chikns.length + '|' + (ev ? ev.id : '') + S.spec;
   if (key !== fatKey || !fatPlan) { fatKey = key; fatPlan = fattenPlan(); }
   const p = fatPlan;
-  el.disabled = !p.n;
+  el.classList.toggle('cant', !p.n); // stays clickable, so a tap explains why it can't feed
+  const own = S.chikns.some((c) => !c.rent && c.status !== 'away'), need = Math.max(0, Math.ceil(p.reserve + G.feedCost(S.chikns.filter((c) => !c.rent && c.status !== 'away').sort((a, b) => a.kg - b.kg)[0] || { kg: 100, rarity: 'common' }) - S.res.feed));
   setT(q('.fm-fat-s', el), p.n ? `${plural(p.n, 'feeding')} · ${G.fmtFull(p.spent)} FEED`
-    : !S.chikns.length ? 'No Chikns yet' : p.allMax ? 'Everyone is at max weight' : `Keeps ${Math.ceil(p.reserve)} FEED in reserve`);
+    : !own ? 'No Chikns of your own to fatten' : p.allMax ? 'Everyone is at max weight' : `Need ${G.fmtFull(need)} more FEED (keeps ${Math.ceil(p.reserve)} in reserve)`);
 };
 ui.binders.fmScale = (el) => {
   const c = scaleId != null && G.chikn(G.S, scaleId);
@@ -190,9 +191,9 @@ ui.binders.fmScale = (el) => {
 };
 ui.binders.fmMill = (el) => {
   const S = G.S, cap = G.millQuota(), m = S.farm.milled, qd = G.queuedFeed(), used = m + qd;
-  const full = S.factories.feedmill.lv > 0 && used + millRun() > cap;
-  const qfull = S.jobs.length >= G.jobSlots(), con = !!S.factories.feedmill.con;
-  const key = `${m}|${qd}|${cap}|${qfull}|${con}`;
+  const full = S.factories.feedmill.lv > 0 && cap - used < 0.5; // the last batch of a day is cut to what is left
+  const con = !!S.factories.feedmill.con, auto = !!S.farm.millAuto;
+  const key = `${m}|${qd}|${cap}|${auto}|${con}`;
   if (el.dataset.k === key) return;
   el.dataset.k = key;
   setT(q('.fm-q-used', el), whole(used));
@@ -202,8 +203,7 @@ ui.binders.fmMill = (el) => {
   if (qi) { qi.style.left = Math.min(100, m / cap * 100) + '%'; qi.style.width = Math.max(0, Math.min(100 - m / cap * 100, qd / cap * 100)) + '%'; }
   setT(q('.fm-q-note', el), `${whole(m)} milled · ${whole(qd)} grinding`);
   el.classList.toggle('fm-qfull', full);
-  const why = con ? 'The Feed Mill is under construction' : full ? "Today's quota is used up: it resets at the next farm day"
-    : qfull ? `The production queue is full (${S.jobs.length}/${G.jobSlots()}). Wait for a job or free a slot in Factories.` : '';
+  const why = con ? 'The Feed Mill is under construction' : full ? `Today's quota is used up: it resets at the next farm day${auto ? ', and auto-grind starts again by itself' : ''}` : '';
   for (const b of el.querySelectorAll('.fm-grind')) { b.disabled = !!why; b.title = why || b.dataset.tip || ''; }
   const w = q('.fm-mill-why', el);
   if (w) { w.hidden = !why; setT(w, why); }
@@ -252,7 +252,7 @@ function heroHTML() {
       <div class="fm-top">
         <div class="fm-title">${ui.img('farm/nest', 'fm-title-ic', '')}<div class="fm-title-t"><h1>Egg Farm</h1>
           <div class="fm-sub">Fatten your Chikns with FEED. Heavier Chikns lay more EGG.</div></div></div>
-        <div class="fm-day" title="A farm day lasts ${G.fmtTime(F.day)} in this prototype (a real day in the full game)">
+        <div class="fm-day" title="A farm day is a real day (24 hours): eggs, FEED upkeep, the Feed Mill quota and the daily payouts run on it">
           <span class="fm-sun" aria-hidden="true"></span>
           <div class="fm-day-t"><b>Day <span data-b="fmDay">${G.fmtFull(S.farm.day + 1)}</span></b>
             <small>next day in <span data-b="farmday">${G.fmtTime(G.farmDayLeft())}</span></small>
@@ -265,7 +265,8 @@ function heroHTML() {
     </div>
     <div class="fm-nestctl" data-b="fmNest">
       <div class="fm-nest-n">${ui.icon('egg', 38)}<div class="fm-nest-t"><span class="fm-sl">Eggs in the nest</span>
-        <b class="fm-nest-v"><span data-b="nest">${whole(S.nest)}</span><small> / <span class="fm-ncap">${whole(G.nestCap())}</span></small></b></div></div>
+        <b class="fm-nest-v"><span data-b="nest">${whole(S.nest)}</span><small> / <span class="fm-ncap">${whole(G.nestCap())}</span></small></b>
+        <span class="nest-eta" data-b="nestEta"></span></div></div>
       <div class="bar gold fm-nbar"><i class="fm-nfill"></i></div>
       <button type="button" class="btn gold lg fm-collect" data-a="fmCollect">${ui.icon('egg', 26)}Collect</button>
       <span class="fm-nest-full">Nest full! New eggs are lost until you collect.</span>
@@ -290,7 +291,7 @@ function statsHTML() {
         free > 0 ? `${plural(free, 'space')} free` : 'Full: upgrade to hire more', free > 0 ? '' : 'data-full="1"')}
     </div>
     <p class="fm-explain">${ui.icon('egg', 18)}<span>Every Chikn lays about <b>1 EGG a day</b>; heavier Chikns lay more, with diminishing returns.
-      Chikns eat <b>FEED</b> every day to keep their weight; without it they slowly slim down. A farm day lasts ${G.fmtTime(F.day)} here.</span></p>
+      Chikns eat <b>FEED</b> every day to keep their weight; without it they slowly slim down. A farm day is a real day (24 hours).</span></p>
   </section>`;
 }
 
@@ -423,7 +424,7 @@ function coopHTML() {
       ${max ? '' : `<div class="fm-kv"><span>At Lv. ${lv + 1}</span><b>${next}</b><span>Chikns <em>(+${next - cap})</em></span></div>`}
     </div>
     ${max ? '<div class="fm-maxnote">★ Max level: the grandest coop in the land</div>'
-      : `<div class="fm-upbox"><div class="fm-upcost"><small>Upgrade cost</small>${ui.cost(cost, 1, 18)}</div>${ui.btn('Upgrade Coop', 'upgradeCoop', [], 'green', cost)}</div>`}
+      : `<div class="fm-upbox"><div class="fm-upcost"><small>Upgrade cost</small>${ui.cost(cost, 1, 18)}</div>${ui.btn('Upgrade Coop', 'upgradeCoop', [], 'green', cost)}${ui.miss(cost)}</div>`}
   </section>`;
 }
 function celebrateCoop(from, to) {

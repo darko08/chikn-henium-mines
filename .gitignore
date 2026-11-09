@@ -11,3 +11,9 @@ tools/runway-refs.txt
 .env.*
 !.env.example
 .DS_Store
+# music: only the tracks the game plays are committed (the other candidates stay in the Runway library)
+assets/music/*.mp3
+!assets/music/main-theme.mp3
+!assets/music/playful-mines-2.mp3
+!assets/music/playful-farm-2.mp3
+!assets/music/playful-factories.mp3

@@ -1,4 +1,4 @@
-// Events screen: Season 1 pass + reward track, daily missions, live events & hazards, and the 6-month journey.
+// Events screen: the season pass + reward track, daily missions, live events & hazards, and the 6-month journey.
 (() => {
 const G = window.G, D = G.D, ui = G.ui, esc = ui.esc;
 const now = () => G.now(); // the game clock (moves faster in test mode)
@@ -72,9 +72,9 @@ function seasonHTML() {
   const next = max ? null : rewOf(s.lv + 1);
   return `<section class="ev-season" style="background-image:linear-gradient(90deg,rgba(21,26,70,.15) 0%,rgba(21,26,70,.82) 34%,rgba(21,26,70,.95) 70%,rgba(21,26,70,.6) 100%),url(${G.img('bg/floor-henium')})">
     <div class="ev-s-name">
-      <div class="ev-s-kick">${ui.img('ui/trophy', '', '')}Season 1</div>
+      <div class="ev-s-kick">${ui.img('ui/trophy', '', '')}Season ${s.no || 1}</div>
       <h2 class="ev-s-title">Deep Veins</h2>
-      <div class="ev-s-ends">${ui.img('ui/timer', '', '')}Ends in <b data-b="until:${s.ends}">${G.fmtTime((s.ends - now()) / 1000)}</b></div>
+      <div class="ev-s-ends">${ui.img('ui/timer', '', '')}Ends in <b data-b="until:${s.ends}">${G.fmtTime((s.ends - now()) / 1000)}</b>${cl.length ? ` · <span class="ev-s-unc" title="Unclaimed rewards are paid out automatically when the season ends">${cl.length} unclaimed</span>` : ''}</div>
     </div>
     <div class="ev-s-prog">
       <div class="ev-s-row"><span class="ev-lv"><small>Lv.</small>${s.lv}</span>${ui.bar(seasonFrac() * 100, 'blue lg sp', ' ', 'data-b="evSXp"')}<span class="ev-lv ev-lv-next">${max ? '★' : `<small>Lv.</small>${s.lv + 1}`}</span></div>
@@ -202,8 +202,8 @@ function journeyHTML() {
       <header class="ev-mo-h"><span class="ev-mo-n">Month ${i + 1}</span><span class="ev-mo-name">${esc(j.name)}</span></header>
       <div class="ev-mo-art" style="background-image:url(${G.img(bg)})">${ui.img(art, 'ev-mo-sp', '')}
         ${st === 'done' ? '<span class="ev-mo-badge ev-mo-badge-done">✔ Complete</span>' : st === 'cur' ? '<span class="ev-mo-badge ev-mo-badge-cur">You are here</span>' : `${ui.img('ui/lock', 'ev-mo-lock', 'Locked')}`}</div>
-      <ul class="ev-mo-items">${j.items.map((t) => `<li><span class="ev-mo-cb">${st === 'done' ? '✔' : ''}</span>${esc(t)}</li>`).join('')}</ul>
-      <div class="ev-mo-goal">${ui.img(goal, '', '')}<span>Goal: ${esc(j.goal)}</span>${st === 'done' ? '<b>✔</b>' : ''}</div>
+      <ul class="ev-mo-items">${j.items.map((t) => `<li><span class="ev-mo-cb">${st === 'done' ? '✔' : '·'}</span>${esc(t)}</li>`).join('')}</ul>
+      <div class="ev-mo-goal">${ui.img(goal, '', '')}<span>Goal: ${esc(j.goal)}${j.prog && st !== 'done' ? (() => { const [a, b, w] = j.prog(S); return `<small class="ev-mo-prog">${G.fmtFull(Math.min(a, b))} / ${G.fmtFull(b)} ${esc(w)}</small>`; })() : ''}</span>${st === 'done' ? '<b>✔</b>' : ''}</div>
       ${i < D.journey.length - 1 ? '<span class="ev-mo-arrow" aria-hidden="true">❯</span>' : ''}
     </article>`;
   }).join('');

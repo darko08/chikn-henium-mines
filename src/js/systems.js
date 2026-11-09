@@ -4,7 +4,9 @@
 const G = window.G, D = G.D, R = D.rules;
 const ok = (extra) => Object.assign({ ok: true }, extra);
 const fail = (msg) => ({ ok: false, msg });
-const lack = (cost) => fail('Not enough ' + G.missing(cost).map((r) => D.res[r].name).join(', '));
+// "Not enough Copper Ingot: need 500, you have 120"
+const lack = (cost) => fail('Not enough ' + G.missing(cost).map((r) => `${D.res[r].name}: need ${G.fmt(cost[r])}, you have ${G.fmt(Math.floor(G.S.res[r]))}`).join(' · '));
+G.lackMsg = (cost) => lack(cost).msg;
 const now = () => G.now(); // the game clock (moves faster in test mode)
 G.sys = {}; G.act = {};
 
@@ -37,11 +39,13 @@ G.digGate = (d) => {
   const z = D.zoneOf(d), S = G.S;
   if (z.from !== d || !z.gate) return null;
   const g = z.gate;
-  if (g.factory && S.factories[g.factory].lv < 1) return `Build the ${D.factoryById(g.factory).name} to break into the ${z.name}`;
+  if (g.factory && S.factories[g.factory].lv < 1) { const st = S.factories[g.factory], f = D.factoryById(g.factory);
+    return st.con ? `The ${f.name} is being built (${G.fmtTime(st.con.dur - st.con.t)} left): then you can break into the ${z.name}` : `Build the ${f.name} (Factories) to break into the ${z.name}`; }
   if (g.machine && !S.machines.length) return `Craft your first machine to break into the ${z.name}`;
-  if (g.refineryLv && S.factories.refinery.lv < g.refineryLv) return `Requires Henium Refinery Lv. ${g.refineryLv} & Guild License`;
-  if (g.license && !S.guild.license) return 'Requires a Guild License';
-  return null;
+  const miss = [];
+  if (g.refineryLv && S.factories.refinery.lv < g.refineryLv) miss.push(`Henium Refinery Lv. ${g.refineryLv} (yours: Lv. ${S.factories.refinery.lv})`);
+  if (g.license && !S.guild.license) miss.push(`a Guild License (Guild screen: ${G.fmtFull(D.licenseCost.henium || 0)} HENIUM + ${G.fmtFull(D.licenseCost.egg || 0)} EGG, guild Lv. ${R.licenseGuildLv})`);
+  return miss.length ? `The ${z.name} needs ${miss.join(' and ')}` : null;
 };
 // a working machine on the deepest floor digs faster: half of its speed bonus (Heavy Drill Lv. 10: ×1.75)
 G.digSpeed = () => { const m = G.machineOn(D.zoneOf(G.S.depth).id); return m && G.machineStats(m).working ? 1 + (G.machineStats(m).speed - 1) * 0.5 : 1; };
@@ -63,7 +67,7 @@ G.sys.finishDig = (offline) => {
   let newZone = null;
   if (S.zones[z.id].lv === 0) { S.zones[z.id].lv = 1; newZone = z; S.sel = z.id; }
   G.addXP(8 + S.depth * 3);
-  if (!offline) G.emit('dug', { depth: S.depth, newZone });
+  if (!offline) G.emit('dug', { depth: S.depth, newZone }); else G.logAway('dug', `Dug down to depth ${S.depth}${newZone ? `: the ${newZone.name} is open` : ''}`);
 };
 G.act.speedDig = () => {
   const S = G.S;
@@ -98,6 +102,7 @@ G.sys.finishBuild = (f, offline) => {
   st.lv = to; st.con = null;
   G.addXP(to === 1 ? 60 : 30 * to);
   if (!offline) G.emit('built', { f, lv: to, from, tierUp: from === 0 || D.tier(to) > D.tier(from) });
+  else G.logAway('built', `${f.name} ${from ? `upgraded to Lv. ${to}` : 'is built'}`);
 };
 G.act.speedBuild = (fid) => {
   const st = G.S.factories[fid];
@@ -112,18 +117,28 @@ G.act.queue = (fid, rid, repeat = false) => {
   const S = G.S, f = D.factoryById(fid), st = S.factories[fid];
   if (st.lv < 1) return fail(`Build the ${f.name} first`);
   if (st.con) return fail(`The ${f.name} is under construction`);
-  if (S.jobs.length >= G.jobSlots()) return fail('Production queue is full');
+  if (G.queueFull(fid)) return fail(`Production queue is full (${G.slotJobs()}/${G.jobSlots()}): wait for a job, cancel one, or turn off a repeating job`);
   const rec = f.recipes.find((r) => r.id === (rid || st.recipe)) || f.recipes[0];
-  const cost = G.recipeIn(rec);
-  const feed = fid === 'feedmill' ? G.recipeOut(f, rec).feed : 0;
-  if (feed && S.farm.milled + G.queuedFeed() + feed > G.millQuota()) return fail(`Today's FEED quota is used up (${Math.round(S.farm.milled + G.queuedFeed())}/${G.millQuota()}). Upgrade the Feed Mill for a bigger share.`);
+  let cost = G.recipeIn(rec), feed = 0;
+  if (fid === 'feedmill') { // the last batch of the day is cut to what is left of the quota
+    const full = G.recipeOut(f, rec).feed, room = G.millQuota() - S.farm.milled - G.queuedFeed();
+    if (room < 0.5) { if (repeat) S.farm.millAuto = true; return fail(`Today's FEED quota is used up (${Math.round(S.farm.milled + G.queuedFeed())}/${G.millQuota()}). ${repeat ? 'Auto-grind starts again on the next farm day.' : 'Upgrade the Feed Mill for a bigger share.'}`); }
+    feed = Math.min(full, Math.floor(room * 100) / 100);
+    if (feed < full) cost = G.scale(cost, feed / full);
+    S.farm.millAuto = !!repeat;
+  }
   if (!G.pay(cost)) return lack(cost);
   S.jobs.push({ id: S.nextId++, f: fid, r: rec.id, t: 0, dur: G.jobDur(f, rec), repeat: !!repeat, paid: cost, feed });
   return ok();
 };
+// a new farm day: Feed Mill auto-grind picks up again with the new quota (also while you are away)
+G.on('farmDay', () => {
+  const S = G.S;
+  if (S.farm.millAuto && S.factories.feedmill.lv > 0 && !S.factories.feedmill.con && !S.jobs.some((j) => j.f === 'feedmill')) G.act.queue('feedmill', null, true);
+});
 G.sys.finishJob = (j, offline) => {
   const S = G.S, f = D.factoryById(j.f), rec = f.recipes.find((r) => r.id === j.r);
-  const out = G.recipeOut(f, rec);
+  const out = j.f === 'feedmill' && j.feed ? { feed: j.feed } : G.recipeOut(f, rec); // a cut last batch makes what it was cut to
   G.give(out);
   const units = Object.values(rec.in).reduce((a, b) => a + b, 0);
   G.stat('processed', units);
@@ -133,12 +148,15 @@ G.sys.finishJob = (j, offline) => {
   G.addXP(1 + units / 500); // factories run all day (and offline): a little XP per batch
   S.jobs.splice(S.jobs.indexOf(j), 1);
   if (j.repeat) {
-    const cost = G.recipeIn(rec);
-    const feed = j.f === 'feedmill' ? G.recipeOut(f, rec).feed : 0;
-    const quotaOk = !feed || S.farm.milled + G.queuedFeed() + feed <= G.millQuota();
-    if (quotaOk && S.jobs.length < G.jobSlots() && G.pay(cost)) S.jobs.push({ id: S.nextId++, f: j.f, r: j.r, t: 0, dur: G.jobDur(f, rec), repeat: true, paid: cost, feed });
-    else if (!quotaOk) { if (!offline) G.emit('note', { text: 'Feed Mill: daily FEED quota reached. It resumes tomorrow.', icon: 'res/feed' }); }
-    else if (!offline) G.emit('note', { text: `${f.name}: repeat stopped (not enough materials)`, icon: G.bImg(f.id, G.S.factories[f.id].lv), bad: true });
+    if (j.f === 'feedmill') {
+      const r = G.act.queue('feedmill', j.r, true);
+      if (!r.ok && !offline) G.emit('note', { text: /quota/.test(r.msg) ? 'Feed Mill: today\'s FEED quota is reached. Auto-grind starts again on the next farm day.' : `Feed Mill: auto-grind stopped. ${r.msg}`, icon: 'res/feed', bad: !/quota/.test(r.msg) });
+    } else {
+      const cost = G.recipeIn(rec);
+      if (!G.queueFull(j.f) && G.pay(cost)) S.jobs.push({ id: S.nextId++, f: j.f, r: j.r, t: 0, dur: G.jobDur(f, rec), repeat: true, paid: cost, feed: 0 });
+      else if (!offline) G.emit('note', { text: `${f.name}: repeat stopped. ${G.lackMsg(cost)}`, icon: G.bImg(f.id, G.S.factories[f.id].lv), bad: true });
+      else G.logAway('stopped', `${f.name} stopped repeating. ${G.lackMsg(cost)}`);
+    }
   }
   if (!offline) G.emit('jobDone', { j, out, f }); // after re-queueing, so screens never show a stale idle factory
 };
@@ -158,9 +176,10 @@ G.act.cancelJob = (id) => {
   if (!j) return fail('Job not found');
   G.give(j.paid || {}, j.t > 0 ? R.refund : 1, true); // a refund, never a mint
   S.jobs.splice(S.jobs.indexOf(j), 1);
+  if (j.f === 'feedmill') S.farm.millAuto = false; // cancelling the mill's job also ends its auto-grind
   return ok();
 };
-G.act.toggleRepeat = (id) => { const j = G.S.jobs.find((x) => x.id === id); if (j) j.repeat = !j.repeat; return ok(); };
+G.act.toggleRepeat = (id) => { const j = G.S.jobs.find((x) => x.id === id); if (j) { j.repeat = !j.repeat; if (j.f === 'feedmill') G.S.farm.millAuto = j.repeat; } return ok(); };
 G.act.fUpgrade = (uid) => {
   const S = G.S, u = D.fUpgrades.find((x) => x.id === uid), lv = S.fup[uid];
   if (lv >= u.max) return fail('Max level');
@@ -186,7 +205,7 @@ G.sys.finishCraft = (c, offline) => {
   const m = { id: S.nextId++, type: c.type, lv: 1, dur: 100, zone: null };
   S.machines.push(m);
   G.stat('crafted'); G.addXP(40 + 30 * D.machines.findIndex((x) => x.id === c.type));
-  if (!offline) G.emit('craftDone', m);
+  if (!offline) G.emit('craftDone', m); else G.logAway('craft', `${D.machineById(c.type).name} crafted: deploy it on a floor`);
 };
 G.act.speedCraft = (id) => {
   const c = G.S.crafts.find((x) => x.id === id);
@@ -221,7 +240,7 @@ G.act.service = (id) => {
   const m = G.S.machines.find((x) => x.id === id);
   if (!m) return fail('Machine not found');
   if (m.dur >= 99.5) return fail('Already in perfect shape');
-  const cost = D.machineServiceCost(m.dur);
+  const cost = D.machineServiceCost(m.dur, D.machineTier(m.type));
   if (!G.pay(cost)) return lack(cost);
   m.dur = 100; m.off = false;
   return ok();
@@ -379,7 +398,7 @@ G.act.toggleSquad = (cid) => {
 G.act.collectNest = () => {
   const n = Math.floor(G.S.nest);
   if (n < 1) return fail('The nest is empty');
-  G.S.res.egg += n; G.S.nest -= n;
+  G.S.res.egg += n; G.S.nest -= n; G.S.farm.fullSaid = false;
   return ok({ n });
 };
 G.act.collectAll = () => {
@@ -635,6 +654,21 @@ G.act.claimSeason = (lv) => {
   G.give(r);
   return ok({ rew: r });
 };
+// the season ends: every reward you reached but didn't claim is paid out (a Chikn only if the coop has room), then a new
+// season starts
+G.sys.seasonEnd = () => {
+  const S = G.S, s = S.season, got = {}, missed = [];
+  for (let lv = 1; lv <= Math.min(s.lv, D.seasonMax); lv++) {
+    if (s.claimed.includes(lv)) continue;
+    const r = D.seasonReward(lv, S.depth);
+    if (r.chikn) { if (S.chikns.length < G.coopCap()) G.newChikn(r.chikn, null, { own: true }); else missed.push(D.rarity(r.chikn).name + ' Chikn'); continue; }
+    const g = G.give(r); for (const k in g) got[k] = (got[k] || 0) + g[k];
+  }
+  const no = (s.no || 1) + 1;
+  S.season = { no, lv: 1, xp: 0, claimed: [], ends: now() + R.seasonDays * 86400e3 };
+  const paid = Object.keys(got).length ? ` Your unclaimed rewards were paid out: ${Object.entries(got).map(([k, v]) => `${G.fmt(v)} ${D.res[k].name}`).join(', ')}.` : '';
+  G.emit('note', { text: `Season ${no} has begun!${paid}${missed.length ? ` The coop was full, so ${missed.join(', ')} could not join.` : ''}`, icon: 'ui/trophy', good: true });
+};
 G.act.chooseSpec = (id) => {
   if (G.S.spec) return fail('Specialization already chosen');
   if (G.S.player.lv < R.specLv) return fail(`Unlocks at player Lv. ${R.specLv}`);
@@ -677,6 +711,17 @@ G.sys.hazardTick = () => {
   if (type === 'bandits') { h.until = t + B.sec * 1000; h.power = Math.round(P * G.rand(B.power[0], B.power[1])); h.toll = { egg: B.toll(d) }; }
   S.hazard = h;
   G.emit('hazard', h);
+};
+// when you leave (or skip time) the current hazard ends on its own, without a penalty, and a new one waits until you are back
+G.sys.awayHazard = () => {
+  const S = G.S, h = S.hazard;
+  if (h) {
+    const z = D.zoneById(h.zone).name;
+    G.logAway('hazard', { collapse: `The cave-in in the ${z} cleared itself`, bandits: `The bandits in the ${z} gave up and left`, creature: `The creature in the ${z} wandered off`,
+      supply: `The supply crate in the ${z} was lost`, richvein: `The rich vein in the ${z} faded` }[h.type] || 'A hazard ended');
+    S.hazard = null;
+  }
+  S.hazardNext = now() + G.rand(R.hazardGap[0], R.hazardGap[1]) * 1000;
 };
 // raiders go after your HENIUM once you hold a meaningful stash: defend it (Guardians, squad power) or lose a share
 G.sys.stealHenium = (share) => {
@@ -732,10 +777,11 @@ G.on('farmDay', (day, offline) => {
   const hunt = Math.round(G.huntPerDay() * 100) / 100;
   if (war > 0) G.give({ henium: war });
   if (hunt > 0) G.give({ henium: hunt });
-  // while away the payouts land in the "while you were away" summary instead of one toast per day
-  if (!offline && (war > 0 || hunt > 0)) G.emit('note', { text: `Daily payout: +${G.fmt(war + hunt, 2)} HENIUM (guild wars ${G.fmt(war, 2)}, monster hunts ${G.fmt(hunt, 2)})`, icon: 'res/henium', good: true });
+  const w0 = S.guild.warPts, h0 = S.hunt || 0;
   S.guild.warPts = Math.round(S.guild.warPts * (1 - R.warDecay));
   S.hunt = Math.floor((S.hunt || 0) * R.huntKeep);
+  // while away the payouts land in the "Welcome back" report instead of one toast per day
+  if (!offline && (war > 0 || hunt > 0 || w0 !== S.guild.warPts || h0 !== S.hunt)) G.emit('note', { text: `New farm day. Daily payout: +${G.fmt(war + hunt, 2)} HENIUM (guild wars ${G.fmt(war, 2)}, monster hunts ${G.fmt(hunt, 2)}). War points cooled down ${G.fmtFull(w0)} → ${G.fmtFull(S.guild.warPts)}, hunt points ${G.fmtFull(h0)} → ${G.fmtFull(S.hunt)}.`, icon: 'res/henium', good: true });
   S.world.war = Math.round(S.world.war * (1 + R.worldWar));
   S.world.hunt = Math.round((S.world.hunt || D.supply.worldHunt0) * (1 + R.worldHunt));
 });

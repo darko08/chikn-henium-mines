@@ -458,7 +458,7 @@ function earnHTML() {
       ui.bar(0, 'gold dx-sb', ' ', 'data-b="dxBar:war"'),
       `<b class="dx-pur">+<span data-b="dxE:warDay"></span></b> HENIUM at the next day rollover`,
       `War points cool down ${Math.round(D.rules.warDecay * 100)}% every day: keep raiding rival guilds to hold your share.`,
-      `<button class="btn sm red" data-a="nav" data-args='["battle"]'>${ui.img('ui/battle', '', '')}Raid rival guilds</button>`) +
+      `<button class="btn sm red" data-a="gdBattle">${ui.img('ui/battle', '', '')}Raid rival guilds</button>`) +
     card('hunt', ui.img(nb ? 'monster/' + nb.mon : 'ui/trophy', 'dx-earn-art', ''), 'Monster hunts', '10% · fighting', '',
       `<span>Your hunt points <b data-b="dxE:hunt"></b></span><span>Other hunters <b data-b="dxE:worldHunt"></b></span>`,
       ui.bar(0, 'green dx-sb', ' ', 'data-b="dxBar:hunt"'),
@@ -472,10 +472,10 @@ function sinksHTML() {
     : `From depth 21 on, every new level costs HENIUM (${D.digCost(21).henium}+)`;
   const rows = [
     ['ui/mines', 'Digging below depth 21', dig, 'mines'],
-    ['ui/factories', 'Building levels 5+', `Lv. 5 → 6 costs ${D.factoryUpCost(f, 5).henium}, Lv. 9 → 10 costs ${D.factoryUpCost(f, 9).henium} HENIUM`, 'factories'],
+    ['ui/factories', 'Building upgrades', `the Henium Refinery from Lv. 1 → 2 (${D.factoryUpCost(f, 1).henium} HENIUM, up to ${G.fmtFull(D.factoryUpCost(f, 9).henium)} for Lv. 10); other buildings from Lv. 5 → 6 (${D.factoryUpCost(D.factories[0], 5).henium}, up to ${D.factoryUpCost(D.factories[0], 9).henium})`, 'factories'],
     ['ui/chikns', 'Buying Chikn NFTs', `${D.buyNft.cost.henium} HENIUM per NFT, rare or better`, 'chikns'],
     ['ui/guild', 'Guild license & zone', `${g.license ? 'License owned' : `License ${D.licenseCost.henium} HENIUM`} · zone Lv. ${g.zoneLv + 1}: ${D.guildZoneCost(g.zoneLv).henium} HENIUM`, 'guild'],
-    ['ui/timer', 'Speed-ups', `${G.speedCost(60)} HENIUM per minute skipped (digs and builds cost double; refinery batches can't be rushed)`, 'factories'],
+    ['ui/timer', 'Speed-ups', `1 HENIUM per started 10 minutes skipped (digs and builds cost double; refinery batches can't be rushed)`, 'factories'],
     ['ui/dex', 'Every DEX swap', `A third of the ${pct(G.dexFee(), 3)} fee is burned`, null],
   ];
   return rows.map(([ic, t, s, v]) => `<${v ? `button class="dx-sink" data-a="nav" data-args='["${v}"]'` : 'div class="dx-sink"'}>${ui.img(ic, 'dx-sink-ic', '')}
@@ -496,7 +496,7 @@ function heniumHTML() {
           <div class="dx-fact"><span>Hard cap</span><b>21M</b></div>
           <div class="dx-fact"><span>Mined so far</span><b data-b="dxH:minedS"></b></div>
           <div class="dx-fact"><span>World emission</span><b data-b="dxH:emis"></b></div>
-          <div class="dx-fact"><span>Next halving in</span><b data-b="dxH:toNextS"></b></div>
+          <div class="dx-fact"><span>Next halving</span><b data-b="dxH:toNextS"></b></div>
         </div></div>
       <div class="dx-hp"><div class="dx-hp-h">1 HENIUM is worth</div>
         <div class="dx-hp-r">${ui.icon('eth', 26)}<b data-b="dxPx:henium,eth"></b><span>ETH</span></div>
@@ -625,8 +625,8 @@ ui.binders.dxH = (el, k) => {
     emis: () => `${G.fmt(E, 1)} / day`,
     epoch: () => `${e + 1} of ${D.supply.halvings.length + 1}`,
     toNext: () => (last ? `${G.fmtFull(Math.floor(cap - w))} left to mine` : `${G.fmtFull(Math.ceil(next - w))} HENIUM to go`),
-    toNextS: () => (last ? 'final epoch' : G.fmt(next - w)),
-    eta: () => (w >= cap ? 'All 21M are mined: no new HENIUM, ever' : E > 0 ? `≈ ${G.fmtFull(Math.ceil((next - w) / E))} game days at today's emission` : ''),
+    toNextS: () => (last ? 'final epoch' : `${G.nextHalvingDate()} · in ${G.fmtFull(Math.ceil(G.nextHalvingIn() / 86400))} days`),
+    eta: () => (w >= cap ? 'All 21M are mined: no new HENIUM, ever' : `on ${G.nextHalvingDate()}, in ${G.fmtFull(Math.ceil(G.nextHalvingIn() / 86400))} days (every ${G.fmtFull(D.supply.halvingDays)} days)`),
     sr: () => G.fmt(E * sp.refinery, 1), sw: () => G.fmt(E * sp.war, 1), sh: () => G.fmt(E * sp.boss, 1),
   }[k];
   if (k === 'next') setH(el, last ? 'Final epoch: <b>no more halvings</b>' : `Next halving at <b>${G.fmtFull(next)}</b>`);

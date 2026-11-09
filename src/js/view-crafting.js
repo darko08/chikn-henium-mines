@@ -61,7 +61,7 @@ ui.binders.crSpeed = (el, id) => { // speed-up price shrinks as the craft progre
 ui.binders.crSvc = (el, id) => { // service price grows as the machine wears
   const m = G.S.machines.find((x) => x.id === +id);
   if (!m) return;
-  const c = D.machineServiceCost(m.dur), key = ui.need(c);
+  const c = D.machineServiceCost(m.dur, D.machineTier(m.type)), key = ui.need(c);
   if (el.dataset.k === key) return;
   el.dataset.k = key;
   el.innerHTML = ui.cost(c, 1, 15);
@@ -190,9 +190,12 @@ function queueHTML() {
   }).join('');
   let empty = '';
   for (let i = S.crafts.length; i < S.craftSlots; i++) {
-    empty += `<button type="button" class="cr-q-add" data-a="craft" data-args='["${m.id}"]' ${isLocked(m) ? '' : `data-need="${ui.need(m.cost)}"`}
+    empty += isLocked(m) ? `<div class="cr-q-add cr-q-lock">${plainImg('ui/lock')}<span>${esc(m.name)} unlocks at player Lv. ${m.lv}</span></div>`
+      : `<button type="button" class="cr-q-add" data-a="craft" data-args='["${m.id}"]' data-need="${ui.need(m.cost)}"
       title="Craft the selected machine"><span class="cr-plus">+</span><span>Add ${esc(m.name)}</span><small>${G.fmtTime(craftTime(m))}</small></button>`;
   }
+  const up = D.fUpgrades.find((u) => u.id === 'craft');
+  if (S.crafts.length >= S.craftSlots && up && S.fup.craft < up.max) empty += `<button type="button" class="cr-q-add cr-q-lock" data-a="nav" data-args='["factories"]' title="Buy a Craft Slot in Factory Upgrades (Factories screen)">${plainImg('ui/lock')}<span>Queue full: unlock a Craft Slot in Factories → Factory Upgrades</span></button>`;
   return `<section class="panel cr-queue" aria-label="Crafting queue">
     <div class="panel-h">${plainImg('ui/timer')}<span class="sp">Crafting Queue <span class="cr-cnt">(${S.crafts.length}/${S.craftSlots})</span></span></div>
     <div class="cr-qlist">${rows}${empty}</div>
@@ -204,11 +207,15 @@ function floorsHTML() {
   const open = D.zones.filter((z) => G.zoneOpen(z));
   const rows = open.map((z) => {
     const m = G.machineOn(z.id), d = m ? D.machineById(m.type) : null, ms = m ? G.machineStats(m) : null;
+    const st = !m ? '' : m.dur <= 0 ? ' · <b class="cr-bad">broken</b>' : m.off ? ' · <b class="cr-bad">no coal</b>' : '';
     return `<div class="cr-fl ${m ? '' : 'cr-fl-empty'}" style="--zg:${z.glow}">${ui.icon(z.res, 26)}<div class="cr-fl-t"><b>${esc(z.name)}</b><small>Depth ${z.from}–${z.to}</small></div>
-      ${m ? `<span class="cr-fl-m">${ui.img('machine/' + m.type, 'cr-fl-img', d.name)}<span><b>${esc(d.name)}</b><small>Lv. ${m.lv} · ×${ms.speed.toFixed(2)}</small></span></span>`
+      ${m ? `<span class="cr-fl-m">${ui.img('machine/' + m.type, 'cr-fl-img', d.name)}<span><b>${esc(d.name)}</b><small>Lv. ${m.lv} · ×${ms.speed.toFixed(2)}${st}</small></span></span>`
         : '<span class="cr-fl-none">No machine</span>'}</div>`;
   }).join('') || '<div class="empty">No mine floors open yet.</div>';
-  return `<section class="panel cr-floors" aria-label="Mine floors"><div class="panel-h">${plainImg('ui/mines')}<span class="sp">Mine Floors</span><small>${open.filter((z) => G.machineOn(z.id)).length}/${open.length} equipped</small></div>
+  const working = open.filter((z) => { const m = G.machineOn(z.id); return m && G.machineStats(m).working; }).length;
+  const burn = G.coalUse() * 3600, mined = (G.rates().coal || 0) * 3600;
+  return `<section class="panel cr-floors" aria-label="Mine floors"><div class="panel-h">${plainImg('ui/mines')}<span class="sp">Mine Floors</span><small>${working}/${open.length} working</small></div>
+    ${G.S.machines.some((x) => x.zone) ? `<div class="cr-coal ${burn > mined ? 'cr-bad' : ''}">${ui.icon('coal', 18)} Machines burn <b>${G.fmt(burn)}/h</b> · your Coal floor mines <b>${G.fmt(mined)}/h</b>${burn > mined ? ' · your Coal stock is shrinking' : ''}</div>` : ''}
     <p class="cr-fl-rule"><b>One machine per floor.</b> A second one on the same floor replaces the first (it goes back to storage), so machines don't stack. Its speed multiplies the floor's output together with your Chikn, guild and specialization bonuses. On your deepest floor it also speeds up digging.</p>${rows}</section>`;
 }
 
@@ -223,7 +230,9 @@ function machineCard(x) {
     return `<option value="${oz.id}" ${x.zone === oz.id ? 'selected' : ''}>${esc(oz.name)} (${oz.from}–${oz.to})${boost}${swap}</option>`;
   }).join('');
   const up = x.lv < D.machineMaxLv ? D.machineUpCost(d, x.lv) : null;
-  const svc = D.machineServiceCost(x.dur), perfect = x.dur >= 99.5;
+  const svc = D.machineServiceCost(x.dur, D.machineTier(x.type)), perfect = x.dur >= 99.5;
+  const wearMin = ms.def.wear * (1 - Math.min(0.6, G.bonus('machine') * 0.5)), left = wearMin > 0 ? x.dur / wearMin : Infinity; // minutes of play
+  const nx = up ? statsAt(d, x.lv + 1, x.zone) : null;
   return `<article class="cr-mc ${z ? 'cr-mc-dep' : 'cr-mc-stored'}" style="--zg:${z ? z.glow : '#5a63b8'}">
     <div class="cr-mc-top">
       <div class="cr-mc-art" ${z ? `style="background-image:url(${G.img('bg/floor-' + z.id)})"` : ''}>${ui.img('machine/' + x.type, 'cr-mc-img', d.name)}<span class="cr-mc-lv">Lv. ${x.lv}</span></div>
@@ -232,14 +241,16 @@ function machineCard(x) {
         <div class="cr-mc-st"><span class="tag ${status[1]}">${status[0]}</span>${z ? `<span class="cr-mc-z">${ui.icon(z.res, 16)}${esc(z.name)}</span>` : ''}</div>
         <div class="cr-kv"><span>Speed</span><b>×${ms.speed.toFixed(2)}</b></div>
         <div class="cr-kv"><span>Capacity</span><b>+${G.fmt(ms.cap)}/h</b></div>
+        <div class="cr-kv"><span>Coal</span><b>−${G.fmt(ms.energy)}/h</b></div>
+        <div class="cr-kv"><span>Breaks in</span><b>${x.dur <= 0 ? 'broken' : `~${G.fmtTime(left * 60)} of play`}</b></div>
         <div class="cr-kv cr-dur"><span>Durability</span>${ui.bar(x.dur, x.dur < 25 ? 'red' : 'green', Math.round(x.dur) + '%', `data-b="dur:${x.id}"`)}</div>
       </div>
     </div>
     <label class="cr-dep"><span>${plainImg('ui/mines')}Floor</span><select data-cr-deploy="${x.id}" aria-label="Deploy ${esc(d.name)} to a mine floor">${opts}</select></label>
     <div class="cr-mc-btns">
-      <div class="cr-mc-b">${up ? ui.btn('▲ Upgrade', 'upgradeMachine', [x.id], 'sm', up, `title="Upgrade to Lv. ${x.lv + 1}"`) + ui.cost(up, 1, 15) : '<button type="button" class="btn sm gray" disabled>★ Max Lv.</button><span class="cr-mc-hint">Fully upgraded</span>'}</div>
+      <div class="cr-mc-b">${up ? ui.btn('▲ Upgrade', 'upgradeMachine', [x.id], 'sm', up, `title="Upgrade to Lv. ${x.lv + 1}"`) + ui.cost(up, 1, 15) + `<span class="cr-mc-hint">Lv. ${x.lv + 1}: ×${nx.speed.toFixed(2)} · +${G.fmt(nx.cap)}/h</span>` + ui.miss(up) : '<button type="button" class="btn sm gray" disabled>★ Max Lv.</button><span class="cr-mc-hint">Fully upgraded</span>'}</div>
       <div class="cr-mc-b">${perfect ? '<button type="button" class="btn sm gray" disabled>Service</button><span class="cr-mc-hint">In perfect shape</span>'
-        : `${ui.btn(`${plainImg('ui/crafting')}Service`, 'service', [x.id], 'sm gold', svc, 'title="Restore durability to 100%"')}<span data-b="crSvc:${x.id}">${ui.cost(svc, 1, 15)}</span>`}</div>
+        : `${ui.btn(`${plainImg('ui/crafting')}Service`, 'service', [x.id], 'sm gold', svc, 'title="Restore durability to 100%"')}<span data-b="crSvc:${x.id}">${ui.cost(svc, 1, 15)}</span>${ui.miss(svc)}`}</div>
     </div>
   </article>`;
 }

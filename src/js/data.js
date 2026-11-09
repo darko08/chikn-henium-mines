@@ -132,8 +132,8 @@ D.factoryUpCost = (f, lv) => {
   const c = {}, k = f.id === 'refinery' ? 1.5 : 1, g = f.upG || 1.9; // the refinery (the HENIUM engine) needs 1.5× the materials
   for (const r in f.build) c[r] = Math.ceil(f.build[r] * (D.res[r].cat === 'raw' ? pow(g, lv) : k * pow(1.5, lv)));
   const need = (r, v) => { c[r] = Math.max(c[r] || 0, Math.ceil(v)); };
-  if (lv >= 2) need('components', 200 * pow(1.5, lv - 2));
-  if (lv >= 4) need('machinePart', 150 * pow(1.5, lv - 4));
+  if (lv >= 4) need('components', 200 * pow(1.5, lv - 4));  // Components and Machine Parts come from the Iron Forge (depth 14)
+  if (lv >= 5) need('machinePart', 150 * pow(1.5, lv - 5));
   if (lv >= 5) need('henium', 10 * pow(1.7, lv - 5));
   if (f.id === 'refinery') need('henium', 15 * pow(1.8, lv - 1)); // every refinery upgrade costs HENIUM: 15, 27, 49 … 1,700
   if (lv >= 6) need('alloy', 150 * pow(1.5, lv - 6));
@@ -174,7 +174,10 @@ D.machines = [
 D.machineById = (id) => D.machines.find((m) => m.id === id);
 D.machineMaxLv = 10;
 D.machineUpCost = (m, lv) => { const i = D.machines.indexOf(m); const c = { machinePart: Math.ceil(30 * lv * (1 + i * 0.6)), ironIngot: Math.ceil(300 * lv * (1 + i * 0.4)) }; if (lv >= 5) c.alloy = Math.ceil(20 * (lv - 3) * (1 + i * 0.5)); return c; };
-D.machineServiceCost = (dur) => { const miss = 100 - dur; return { machinePart: Math.max(1, Math.ceil(miss / 10)), coal: Math.ceil(miss * 20000) }; };
+// servicing: Coal, plus Machine Parts once you can make them (the Iron Forge opens at depth 14): early drills need Stone instead
+D.machineServiceCost = (dur, tier = 3) => { const miss = 100 - dur;
+  return tier <= 2 ? { stone: Math.ceil(miss * 30000), coal: Math.ceil(miss * 5000) } : { machinePart: Math.max(1, Math.ceil(miss / 10)), coal: Math.ceil(miss * 20000) }; };
+D.machineTier = (type) => { const i = D.machines.findIndex((m) => m.id === type); return i < 0 ? 3 : i + 1; }; // basic 1, improved 2, heavy 3 …
 
 // Chikns
 D.roles = {
@@ -383,18 +386,18 @@ D.quests = [
 
 // Six-month journey from the roadmap
 D.journey = [
-  { name: 'The Beginning',    goal: 'Stable mine',       items: ['First mines (Depth 1–5)', 'Gather Stone & Coal', 'Build basic buildings', 'Learn core mechanics'], done: (S) => S.depth >= 6 },
-  { name: 'Build & Produce',  goal: 'Active production', items: ['Unlock core factories', 'Start resource production', 'Craft first machines', 'Contribute to your guild'], done: (S) => S.stats.crafted >= 1 && built(S, 'smelter') },
-  { name: 'Specialize',       goal: 'Specialization',    items: ['Deeper mines (Depth 11–20)', 'Choose a specialization', 'Advanced equipment', 'First large guild project'], done: (S) => !!S.spec && S.depth >= 20 },
-  { name: 'Expand Territory', goal: 'Territory control', items: ['Guild competitions (PvE/PvP)', 'Rare Earth production', 'World events & expeditions'], done: (S) => S.guild.warPts >= 300 },
-  { name: 'The Henium Rush',  goal: 'Henium yield',      items: ['Unlock Henium zones (21–30)', 'Limited Henium vein events', 'Defend against raids', 'Advanced tech'], done: (S) => S.stats.refined >= 500 },
-  { name: 'Mining Empire',    goal: 'Empire status',     items: ['Core Zone (Depth 41+)', 'Guild wars & world rankings', 'Prestige (Season 1)', 'Long-term empire upgrades'], done: (S) => S.depth >= 50 },
+  { name: 'The Beginning',    goal: 'Stable mine',       items: ['First mines (Depth 1–5)', 'Gather Stone & Coal', 'Build basic buildings', 'Learn core mechanics'], done: (S) => S.depth >= 6, prog: (S) => [S.depth, 6, 'depth'] },
+  { name: 'Build & Produce',  goal: 'Active production', items: ['Unlock core factories', 'Start resource production', 'Craft first machines', 'Contribute to your guild'], done: (S) => S.stats.crafted >= 1 && built(S, 'smelter'), prog: (S) => [(S.stats.crafted >= 1 ? 1 : 0) + (built(S, 'smelter') ? 1 : 0), 2, 'of: a crafted machine, the Smelter'] },
+  { name: 'Specialize',       goal: 'Specialization',    items: ['Deeper mines (Depth 11–20)', 'Choose a specialization', 'Advanced equipment', 'First large guild project'], done: (S) => !!S.spec && S.depth >= 20, prog: (S) => [Math.min(S.depth, 20), 20, `depth${S.spec ? '' : ' · and choose a specialization'}`] },
+  { name: 'Expand Territory', goal: 'Territory control', items: ['Guild competitions (PvE/PvP)', 'Rare Earth production', 'World events & expeditions'], done: (S) => S.guild.warPts >= 300, prog: (S) => [S.guild.warPts, 300, 'war points'] },
+  { name: 'The Henium Rush',  goal: 'Henium yield',      items: ['Unlock Henium zones (21–30)', 'Limited Henium vein events', 'Defend against raids', 'Advanced tech'], done: (S) => S.stats.refined >= 500, prog: (S) => [Math.floor(S.stats.refined), 500, 'HENIUM refined'] },
+  { name: 'Mining Empire',    goal: 'Empire status',     items: ['Core Zone (Depth 41+)', 'Guild wars & world rankings', 'Max out your buildings', 'Rent out your Chikns'], done: (S) => S.depth >= 50, prog: (S) => [S.depth, 50, 'depth'] },
 ];
 
 // Live events rotate; hazards pop up at random.
 D.liveEvents = [
-  { id: 'vein',     name: 'Henium Vein Discovered!', desc: 'Depth 29 — limited quantity. Henium Vein output ×1.5 and a special expedition.', dur: 36000, zone: 'henium', mult: 1.5, minDepth: 18 },
-  { id: 'comp',     name: 'Guild Mining Competition', desc: 'Top guilds earn exclusive machines! All mining +20%.', dur: 54000, mult: 1.2 },
+  { id: 'vein',     name: 'Henium Vein Discovered!', desc: 'Depth 29 — limited quantity. Henium Vein output ×1.5 and a special expedition.', dur: 36000, zone: 'henium', mult: 1.5, minDepth: 21 },
+  { id: 'comp',     name: 'Guild Mining Competition', desc: 'All guilds race to mine the most: every floor mines +20% while it lasts.', dur: 54000, mult: 1.2 },
   { id: 'collapse', name: 'Cave Collapse Warning',   desc: 'Increased cave-in risk in depths 21–30!', dur: 28800, minDepth: 21 },
   { id: 'rush',     name: 'Copper Rush',             desc: 'Copper Zone output ×2.', dur: 21600, zone: 'copper', mult: 2, minDepth: 11 },
   { id: 'feast',    name: 'Feed Festival',           desc: 'Fattening Chikns costs 30% less FEED.', dur: 36000 },

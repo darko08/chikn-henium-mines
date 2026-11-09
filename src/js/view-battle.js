@@ -4,7 +4,7 @@ const G = window.G, D = G.D, ui = G.ui, esc = ui.esc;
 const now = () => G.now(); // the game clock (moves faster in test mode)
 const STEP = 450; // ms per battle round
 
-let mode = 'pve'; // 'pve' | 'pvp'
+let mode = 'pve'; // 'pve' | 'pvp' (G.battleMode = 'pvp' before ui.go('battle') opens the PvP tab)
 let sig = '';     // state signature of the last render
 let run = null;   // running battle animation
 
@@ -36,7 +36,9 @@ function titleHTML() {
     <div class="bt-chips">
       <span class="bt-chip">${ui.img('ui/trophy', '', '')}Wins <b>${G.fmtFull(S.stats.wins)}</b></span>
       <span class="bt-chip">${ui.img('monster/golem', '', '')}Stages <b>${S.battle.cleared}/${D.stages.length}</b></span>
-      <span class="bt-chip">${ui.img('ui/guild', '', '')}War pts <b>${G.fmtFull(S.guild.warPts)}</b></span>
+      <span class="bt-chip" title="Your share of the daily guild-war pool (paid at the next farm day)">${ui.img('ui/guild', '', '')}War pts <b>${G.fmtFull(S.guild.warPts)}</b> <small>≈ ${G.fmt(G.warPerDay(), 2)} HENIUM/day</small></span>
+      <span class="bt-chip" title="Hunt points from PvE wins, creatures and bandits: your share of the daily monster-hunt pool">${ui.img('monster/bat', '', '')}Hunt pts <b>${G.fmtFull(S.hunt || 0)}</b> <small>≈ ${G.fmt(G.huntPerDay(), 2)} HENIUM/day</small></span>
+      <span class="bt-chip" title="War and hunt payouts arrive at every farm day; points cool down then">${ui.img('ui/timer', '', '')}Payout in <b data-b="farmday">${G.fmtTime(G.farmDayLeft())}</b></span>
     </div>
   </div>`;
 }
@@ -115,7 +117,7 @@ function stageHTML(st, i) {
       <div class="bt-st-name">${esc(st.name)}</div>
       <div class="bt-st-row"><span class="bt-st-pow">${sw()}${G.fmtFull(st.power)}</span><span class="bt-ch ${tier(ch)}">${pct(ch)} win</span></div>
       <div class="bt-chbar ${tier(ch)}"><i style="width:${ch * 100}%"></i></div>
-      <div class="bt-st-rew">${ui.rew(st.r, 18)}${next ? '<span class="bt-x2">×2 first clear</span>' : ''}</div>
+      <div class="bt-st-rew">${ui.rew(st.r, 18)}${next ? '<span class="bt-x2">×2 first clear</span>' : ''}${next && st.first ? ui.rew(st.first, 18) : ''}<span class="bt-hunt" title="Hunt points: your share of the daily monster-hunt HENIUM">+${D.rules.pveHunt(i)} hunt pts</span></div>
       ${foot}
     </div>
   </article>`;
@@ -147,7 +149,8 @@ function pvpHTML() {
     <div class="bt-pvp-top">
       <div class="bt-box"><div class="bt-lbl">Battle tickets</div><div class="bt-tks">${tk}<b>${B.tickets}/${D.pvpTickets}</b></div>
         <div class="bt-refill">${B.tickets < D.pvpTickets ? `${ui.img('ui/timer', '', '')}Next ticket in <b data-b="btTicket">${G.fmtTime(D.pvpTicketTime - B.tt)}</b>` : 'Tickets full. Go fight!'}</div></div>
-      <div class="bt-box"><div class="bt-lbl">War points</div><div class="bt-wp">${ui.img('ui/trophy', '', '')}<b>${G.fmtFull(S.guild.warPts)}</b></div><div class="bt-refill">Earned for ${esc(S.guild.name)}</div></div>
+      <div class="bt-box"><div class="bt-lbl">War points</div><div class="bt-wp">${ui.img('ui/trophy', '', '')}<b>${G.fmtFull(S.guild.warPts)}</b></div>
+        <div class="bt-refill">Share ${G.fmt(G.warShare() * 100, 2)}% → <b>≈ ${G.fmt(G.warPerDay(), 2)} HENIUM</b> in <b data-b="farmday">${G.fmtTime(G.farmDayLeft())}</b>, then −${Math.round(D.rules.warDecay * 100)}%</div></div>
       <div class="bt-box bt-terms"><div class="bt-lbl">Victory</div><div class="bt-tw"><b class="gain">+${pv.pts[0]}–${pv.pts[1]} war pts</b> ${Object.entries({ henium: pv.henium, ...pv.loot(S.depth) }).map(([r, v]) => `${ui.icon(r, 18)}${ui.amt(r, v)}`).join(' ')}</div>
         <div class="bt-lbl">Defeat</div><div class="bt-tl">−${pv.lose} war pts</div></div>
     </div>
@@ -262,6 +265,7 @@ function finish(R) {
 // ---------- view ----------
 ui.views.battle = {
   render(el) {
+    if (G.battleMode) { mode = G.battleMode; G.battleMode = null; }
     el.innerHTML = `${titleHTML()}
       <div class="bt-head">${heroHTML()}${squadHTML()}</div>
       ${modesHTML()}

@@ -24,12 +24,12 @@ ui.binders.tapen = (el) => {
 function floorHTML(z) {
   const S = G.S, open = G.zoneOpen(z), st = S.zones[z.id], h = S.hazard && S.hazard.zone === z.id ? S.hazard : null;
   const sel = S.sel === z.id ? 'sel' : '';
-  const label = `<div class="plate">${ui.icon(z.res, 30)}<div><div class="pl1">Lv. ${z.from}–${z.to}</div><div class="pl2">${z.name}</div></div></div>`;
+  const label = `<div class="plate">${ui.icon(z.res, 30)}<div><div class="pl1">Depth ${z.from}–${z.to}</div><div class="pl2">${z.name}</div></div></div>`;
   if (!open) {
-    const next = S.depth + 1 === z.from;
-    const gate = next ? G.digGate(z.from) : null;
-    return `<div class="floor locked ${next ? 'next' : ''}" style="background-image:url(${G.img('bg/floor-' + z.id)})">${label}
-      <div class="lockmsg">${ui.img('ui/lock', 'lk', '')}<div><b>${next ? 'Locked' : 'Locked'}</b><div>${esc(gate || (next ? `Dig to depth ${z.from} to open` : `Reach depth ${z.from}`))}</div></div></div></div>`;
+    const next = S.depth + 1 === z.from, upcoming = D.zoneOf(S.depth).to + 1 === z.from; // the zone right after yours
+    const gate = next || upcoming ? G.digGate(z.from) : null;
+    return `<div class="floor locked ${next ? 'next' : ''} ${next || upcoming ? '' : 'far'}" style="background-image:url(${G.img('bg/floor-' + z.id)})">${label}
+      <div class="lockmsg">${ui.img('ui/lock', 'lk', '')}<div><b>Locked</b><div>${esc(next ? gate || `Dig to depth ${z.from} to open` : `Reach depth ${z.from}${gate ? '. ' + gate : ''}`)}</div></div></div></div>`;
   }
   const workers = Math.min(3, 1 + Math.floor(st.lv / 8));
   const m = G.machineOn(z.id), ms = m ? G.machineStats(m) : null;
@@ -39,19 +39,22 @@ function floorHTML(z) {
   if (m) stage += `<div class="mach ${ms.working ? 'on' : 'off'}">${ui.img('machine/' + m.type, 'mach-img', ms.def.name)}</div>`;
   let haz = '';
   if (h) {
-    if (h.type === 'collapse') haz = `<div class="haz collapse">${ui.img('prop/rubble', 'haz-img', '')}<div class="haz-box"><b>Cave-in!</b> Production stopped<button class="btn sm gold" data-a="hazardAct" data-args='["clear"]' data-need="${ui.need(h.cost)}">Clear ${ui.cost(h.cost, 1, 16)}</button></div></div>`;
-    if (h.type === 'richvein') haz = `<div class="haz rich"><div class="haz-box pulse"><b>Rich vein!</b> Tap ×10</div></div>`;
-    if (h.type === 'supply') haz = `<div class="haz supply">${ui.img('prop/crate', 'haz-img bob', '')}<div class="haz-box"><b>Supply drop!</b><button class="btn sm green" data-a="hazardAct" data-args='["open"]'>Open</button></div></div>`;
-    if (h.type === 'creature') haz = `<div class="haz creature">${ui.img('monster/' + h.mon, 'haz-img bob', '')}<div class="haz-box"><b>Creature!</b> Power ${G.fmt(h.power)}<button class="btn sm red" data-a="hazardAct" data-args='["fight"]'>Fight</button></div></div>`;
-    if (h.type === 'bandits') haz = `<div class="haz bandits"><div class="haz-box"><b>Bandit raid!</b> Power ${G.fmt(h.power)}<button class="btn sm red" data-a="hazardAct" data-args='["fight"]'>Defend</button><button class="btn sm gray" data-a="hazardAct" data-args='["pay"]' data-need="${ui.need(h.toll)}">Pay ${ui.cost(h.toll, 1, 16)}</button></div></div>`;
+    const P = G.squadPower(), left = `<span class="haz-t" data-b="until:${h.until}"></span>`;
+    const odds = h.power ? `Squad ${G.fmt(P)} vs ${G.fmt(h.power)} · <b>${Math.round(G.winChance(Math.max(1, P), h.power) * 100)}% win</b>` : '';
+    const fight = (label) => (P > 0 ? `<button class="btn sm red" data-a="hazardAct" data-args='["fight"]'>${label}</button>` : `<button class="btn sm gold" data-a="nav" data-args='["chikns"]'>Assign Chikns</button>`);
+    if (h.type === 'collapse') haz = `<div class="haz collapse">${ui.img('prop/rubble', 'haz-img', '')}<div class="haz-box"><b>Cave-in!</b> Production stopped · clears itself in ${left}<button class="btn sm gold" data-a="hazardAct" data-args='["clear"]' data-need="${ui.need(h.cost)}">Clear now ${ui.cost(h.cost, 1, 16)}</button></div></div>`;
+    if (h.type === 'richvein') haz = `<div class="haz rich"><div class="haz-box pulse"><b>Rich vein!</b> Taps ×${D.rules.rich.mult} · ${D.rules.rich.taps - (h.taps || 0)} taps left · ${left}</div></div>`;
+    if (h.type === 'supply') haz = `<div class="haz supply">${ui.img('prop/crate', 'haz-img bob', '')}<div class="haz-box"><b>Supply drop!</b> ${ui.rew(h.reward || {}, 14)} ${left}<button class="btn sm green" data-a="hazardAct" data-args='["open"]'>Open</button></div></div>`;
+    if (h.type === 'creature') haz = `<div class="haz creature">${ui.img('monster/' + h.mon, 'haz-img bob', '')}<div class="haz-box"><b>Creature!</b> ${odds} · win ${ui.rew(h.reward || {}, 14)} ${left}${fight('Fight')}</div></div>`;
+    if (h.type === 'bandits') haz = `<div class="haz bandits"><div class="haz-box"><b>Bandit raid!</b> ${odds} · lose: −${Math.round(D.rules.bandits.lose[0] * 100)}% ore, −${Math.round(D.rules.bandits.lose[1] * 100)}% HENIUM · ${left}${fight('Defend')}<button class="btn sm gray" data-a="hazardAct" data-args='["pay"]' data-need="${ui.need(h.toll)}">Pay ${ui.cost(h.toll, 1, 16)}</button></div></div>`;
   }
   const deepest = D.zoneOf(S.depth) === z;
   return `<div class="floor ${sel} ${h ? 'h-' + h.type : ''}" data-zone="${z.id}" data-a="tapFloor" data-args='["${z.id}"]' style="background-image:url(${G.img('bg/floor-' + z.id)});--glow:${z.glow}">
     ${label}<div class="stage">${stage}</div>
-    ${deepest ? `<div class="depth-chip">Depth <b data-b="depth"></b>${S.dig ? ` <span class="dig-chip">→ ${S.dig.to}</span>${ui.bar(0, 'gold dig-bar', '', 'data-b="dig"')}` : ''}</div>` : ''}
+    ${deepest ? `<div class="depth-chip">Depth <b data-b="depth"></b>${S.dig ? ` <span class="dig-chip">→ ${S.dig.to}</span>${ui.bar(0, 'gold dig-bar', ' ', 'data-b="dig"')}` : ''}</div>` : ''}
     <div class="ratebox"><div class="rb-main"><span class="rb-v">${ui.icon(z.res, 18)}<span data-b="zrate:${z.id}"></span></span>
       <button class="up" data-a="upgradeZone" data-args='["${z.id}"]' data-need="${ui.need(D.floorCost(z, st.lv))}" title="Upgrade to Lv. ${st.lv + 1}" aria-label="Upgrade ${z.name}">▲</button></div>
-      <div class="rb-next" title="Cost of the next floor upgrade (Lv. ${st.lv} → ${st.lv + 1})"><span class="rb-lv">Lv.${st.lv + 1}</span>${ui.cost(D.floorCost(z, st.lv), 1, 13)}</div>
+      <div class="rb-next" title="Cost of the next floor upgrade (Lv. ${st.lv} → ${st.lv + 1})${[10, 25, 50, 100].includes(st.lv + 1) ? ': a milestone level, output ×2!' : ''}"><span class="rb-lv">Lv.${st.lv + 1}${[10, 25, 50, 100].includes(st.lv + 1) ? ' <b class="rb-x2">×2</b>' : ''}</span>${ui.cost(D.floorCost(z, st.lv), 1, 13)}</div>
       ${ui.bar(0, 'green rb-prog', '', `data-b="fprog:${z.id}"`)}</div>
     ${haz}</div>`;
 }
@@ -71,7 +74,7 @@ function surfaceHTML() {
     <img class="sf-flag f1" src="${G.img('prop/flag')}" alt=""><img class="sf-flag f2" src="${G.img('prop/flag')}" alt="">
     ${facs}
     <img class="sf-head" src="${G.img('prop/headframe')}" alt="Mine headframe">
-    <div class="sf-sign">My Mine<br><b>Lv. ${S.depth}</b></div>
+    <div class="sf-sign">My Mine<br><b>Depth ${S.depth}</b></div>
     <div class="tap-energy" data-b="tapen" title="Tap energy: every tap on a floor costs 1, and it refills 1 every ${Math.round(1 / D.rules.tap.regen)} s">${ui.img('ui/energy', 'te-ic', '')}<div class="te-bar"><i></i></div><b></b></div>
     <div class="mascot"><div class="bubble" id="bubble">${esc(line)}</div>${ui.img('chikn/explorer', 'mascot-img', '')}</div>
   </div>`;
@@ -89,10 +92,11 @@ function sideHTML() {
       <div class="hx" style="font-size:17px">${ms.def.name} <span class="muted">(Lv. ${m.lv})</span></div>
       <div class="kv">Speed <b>${ms.speed.toFixed(1)}x</b></div><div class="kv">Capacity <b>+${G.fmt(ms.cap)}/h</b></div>
       <div class="kv">Energy <b>−${G.fmt(ms.energy)} Coal/h</b></div>
-      <div class="kv">Durability ${ui.bar(m.dur, m.dur < 25 ? 'red' : 'green', '', `data-b="dur:${m.id}"`)}</div>
+      <div class="kv">Durability ${ui.bar(m.dur, m.dur < 25 ? 'red' : 'green', ' ', `data-b="dur:${m.id}"`)}</div>
+      <div class="kv">Breaks in <b>${m.dur <= 0 ? 'broken' : '~' + G.fmtTime(m.dur / Math.max(1e-9, ms.def.wear * (1 - Math.min(0.6, G.bonus('machine') * 0.5))) * 60) + ' of play'}</b></div>
       ${m.off ? '<div class="tag r">No coal — machine idle</div>' : ''}</div></div>
-      <div class="row" style="margin-top:8px">${m.lv < D.machineMaxLv ? ui.btn('Upgrade', 'upgradeMachine', [m.id], 'sm sp', D.machineUpCost(ms.def, m.lv)) : '<button class="btn sm sp cant" disabled>Max Lv.</button>'}${ui.btn('Service', 'service', [m.id], 'sm gray sp', D.machineServiceCost(m.dur))}</div>
-      <div class="dim" style="font-size:12px;margin-top:4px">Upgrade: ${m.lv < D.machineMaxLv ? ui.cost(D.machineUpCost(ms.def, m.lv), 1, 16) : 'max'}</div>`;
+      <div class="row" style="margin-top:8px">${m.lv < D.machineMaxLv ? ui.btn('Upgrade', 'upgradeMachine', [m.id], 'sm sp', D.machineUpCost(ms.def, m.lv)) : '<button class="btn sm sp cant" disabled>Max Lv.</button>'}${ui.btn('Service', 'service', [m.id], 'sm gray sp', D.machineServiceCost(m.dur, D.machineTier(m.type)))}</div>
+      <div class="dim" style="font-size:12px;margin-top:4px">Upgrade: ${m.lv < D.machineMaxLv ? ui.cost(D.machineUpCost(ms.def, m.lv), 1, 16) : 'max'} · Service: ${m.dur >= 99.5 ? 'not needed' : ui.cost(D.machineServiceCost(m.dur, D.machineTier(m.type)), 1, 16)}</div>`;
   } else {
     const spare = S.machines.filter((x) => !x.zone);
     mach = `<div class="muted" style="font-size:14px">No machine on this floor.</div>` + (spare.length
@@ -100,11 +104,11 @@ function sideHTML() {
       : `<button class="btn sm" data-a="nav" data-args='["crafting"]' style="margin-top:6px">Craft a machine</button>`);
   }
   const squad = G.squad();
-  const team = squad.length ? squad.map((c) => `<div class="tm rarity-${c.rarity}" data-a="nav" data-args='["chikns"]'>${ui.img('chikn/' + c.role, 'tm-img', '')}<div class="sp"><div class="tm-n">${D.rarity(c.rarity).name} ${D.roles[c.role].name}</div><div class="tm-b">+${G.fmt(G.chiknPct(c), 1)}% ${D.roles[c.role].label}</div></div></div>`).join('')
-    : `<div class="muted" style="font-size:14px">No Chikns yet.</div><button class="btn sm gold" data-a="hire" style="margin-top:6px">Hire your first Chikn (free)</button>`;
+  const team = squad.length ? squad.map((c) => `<div class="tm rarity-${c.rarity}" data-a="nav" data-args='["chikns"]'>${ui.img('chikn/' + c.role, 'tm-img', '')}<div class="sp"><div class="tm-n">${D.rarity(c.rarity).name} ${D.roles[c.role].name}</div><div class="tm-b">+${G.fmt(G.chiknPct(c), 1)}% ${D.roles[c.role].label}${ui.rentTag(c)}</div></div></div>`).join('')
+    : `<div class="muted" style="font-size:14px">No Chikns yet.</div><button class="btn sm gold" data-a="hire" style="margin-top:6px">Rent your first Chikn (free)</button>`;
   const qs = G.questList();
-  const quests = qs.map((q) => `<div class="q ${q.done ? 'done' : ''}"><span class="qc">${q.done ? '✔' : ''}</span><span class="sp">${esc(q.text)}</span>
-    ${q.done ? ui.btn('Claim', 'claimQuest', [q.id], 'sm green') : `<span class="num dim">${G.fmt(q.cur)}/${G.fmt(q.target)}</span>`}</div>`).join('') || '<div class="muted">All quests complete. Legendary!</div>';
+  const quests = qs.map((q) => `<div class="q ${q.done ? 'done' : ''}"><span class="qc">${q.done ? '✔' : ''}</span><span class="sp">${esc(q.text)}<span class="q-rew">${ui.rew(q.r, 14)}</span></span>
+    ${q.done ? ui.btn('Claim', 'mnQuest', [q.id], 'sm green') : `<span class="num dim">${G.fmt(q.cur)}/${G.fmt(q.target)}</span>`}</div>`).join('') || '<div class="muted">All quests complete. Legendary!</div>';
   return `<div class="panel side-floor">
       <div class="panel-h" style="margin-bottom:4px"><span class="sp">Selected Floor</span><button class="btn sm ff" data-a="cycleFloor" data-args='[-1]' aria-label="Previous floor">◀</button><button class="btn sm ff" data-a="cycleFloor" data-args='[1]' aria-label="Next floor">▶</button></div>
       <div class="row">${ui.icon(z.res, 40)}<div class="sp"><div class="hx" style="font-size:20px">${z.name} <span class="muted">(${z.from}–${z.to})</span></div>
@@ -116,7 +120,7 @@ function sideHTML() {
     <div class="panel"><div class="panel-h">Production <small>(per hour)</small></div><div class="prod">${prod}</div></div>
     <div class="panel"><div class="panel-h">Active Machine</div>${mach}</div>
     <div class="panel"><div class="panel-h"><span class="sp">Mining Team</span><small>${squad.length}/${G.squadSlots()}</small></div>${team}</div>
-    <div class="panel"><div class="panel-h"><span class="sp">Quests</span><small>${qs.filter((q) => q.done).length}/${qs.length}</small></div>${quests}</div>`;
+    <div class="panel side-quests"><div class="panel-h"><span class="sp">Quests</span><small>${qs.filter((q) => q.done).length}/${qs.length}</small></div>${quests}</div>`;
 }
 
 function actionsHTML() {
@@ -124,12 +128,12 @@ function actionsHTML() {
   const ev = G.liveEvent(), h = S.hazard;
   const collectN = (S.nest >= 1 ? 1 : 0) + S.exps.filter((e) => e.done).length + G.missions().filter((m) => m.done && !m.claimed).length;
   const ticker = h ? `<b>${{ collapse: 'Cave-in!', richvein: 'Rich vein spotted!', supply: 'Supply drop!', creature: 'Creature sighted!', bandits: 'Bandit raid!' }[h.type]}</b><span>${D.zoneById(h.zone).name} · <span data-b="until:${h.until}"></span></span>`
-    : ev ? `<b>${esc(ev.name)}</b><span>${esc(ev.desc.split('.')[0])} · <span data-b="until:${S.live.until}"></span></span>` : `<b>All quiet in the mine</b><span>Next event soon…</span>`;
+    : ev ? `<b>${esc(ev.name)}</b><span>${esc(ev.desc.split('.')[0])} · <span data-b="until:${S.live.until}"></span></span>` : `<b>All quiet in the mine</b><span>Next live event in <span data-b="until:${S.live.next}"></span></span>`;
   const digCard = S.dig
     ? `<div class="act digging">${ui.img('ui/mines', 'act-ic bob', '')}<span class="act-l">Digging → ${S.dig.to}</span>
-        <span class="act-c dig-row">${ui.bar(0, 'gold', '', 'data-b="dig"')}<button class="btn sm purple dig-fin" data-a="speedDig" title="Finish the dig now">⚡ ${ui.icon('henium', 14)}<span data-b="digcost"></span></button></span></div>`
-    : `<button class="act ${gate ? 'cant' : ''}" data-a="dig" ${gate ? '' : `data-need="${ui.need(cost)}"`}>${ui.img('ui/mines', 'act-ic', '')}<span class="act-l">Dig Deeper</span><span class="act-c">${gate ? esc(gate.length > 34 ? gate.slice(0, 32) + '…' : gate)
-        : `${ui.cost(cost, 1, 15)} <span class="dig-time">${ui.img('ui/timer', 'ic', '').replace('class="ic"', 'class="ic" width="14" height="14"')}${G.fmtTime(D.digTime(S.depth + 1) / G.digSpeed())}</span>`}</span></button>`;
+        <span class="act-c dig-row">${ui.bar(0, 'gold', ' ', 'data-b="dig"')}</span><button class="btn sm purple dig-fin" data-a="mnFinishDig" title="Finish the dig now for HENIUM">⚡ Finish now ${ui.icon('henium', 14)}<span data-b="digcost"></span></button></div>`
+    : `<button class="act ${gate ? 'cant' : ''}" data-a="dig" ${gate ? '' : `data-need="${ui.need(cost)}"`}>${ui.img('ui/mines', 'act-ic', '')}<span class="act-l">Dig Deeper</span><span class="act-c ${gate ? 'act-gate' : ''}">${gate ? esc(gate)
+        : `${ui.cost(cost, 1, 15)} <span class="dig-time">${ui.img('ui/timer', 'ic', '').replace('class="ic"', 'class="ic" width="14" height="14"')}${G.fmtTime(D.digTime(S.depth + 1) / G.digSpeed())}</span>${ui.miss(cost)}`}</span></button>`;
   return `<div class="mine-actions">
     ${digCard}
     <button class="act" data-a="hire">${ui.img('ui/chikns', 'act-ic', '')}<span class="act-l">Rent a Chikn</span><span class="act-c">${S.stats.hired === 0 ? 'First rental is free!' : `from ${ui.cost({ egg: 1 }, 1, 15)} a day`}</span>${S.stats.hired === 0 ? '<span class="badge">!</span>' : ''}</button>
@@ -144,7 +148,7 @@ function dashHTML() {
   const sNeed = D.seasonNeed(S.season.lv);
   return `<div class="dash">
     <div class="panel dash-season" data-a="nav" data-args='["events"]' style="background-image:linear-gradient(90deg,rgba(21,26,70,.95) 30%,rgba(21,26,70,.3)),url(${G.img('bg/floor-henium')})">
-      <div class="panel-h">${ui.img('ui/trophy', '', '')}Season 1: Deep Veins</div>
+      <div class="panel-h">${ui.img('ui/trophy', '', '')}Season ${S.season.no || 1}: Deep Veins</div>
       <div class="muted">Ends in <b data-b="until:${S.season.ends}"></b></div>
       <div class="row" style="margin-top:10px"><span class="lvchip">Lv. ${S.season.lv}</span>${ui.bar(S.season.xp / sNeed * 100, 'blue lg sp', `${G.fmtFull(S.season.xp)} / ${G.fmtFull(sNeed)} XP`)}</div></div>
     <div class="panel" data-a="nav" data-args='["events"]'><div class="panel-h">${ui.img('ui/events', '', '')}Daily Missions</div>
@@ -152,14 +156,15 @@ function dashHTML() {
     <div class="panel" data-a="nav" data-args='["guild"]'><div class="panel-h">${ui.img('ui/guild', '', '')}Guild: ${esc(g.name)}</div>
       <div class="muted" style="text-align:center">Members: ${g.members} / ${g.max}</div>
       ${p ? `<div class="hx" style="margin:6px 0 4px">Guild Project: ${esc(p.name)}</div>${ui.bar(g.pts / p.need * 100, 'green lg', Math.floor(g.pts / p.need * 100) + '%')}
-      <div class="muted" style="margin-top:6px;font-size:14px">Reward: <b>+${p.bonus}% Guild Mining Bonus</b> · <b>${ui.icon('henium', 15)}+${G.guildProjectReward(g.proj)}</b></div>` : '<div class="hx">All projects complete!</div>'}</div>
+      <div class="muted" style="margin-top:6px;font-size:14px">Reward: <b>+${Math.round(p.bonus * (G.specIs('gleader') ? 1.25 : 1))}% Guild Mining Bonus</b> · <b>${ui.icon('henium', 15)}+${G.guildProjectReward(g.proj)}</b></div>` : '<div class="hx">All projects complete!</div>'}</div>
     <div class="panel" data-a="nav" data-args='["events"]'><div class="panel-h">${ui.img('ui/bell', '', '')}Live Events</div>
       ${G.liveEvent() ? `<div class="list-row">${ui.icon('heniumOre', 28)}<div class="sp"><b>${esc(G.liveEvent().name)}</b><div class="muted" style="font-size:12px">${esc(G.liveEvent().desc)}</div></div><span class="tchip" data-b="until:${S.live.until}"></span></div>` : ''}
-      <div class="list-row">${ui.img('ui/trophy', 'ic', '').replace('class="ic"', 'class="ic" width="26" height="26"')}<div class="sp"><b>Guild Mining Competition</b><div class="muted" style="font-size:12px">Top guilds earn exclusive machines!</div></div></div>
-      <div class="list-row">${ui.img('ui/energy', 'ic', '').replace('class="ic"', 'class="ic" width="26" height="26"')}<div class="sp"><b>Next HENIUM halving</b><div class="muted" style="font-size:12px">${G.fmt(G.nextHalving() - S.world.mined)} HENIUM left in this epoch</div></div></div></div>
+      <div class="list-row">${ui.img('ui/trophy', 'ic', '').replace('class="ic"', 'class="ic" width="26" height="26"')}<div class="sp"><b>Guild Mining Competition</b><div class="muted" style="font-size:12px">A live event: every floor mines +20% while it runs.</div></div></div>
+      <div class="list-row">${ui.img('ui/energy', 'ic', '').replace('class="ic"', 'class="ic" width="26" height="26"')}<div class="sp"><b>Next HENIUM halving</b><div class="muted" style="font-size:12px">${G.nextHalvingDate()} · ${G.fmt(G.nextHalving() - S.world.mined)} HENIUM left in this epoch</div></div></div></div>
   </div>`;
 }
 
+let mnSig = null; // quests, missions, nest and expeditions shown on the Mines screen
 ui.views.mines = {
   render(el) {
     const S = G.S;
@@ -167,6 +172,7 @@ ui.views.mines = {
       <section class="scene">${surfaceHTML()}
         <div class="shaft" style="--open:${D.zones.filter((z) => G.zoneOpen(z)).length}">
           ${D.zones.map(floorHTML).join('')}
+          ${(() => { const far = D.zones.filter((z) => !G.zoneOpen(z) && S.depth + 1 !== z.from && D.zoneOf(S.depth).to + 1 !== z.from); return far.length ? `<div class="floors-more">${ui.img('ui/lock', 'lk', '')} ${far.length} more zone${far.length > 1 ? 's' : ''} below: ${far.map((z) => esc(z.short)).join(', ')}</div>` : ''; })()}
           <div class="elevator"><div class="cabin">${ui.img('prop/lift', 'cabin-img', 'Elevator')}<span class="cabin-lv">L${S.depth}</span></div></div>
         </div>
       </section>
@@ -174,6 +180,8 @@ ui.views.mines = {
     </div>${actionsHTML()}${dashHTML()}`;
   },
   update() {
+    const S = G.S, sg = G.questList().map((q) => (q.done ? 1 : 0)).join('') + '|' + G.missions().map((m) => (m.done ? 1 : 0) + (m.claimed ? 2 : 0)).join('') + '|' + Math.floor(S.nest) + '|' + S.exps.filter((x) => x.done).length;
+    if (sg !== mnSig && !ui.modalOpen()) { const first = mnSig === null; mnSig = sg; if (!first) { ui.render(); return; } }
     // production pop-ups every ~3s
     popT++;
     if (popT % 12 !== 0 || ui.modalOpen()) return;
@@ -192,11 +200,31 @@ ui.views.mines = {
 };
 
 // ---------- handlers ----------
+ui.handlers.mnFinishDig = () => {
+  const d = G.S.dig;
+  if (!d) return;
+  const c = 2 * G.speedCost((d.dur - d.t) / G.digSpeed()), have = G.S.res.henium;
+  ui.modal({ title: `${ui.img('ui/mines', '', '')} Finish the dig now?`, html: `<p style="margin-top:0">Reach depth <b>${d.to}</b> right away for <b>${G.fmtFull(c)} HENIUM</b> (you have ${G.fmt(have, 2)}). Otherwise it finishes by itself in ${G.fmtTime((d.dur - d.t) / G.digSpeed())}.</p>`,
+    actions: [{ label: 'Keep digging', cls: 'gray' }, { label: `Finish for ${G.fmtFull(c)} HENIUM`, cls: have >= c ? 'purple' : 'purple cant', fn: () => {
+      const r = G.act.speedDig();
+      if (!r.ok) { ui.toast(r.msg, 'bad', 'res/henium'); G.sfx('err'); return; }
+      ui.toast(`−${G.fmtFull(c)} HENIUM: the dig is done`, 'purple', 'res/henium');
+    } }] });
+};
+ui.handlers.mnQuest = (el, e, id) => {
+  const q = D.quests.find((x) => x.id === id), r = G.act.claimQuest(id);
+  if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
+  const [x, y] = ui.centerOf(el);
+  Object.entries(q.r).forEach(([res, v], i) => ui.float(`+${ui.amt(res, v)}${ui.icon(res, 20)}`, x + i * 34, y - 12));
+  ui.toast(`Quest complete: ${Object.entries(q.r).map(([res, v]) => `+${ui.amt(res, v)} ${D.res[res].name}`).join(', ')}`, 'good', 'ui/gift');
+  G.sfx('coin');
+  ui.render();
+};
 ui.handlers.tapFloor = (el, e, zid) => {
   const r = G.act.tap(zid);
   if (G.S.sel !== zid) { G.S.sel = zid; document.querySelectorAll('.floor.sel').forEach((f) => f.classList.remove('sel')); el.classList.add('sel'); document.getElementById('mine-side').innerHTML = sideHTML(); }
   if (!r.ok) {
-    if ((G.S.tapEnergy || 0) < 1) { ui.float('<span style="color:#ff8a95">No energy</span>', e.clientX, e.clientY - 10); G.sfx('err'); return; }
+    if ((G.S.tapEnergy || 0) < 1) { ui.float(`<span style="color:#ff8a95">No energy · +1 in ${Math.ceil((1 - (G.S.tapEnergy || 0)) / D.rules.tap.regen)}s</span>`, e.clientX, e.clientY - 10); G.sfx('err'); return; }
     ui.toast(r.msg, 'bad'); G.sfx('err'); return;
   }
   ui.float(`+${ui.amt(r.res, r.amt)}${ui.icon(r.res, 20)}`, e.clientX, e.clientY - 10, r.rich ? '#ffe27a' : '#fff');
@@ -248,6 +276,8 @@ ui.handlers.collectAll = (el) => {
   ui.render();
 };
 ui.handlers.hazardAct = (el, e, choice) => {
+  const h = G.S.hazard;
+  if (h && G.now() - h.at < 700 * G.speed()) return; // it appeared under a tapping finger a moment ago
   const r = G.act.hazard(choice);
   if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
   G.sfx(r.win === false ? 'lose' : 'win');
@@ -271,7 +301,7 @@ const rentOfferCard = (o) => {
     <div class="rent-kv"><span>Lays</span><b>${G.fmt(G.chiknEgg(c), 2)} EGG/day</b></div>
     <div class="rent-kv"><span>Eats</span><b>${G.fmt(D.farm.upkeep(o.kg), 2)} FEED/day</b></div>
     <div class="rent-kv"><span>Battle power</span><b>${G.fmt(G.chiknPower(c))}</b></div>
-    <div class="rent-price">${o.free ? '<b>Free</b> first rental' : `<b>${G.fmt(o.price * (D.rent.disc[days] || 1), 2)}</b> EGG a day`}</div>
+    <div class="rent-price">${o.free ? `<b>Free</b> first rental · ${days} days, then it goes home (rent it again or another one)` : `<b>${G.fmt(o.price * (D.rent.disc[days] || 1), 2)}</b> EGG a day`}</div>
     ${btn}</div>`;
 };
 const rentHTML = () => {

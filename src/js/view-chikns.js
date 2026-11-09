@@ -76,10 +76,11 @@ function headHTML() {
       <div class="ck-stats">
         <div class="ck-stat ${full ? 'ck-full' : ''}" title="Chikns in the coop / coop capacity">${ui.img(G.coopImg(), 'ck-stat-ic', '')}<div><div class="ck-sl">Coop</div><div class="ck-sv">${n}<small>/${cap}</small></div></div></div>
         <div class="ck-stat">${ui.img('ui/mines', 'ck-stat-ic', '')}<div><div class="ck-sl">Squad</div><div class="ck-sv">${G.squad().length}<small>/${G.squadSlots()}</small></div></div></div>
-        <div class="ck-stat" title="Your flock eats ${G.fmt(G.upkeepPerDay(), 1)} FEED a day">${ui.icon('egg', 34, 'ck-stat-ic')}<div><div class="ck-sl">Eggs / day</div><div class="ck-sv">${fmtEgg(G.eggsPerDay())}</div></div></div>
+        <div class="ck-stat" title="Eggs your Chikns at home lay every day">${ui.icon('egg', 34, 'ck-stat-ic')}<div><div class="ck-sl">Eggs / day</div><div class="ck-sv">${fmtEgg(G.eggsPerDay())}</div></div></div>
+        <div class="ck-stat ${G.feedDaysLeft() < 2 ? 'ck-full' : ''}" title="FEED your flock eats every day, and how long your FEED stock lasts">${ui.icon('feed', 34, 'ck-stat-ic')}<div><div class="ck-sl">FEED / day</div><div class="ck-sv">${G.fmt(G.upkeepPerDay(), 1)}<small> · ${isFinite(G.feedDaysLeft()) ? G.fmt(G.feedDaysLeft(), 1) + ' days left' : 'none needed'}</small></div></div></div>
         ${G.rentIncome() > 0 ? `<div class="ck-stat ck-income" title="Rent from your Chikns that other players are using, after the ${Math.round(D.rent.fee * 100)}% market fee">${ui.icon('egg', 34, 'ck-stat-ic')}<div><div class="ck-sl">Rent income</div><div class="ck-sv">+${fmtEgg(G.rentIncome())}<small>/day</small></div></div></div>` : ''}
         <div class="ck-stat ck-nest">${ui.img('farm/nest', 'ck-stat-ic', '')}<div class="ck-nest-m"><div class="ck-sl">Nest</div>
-          <div class="ck-sv">${ui.icon('egg', 18)}<span data-b="ckNestV"></span></div><div class="bar gold ck-nestbar" data-b="ckNest"><i></i></div></div>
+          <div class="ck-sv">${ui.icon('egg', 18)}<span data-b="ckNestV"></span></div><div class="bar gold ck-nestbar" data-b="ckNest"><i></i></div><span class="nest-eta" data-b="nestEta"></span></div>
           <button class="btn gold sm" data-a="ckCollect" data-b="ckNestBtn">Collect</button></div>
       </div>
       ${notes.join('')}
@@ -387,6 +388,7 @@ ui.handlers.ckFarm = () => {
   if (!ui.views.farm) { ui.toast('The Egg Farm is not open yet', '', 'farm/nest'); return; }
   ui.closeModal();
   ui.go('farm');
+  if (coopFull()) setTimeout(() => ui.handlers.fmGoto && ui.handlers.fmGoto(null, null, 'fm-coop'), 60); // straight to the coop upgrade
 };
 document.addEventListener('keydown', (e) => {
   if (ui.cur !== 'chikns' || openId == null || !document.getElementById('ck-det')) return;
