@@ -1,0 +1,13 @@
+# build output: `node build.mjs` recreates it, and the published copy lives on the gh-pages branch
+dist/
+node_modules/
+# the original Runway sheets (313 MB) stay out of git; the cut sprites (assets/sprites) and the compressed
+# images the build uses (assets/web) are committed
+assets/raw/
+# signed Runway URLs (they contain access tokens): never commit
+tools/runway-refs.txt
+# secrets
+.env
+.env.*
+!.env.example
+.DS_Store
