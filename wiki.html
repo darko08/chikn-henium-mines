@@ -54,6 +54,17 @@ h1, h2, h3, h4 { font-family: var(--font-h); font-weight: 400; margin: 0; letter
 .res-strip img { width: 28px; height: 28px; object-fit: contain; }
 .res-strip .lbl { font-size: 9px; }
 .res-strip .val { font-size: 15px; min-width: 40px; }
+button.res-strip { font: inherit; color: inherit; cursor: pointer; align-items: center; text-align: left; }
+button.res-strip:hover { border-color: #6a76d8; }
+.res-strip .res-more { color: var(--gold); font-size: 13px; padding: 0 2px 0 4px; }
+/* inventory dialog */
+.inv-h { margin: 6px 0 8px; font: 400 17px var(--font-h); color: var(--gold); }
+.inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.inv-it { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 2px solid #343d86; background: rgba(9, 12, 42, .62); }
+.inv-it div { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.inv-it b { font: 400 17px var(--font-h); color: #fff; }
+.inv-it small { font-size: 12px; color: var(--muted); }
+.inv-it i { font-style: normal; font-size: 11px; color: #7dff9a; }
 .top-icons { display: flex; gap: 6px; flex: none; }
 .icon-btn { position: relative; width: 42px; height: 42px; border: 0; padding: 4px; border-radius: 12px; background: transparent; cursor: pointer; }
 .icon-btn img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .5)); }
@@ -186,6 +197,13 @@ h1, h2, h3, h4 { font-family: var(--font-h); font-weight: 400; margin: 0; letter
 /* standalone wiki page */
 .wiki-only #topbar, .wiki-only #sidenav { display: none; }
 .wiki-only #app { grid-template-columns: 1fr; grid-template-rows: 1fr; grid-template-areas: 'view'; }
+
+/* test speed */
+.speed-chip { align-self: center; border: 2px solid #ff8a3d; background: linear-gradient(#ff9d4d, #e5641c); color: #fff; font: 400 15px var(--font-h);
+  border-radius: 12px; padding: 4px 10px; cursor: pointer; box-shadow: 0 0 12px rgba(255, 138, 61, .5); white-space: nowrap; }
+.set-test { margin: 10px 0; padding: 10px 12px; border-radius: 12px; border: 2px dashed #ff8a3d; background: rgba(255, 138, 61, .07); }
+.set-speeds { margin-top: 8px; flex-wrap: wrap; }
+.set-skips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 
 /* mines.css */
 .mines-grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 12px; align-items: start; }
@@ -583,6 +601,13 @@ button.fx-rc:hover { border-color: #6a76d8; }
 .fx-rc-io .cost { gap: 2px 6px; }
 .fx-rc-io .cost .c { font-size: 14px; }
 .fx-arr { color: var(--gold); font-size: 13px; }
+/* what you have of a recipe's inputs and outputs (live) */
+.fx-rc-have { flex-basis: 100%; display: flex; align-items: center; flex-wrap: wrap; gap: 2px 8px; padding-top: 3px; border-top: 1px dashed rgba(122, 132, 220, .3);
+  font: 600 12px var(--font-b); color: var(--muted); }
+.fx-rc-have small { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.fx-hv { display: inline-flex; align-items: center; gap: 3px; }
+.fx-hv b { color: #fff; font-weight: 700; }
+.fx-rc-have .fx-arr { font-size: 11px; }
 
 .fx-foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
 .fx-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -1100,6 +1125,9 @@ button.fx-rc:hover { border-color: #6a76d8; }
   .cr-link.cr-ok, .cr-tglow, .cr-tart-img, .cr-mc.cr-mc-dep .cr-mc-img { animation: none; }
 }
 
+.cr-fl-rule { margin: 0 0 8px; font-size: 12.5px; line-height: 1.35; color: var(--muted); }
+.cr-fl-rule b { color: #fff; }
+
 /* chikns.css */
 /* ---------- Chikn NFT screen (.ck-) ---------- */
 .v-chikns { --ck-side: 340px; }
@@ -1342,6 +1370,71 @@ button.fx-rc:hover { border-color: #6a76d8; }
   .ck-power span { display: none; }
   .ck-team .panel-h { font-size: 18px; }
 }
+
+/* ---------- rental market dialog ---------- */
+.rent-intro { margin: 0 0 10px; color: var(--muted); font-size: 14px; line-height: 1.4; }
+.rent-intro b { color: #fff; }
+.rent-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 10px; }
+.rent-bar .tabs { margin: 0; }
+.rent-days .tab small { font-family: var(--font-b); font-size: 11px; color: #9dffa8; }
+.rent-auto { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); cursor: pointer; }
+.rent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.rent-card { display: flex; flex-direction: column; gap: 3px; padding: 8px 10px 10px; border-radius: 14px; border: 2px solid #3a4392; background: rgba(9, 12, 42, .62); min-width: 0; }
+.rent-card.rent-free { border-color: var(--gold); box-shadow: 0 0 14px rgba(255, 201, 60, .3); }
+.rent-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.rent-img { width: 64px; height: 64px; object-fit: contain; flex: none; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .5)); }
+.rent-id { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
+.rent-id b { font: 400 16px var(--font-h); }
+.rent-id span { font-size: 13px; }
+.rent-id small { font-size: 11px; color: var(--dim); }
+.rent-kv { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--muted); }
+.rent-kv b { color: #fff; text-align: right; }
+.rent-price { margin: 4px 0 6px; font-size: 13px; color: var(--muted); text-align: center; }
+.rent-price b { font: 400 20px var(--font-h); color: var(--gold); }
+.rent-card .btn { font-size: 14px; padding: 7px 6px; }
+.rent-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin-top: 12px; font-size: 13px; color: var(--muted); }
+.rent-foot b { color: #fff; }
+.rent-foot .btn { margin-left: auto; }
+
+/* ---------- rentals panel on the Chikn NFT screen ---------- */
+.ck-rent-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.ck-rent-col { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ck-rent-col > .btn { align-self: flex-start; }
+.ck-rent-h { font: 400 15px var(--font-h); display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.ck-rent-h small { font: 600 12px var(--font-b); color: var(--muted); }
+.ck-rent-row { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 12px; border: 2px solid #343d86; background: rgba(9, 12, 42, .62); cursor: pointer; min-width: 0; }
+.ck-rent-row:hover { border-color: #6a76d8; }
+.ck-rent-img { width: 40px; height: 40px; object-fit: contain; flex: none; }
+.ck-rent-t { display: flex; flex-direction: column; min-width: 0; flex: 1; line-height: 1.15; }
+.ck-rent-t b { font: 400 15px var(--font-h); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ck-rent-t small { font-size: 12px; }
+.ck-rent-r { display: flex; flex-direction: column; align-items: flex-end; text-align: right; line-height: 1.15; min-width: 0; }
+.ck-rent-r b { font: 400 15px var(--font-h); }
+.ck-rent-r small { font-size: 11.5px; color: var(--muted); }
+.ck-rent-empty { font-size: 13px; color: var(--muted); padding: 6px 2px; }
+.ck-rent-tot { font-size: 13px; color: var(--muted); }
+.ck-good { color: #8dff9b !important; }
+.ck-income .ck-sv { color: #8dff9b; }
+
+/* ownership & rental box in the Chikn detail */
+.ck-rentbox { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 8px 0; padding: 8px 10px; border-radius: 12px; border: 2px dashed #5b4bb0;
+  background: rgba(91, 75, 176, .12); font-size: 13.5px; color: var(--muted); }
+.ck-rentbox b { color: #fff; }
+.ck-rentbox > div:first-child { flex: 1 1 260px; min-width: 0; }
+.ck-rb-in { border-color: #c4782a; background: rgba(196, 120, 42, .12); }
+.ck-rb-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.ck-auto { display: flex; align-items: center; gap: 6px; margin-top: 4px; cursor: pointer; }
+
+/* rent-out dialog */
+.ck-ro { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 14px; align-items: start; }
+.ck-ro .tabs { margin-bottom: 6px; }
+.ck-ro-l { font: 400 15px var(--font-h); margin: 6px 0 4px; }
+.ck-ro-l small { font: 600 12px var(--font-b); color: var(--muted); margin-left: 6px; }
+.ck-ro-sum { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 8px 0 4px; }
+.ck-ro-sum > div { display: flex; flex-direction: column; padding: 6px 10px; border-radius: 10px; background: rgba(9, 12, 42, .62); border: 2px solid #343d86; }
+.ck-ro-sum span { font-size: 12px; color: var(--muted); }
+.ck-ro-sum b { font: 400 17px var(--font-h); }
+@media (max-width: 560px) { .ck-ro { grid-template-columns: minmax(0, 1fr); } .ck-ro > .ccard { max-width: 200px; margin: 0 auto; } }
 
 /* farm.css */
 /* ---------- Farm screen (.fm-) ---------- */
@@ -3788,7 +3881,9 @@ D.res = {
   alloy:       { name: 'Alloy',        cat: 'mat', color: '#b98aff' },
   circuit:     { name: 'Circuit',      cat: 'mat', color: '#5fe08a' },
 };
-D.topRes = ['stone', 'coal', 'copper', 'iron', 'heniumOre', 'rareEarth'];
+D.topRes = ['stone', 'coal', 'copper', 'iron', 'heniumOre', 'rareEarth'];            // mined ores (rates on the Mines screen)
+D.barRes = ['stone', 'crushedOre', 'coal', 'copper', 'iron', 'heniumOre', 'rareEarth']; // the top bar: ores + Crushed Ore
+D.shortName = { heniumOre: 'H. Ore', crushedOre: 'Crushed', copperIngot: 'Cu Ingot', ironIngot: 'Fe Ingot', machinePart: 'Parts' };
 
 // Mine zones (vertical floors). base = units/sec at floor level 1.
 D.zones = [
@@ -3960,10 +4055,27 @@ D.rarities = [
   { id: 'mythic',    name: 'Mythic',    color: '#ff4d8d', pct: 60, kg0: 175, kgMax: 900, power: 120, w: 0.2 },
 ];
 D.rarity = (id) => D.rarities.find((r) => r.id === id);
-D.hires = {
-  standard: { name: 'Standard Hire', cost: { egg: 25, feed: 20 }, weights: [52, 27, 13.5, 5.6, 1.7, 0.2] },
-  premium:  { name: 'Premium Hire',  cost: { henium: 60 },          weights: [0, 0, 70, 22, 7, 1] },
+// Chikn NFTs are a fixed collection of 22,000: the game never mints one. You OWN some (c.own: your wallet, bought or won)
+// and RENT more from other holders for EGG a day (c.rent). Holders list their own Chikns for rent and earn passive EGG
+// while somebody else uses them (c.lease). A rental never changes the NFT: rented Chikns can't be fattened and don't
+// lose weight, and a Chikn you rent out comes back exactly as it left.
+D.nftSupply = 22000;
+D.rent = {
+  days: [1, 3, 7, 30],                                    // rental lengths
+  disc: { 1: 1, 3: 0.95, 7: 0.9, 30: 0.8 },               // price per day by length: longer rentals are cheaper per day
+  base: { common: 0.6, uncommon: 0.75, rare: 0.95, epic: 1.3, legendary: 2, mythic: 3.2 }, // fair EGG a day at start weight
+  fee: 0.1,                                               // market fee on every rent: burned
+  offers: 6,                                              // offers on the rental market; new ones every farm day
+  weights: [52, 27, 13.5, 5.6, 1.7, 0.2],                 // rarity mix of the offers
+  heavy: 0.5,                                             // offered Chikns weigh between start weight and halfway to max
+  wait: 2 * 3600,                                         // average wait for a renter when you list at the market price
+  elastic: 3,                                             // the wait grows with (your price ÷ market price)^elastic
+  priceK: [0.8, 1, 1.2, 1.5],                             // price choices when you list a Chikn: −20%, market, +20%, +50%
+  free: { rarity: 'uncommon', role: 'miner', days: 7 },   // a new player's first rental is free
 };
+D.rentPrice = (rarity, kg) => D.rent.base[rarity] * Math.pow(kg / D.rarity(rarity).kg0, 0.6); // fair EGG a day
+D.rentCost = (price, days) => Math.max(1, Math.ceil(price * days * (D.rent.disc[days] || 1)));  // whole EGG for a rental
+D.buyNft = { name: 'Buy a Chikn NFT', cost: { henium: 60 }, weights: [0, 0, 70, 22, 7, 1] }; // from another holder: Rare+
 D.chiknMaxLv = 30;
 D.names = ['Clucky', 'Nugget', 'Henrietta', 'Pecky', 'Drumstick', 'Goldie', 'Feathers', 'Rocky', 'Sparky', 'Ruby', 'Pip', 'Biscuit',
   'Waffles', 'Scramble', 'Omelette', 'Yolko', 'Sunny', 'Pebbles', 'Cobalt', 'Ember', 'Gizmo', 'Dusty', 'Tinker', 'Boomer', 'Coco',
@@ -4099,7 +4211,7 @@ D.quests = [
   { id: 'tap10',     text: 'Tap the Stone Zone 10 times',  p: (S) => [S.stats.taps, 10],              r: { stone: 150000 } },
   { id: 'stone3',    text: 'Upgrade Stone Zone to Lv. 3',  p: (S) => [S.zones.stone.lv, 3],          r: { stone: 300000 } },
   { id: 'depth3',    text: 'Dig to depth 3',               p: (S) => [S.depth, 3],                    r: { stone: 400000, feed: 4 } },
-  { id: 'hire1',     text: 'Hire your first Chikn',        p: (S) => [S.stats.hired, 1],              r: { feed: 5 } },
+  { id: 'hire1',     text: 'Rent your first Chikn',        p: (S) => [S.stats.hired, 1],              r: { feed: 5 } },
   { id: 'crusher',   text: 'Build the Ore Crusher',        p: (S) => [built(S, 'crusher'), 1],        r: { stone: 800000 } },
   { id: 'depth6',    text: 'Reach the Coal Zone (depth 6)', p: (S) => [S.depth, 6],                   r: { henium: 3 } },
   { id: 'process300', text: 'Process 300 ore in factories', p: (S) => [S.stats.processed, 300],       r: { crushedOre: 200000, coal: 300000 } },
@@ -4152,7 +4264,6 @@ D.hazards = ['collapse', 'bandits', 'creature', 'richvein', 'supply'];
 // Times in seconds; d = the player's depth; loot = an ore & material bundle (D.bundle), never EGG.
 D.rules = {
   specLv: 8,                                        // G.act.chooseSpec: player level that unlocks the specialization
-  freeHire: { rarity: 'uncommon', role: 'miner' },  // G.act.hire: the first standard hire is free
   hazardLv: 4, hazardGap: [300, 900], hazardMin: 40, // G.sys.hazardTick: hostile hazards from this player level; gap while playing (s); min. squad power
   collapse: { sec: 90, stone: (d) => Math.round(D.digCost(Math.max(5, d)).stone * 0.002) },
   rich: { sec: 25, mult: 10, taps: 8 },
@@ -4189,8 +4300,10 @@ D.chiknLines = ['Deeper we go!', 'Dig deeper!', 'Build factories!', 'Refine Heni
 (() => {
 const G = window.G, D = G.D, R = D.rules;
 const SAVE_KEY = 'chikn-henium-mines-v2'; // v2: real-time economy (old saves from the fast prototype are not loaded)
-const now = () => Date.now();
+// the game clock: real time plus whatever test speed / time skips added (S.clockOff, saved with the game)
+const now = () => Date.now() + ((G.S && G.S.clockOff) || 0);
 G.now = now;
+G.speed = () => (G.S && G.S.settings && G.S.settings.speed) || 1; // test speed: game seconds per real second
 
 // ---------- formatting ----------
 const units = [[1e12, 1e12, 'T'], [1e9, 1e9, 'B'], [1e6, 1e6, 'M'], [1e4, 1e3, 'K']]; // [threshold, divisor, suffix]
@@ -4211,7 +4324,7 @@ G.fmtTime = (s) => {
   if (m) return `${m}m ${String(x).padStart(2, '0')}s`;
   return `${x}s`;
 };
-G.dayKey = () => new Date().toISOString().slice(0, 10);
+G.dayKey = () => new Date(now()).toISOString().slice(0, 10);
 G.rand = (a, b) => a + Math.random() * (b - a);
 G.randInt = (a, b) => Math.floor(G.rand(a, b + 1));
 G.pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -4241,12 +4354,12 @@ G.newState = (kind = 'fresh') => {
     season: { lv: 1, xp: 0, claimed: [], ends: now() + (23 * 24 + 14) * 3600e3 },
     daily: { day: G.dayKey(), prog: {}, claimed: {} },
     quests: { done: [] },
-    stats: { mined: 0, processed: 0, crafted: 0, refined: 0, taps: 0, hired: 0, wins: 0, exps: 0, upgrades: 0, ingots: 0, eggBurned: 0, feeBurned: 0 },
+    stats: { mined: 0, processed: 0, crafted: 0, refined: 0, taps: 0, hired: 0, wins: 0, exps: 0, upgrades: 0, ingots: 0, eggBurned: 0, feeBurned: 0, rentEarned: 0, rentPaid: 0 },
     world: { mined: 0, war: D.supply.worldWar0, hunt: D.supply.worldHunt0, paid: 0 }, worldT: Math.max(0, (now() - D.supply.genesis) / 1000),
     hunt: 0, tapEnergy: D.rules.tap.energyMax,
     live: { id: null, until: 0, next: now() + 75e3 },
     hazard: null, hazardNext: now() + 100e3,
-    notes: [], settings: { sound: true }, saveT: 0,
+    notes: [], settings: { sound: true, speed: 1 }, saveT: 0, clockOff: 0,
   };
   S.world.mined = D.cumEmission(S.worldT / 86400);
   G.dexInit(S);
@@ -4268,7 +4381,7 @@ function showcase(S) {
     { id: 2, type: 'improved', lv: 5, dur: 88, zone: 'iron' },
     { id: 3, type: 'basic', lv: 4, dur: 64, zone: 'coal' },
   ];
-  const mk = (role, rarity, lv, name) => ({ id: S.nextId++, name, num: G.randInt(1000, 9999), role, rarity, lv, status: 'idle', until: 0 });
+  const mk = (role, rarity, lv, name) => ({ id: S.nextId++, name, num: G.randInt(1000, 9999), role, rarity, lv, status: 'idle', until: 0, own: true });
   S.nextId = 10;
   S.chikns = [mk('miner', 'legendary', 10, 'Goldie'), mk('engineer', 'rare', 8, 'Gizmo'), mk('miner', 'epic', 1, 'Rocky'),
     mk('guardian', 'epic', 12, 'Flint'), mk('explorer', 'rare', 10, 'Juniper'), mk('operator', 'uncommon', 9, 'Tinker'),
@@ -4277,6 +4390,14 @@ function showcase(S) {
   S.chikns.forEach((c) => G.ensureKg(c));
   S.squad = S.chikns.slice(0, 3).map((c) => c.id);
   S.squad.forEach((id) => (G.chikn(S, id).status = 'squad'));
+  // rentals: one Chikn rented from another holder, one of yours rented out (passive EGG), one listed for rent
+  const rented = mk('miner', 'epic', 1, 'Pebbles'); rented.own = false; G.ensureKg(rented); rented.kg += 60; G.syncLv(rented);
+  rented.rent = { left: 3.4 * 86400, days: 7, price: 1.5, owner: '0x8f3a…c21d', auto: true };
+  S.chikns.push(rented);
+  const pip = S.chikns.find((c) => c.name === 'Pip'); pip.status = 'away';
+  pip.lease = { price: 0.85, days: 7, left: 2.2 * 86400, renter: '0x51be…07a9', earned: 3.6, k: 1 };
+  const biscuit = S.chikns.find((c) => c.name === 'Biscuit');
+  biscuit.lease = { price: 0.62, days: 3, left: null, renter: null, earned: 0, k: 1 };
   S.jobs = [
     { id: 1, f: 'smelter', r: 'smeltCopper', t: 200, dur: 485, repeat: true },
     { id: 2, f: 'forge', r: 'parts', t: 600, dur: 1458, repeat: true },
@@ -4314,7 +4435,7 @@ G.load = () => {
     const saved = JSON.parse(raw);
     const S = merge(G.newState(), saved);
     for (const id in S.factories) if (S.factories[id].con === undefined) S.factories[id].con = null;
-    S.chikns.forEach((c) => G.ensureKg(c));
+    S.chikns.forEach((c) => { G.ensureKg(c); if (c.own === undefined) c.own = true; }); // Chikns hired before rentals are yours
     // saves from before the world clock and the world hunt pool
     if (!(typeof S.worldT === 'number' && S.worldT >= 0)) S.worldT = Math.max(0, (now() - D.supply.genesis) / 1000);
     if (!(typeof S.world.hunt === 'number' && S.world.hunt > 0)) S.world.hunt = D.supply.worldHunt0;
@@ -4501,6 +4622,8 @@ G.tick = (dt, offline = false, mineK = 1) => {
   S.tapEnergy = Math.min(D.rules.tap.energyMax, (S.tapEnergy ?? D.rules.tap.energyMax) + D.rules.tap.regen * dt);
   // farm: eggs, FEED upkeep, hunger
   G.farmTick(dt, offline);
+  // Chikn NFT rentals: rented Chikns go home, renters take your listings, rent arrives (also while you are away)
+  G.sys.rentTick(dt, offline);
   // construction and digging timers
   for (const f of D.factories) { const st = S.factories[f.id]; if (st.con) { st.con.t += dt; if (st.con.t >= st.con.dur) G.sys.finishBuild(f, offline); } }
   if (S.dig) { S.dig.t += dt * G.digSpeed(); if (S.dig.t >= S.dig.dur) G.sys.finishDig(offline); }
@@ -4550,6 +4673,15 @@ G.tick = (dt, offline = false, mineK = 1) => {
   S.last = now();
 };
 
+// Test tool: skip ahead `sec` seconds as if you played the whole time (floors mine all along, no 8 h cap), quietly
+// (no hazards pop up while skipping). The clock moves with it, so every timer stays consistent.
+G.warp = (sec) => {
+  const S = G.S, before = { ...S.res }, step = 60, n = Math.ceil(sec / step);
+  for (let i = 0; i < n; i++) { const dt = Math.min(step, sec - i * step); S.clockOff = (S.clockOff || 0) + dt * 1000; G.tick(dt, true, 1); }
+  const gains = {};
+  for (const r in S.res) { const d = S.res[r] - before[r]; if (d > 0.5) gains[r] = d; }
+  return { sec, gains };
+};
 G.offline = (sec) => {
   const S = G.S;
   if (!(sec >= 30)) return null;
@@ -4578,7 +4710,7 @@ const G = window.G, D = G.D, R = D.rules;
 const ok = (extra) => Object.assign({ ok: true }, extra);
 const fail = (msg) => ({ ok: false, msg });
 const lack = (cost) => fail('Not enough ' + G.missing(cost).map((r) => D.res[r].name).join(', '));
-const now = () => Date.now();
+const now = () => G.now(); // the game clock (moves faster in test mode)
 G.sys = {}; G.act = {};
 
 // ---------- mine ----------
@@ -4806,21 +4938,138 @@ G.rollRarity = (w) => {
   for (let i = 0; i < w.length; i++) { r -= w[i]; if (r <= 0) return D.rarities[i].id; }
   return 'common';
 };
-G.newChikn = (rarity, role) => {
+// a Chikn joins your coop: one you own (bought or won) or one you rent (extra: { own: false, rent, kg, name, num })
+G.newChikn = (rarity, role, extra = {}) => {
   const S = G.S;
-  const c = { id: S.nextId++, name: G.pick(D.names), num: G.randInt(1000, 9999), role: role || G.pick(Object.keys(D.roles)), rarity, lv: 1, kg: D.rarity(rarity).kg0, status: 'idle', until: 0 };
+  const c = Object.assign({ id: S.nextId++, name: G.pick(D.names), num: G.randInt(1000, 9999), role: role || G.pick(Object.keys(D.roles)), rarity, lv: 1,
+    kg: D.rarity(rarity).kg0, status: 'idle', until: 0, own: true }, extra);
+  G.syncLv(c);
   S.chikns.push(c);
   if (S.squad.length < G.squadSlots()) { S.squad.push(c.id); c.status = 'squad'; }
   return c;
 };
-G.act.hire = (kind = 'standard') => {
-  const S = G.S, h = D.hires[kind];
-  const free = kind === 'standard' && S.stats.hired === 0;
+// ---------- Chikn NFT rentals: rent from other holders, or rent yours out for passive EGG ----------
+const hex4 = () => Math.floor(Math.random() * 65536).toString(16).padStart(4, '0');
+G.wallet = () => `0x${hex4()}…${hex4()}`;                                   // a simulated holder's wallet
+G.rentPrice = (c) => D.rentPrice(c.rarity, c.kg || G.kgStart(c));            // fair EGG a day for this Chikn now
+G.rentOffer = (free) => {
+  const S = G.S, rarity = free ? free.rarity : G.rollRarity(D.rent.weights), R = D.rarity(rarity);
+  const kg = free ? R.kg0 : Math.round(R.kg0 + (R.kgMax - R.kg0) * D.rent.heavy * Math.random());
+  return { id: S.nextId++, rarity, role: free ? free.role : G.pick(Object.keys(D.roles)), kg, name: G.pick(D.names), num: G.randInt(1000, 9999),
+    owner: G.wallet(), price: free ? 0 : Math.round(D.rentPrice(rarity, kg) * G.rand(0.85, 1.15) * 100) / 100, free: !!free };
+};
+// the rental market: D.rent.offers offers, new ones every farm day; a new player's first rental is free
+G.rentMarket = () => {
+  const S = G.S;
+  if (!S.rentMk || S.rentMk.day !== S.farm.day) S.rentMk = { day: S.farm.day, offers: Array.from({ length: D.rent.offers }, () => G.rentOffer()) };
+  const free = S.stats.hired === 0;
+  if (free && !S.rentMk.offers.some((o) => o.free)) S.rentMk.offers.unshift(G.rentOffer(D.rent.free));
+  if (!free) S.rentMk.offers = S.rentMk.offers.filter((o) => !o.free);
+  return S.rentMk;
+};
+G.rentDays = (o, days) => (o.free ? D.rent.free.days : days);
+G.act.rent = (oid, days = 7, auto = true) => {
+  const S = G.S, mk = G.rentMarket(), o = mk.offers.find((x) => x.id === oid);
+  if (!o) return fail('That offer is gone: another player rented it');
+  days = G.rentDays(o, days);
+  if (!o.free && !D.rent.days.includes(days)) return fail('Pick how many days to rent');
   if (S.chikns.length >= G.coopCap()) return fail(`The coop is full (${S.chikns.length}/${G.coopCap()}). Upgrade it on the Farm.`);
-  if (!free && !G.pay(h.cost)) return lack(h.cost);
-  const c = G.newChikn(free ? R.freeHire.rarity : G.rollRarity(h.weights), free ? R.freeHire.role : null);
+  const cost = o.free ? 0 : D.rentCost(o.price, days);
+  if (S.res.egg < cost) return fail(`Not enough EGG: renting ${o.name} for ${days} day${days === 1 ? '' : 's'} costs ${cost} EGG`);
+  S.res.egg -= cost; S.stats.rentPaid = (S.stats.rentPaid || 0) + cost; S.stats.eggBurned += cost * D.rent.fee;
+  mk.offers = mk.offers.filter((x) => x !== o);
+  const c = G.newChikn(o.rarity, o.role, { own: false, kg: o.kg, name: o.name, num: o.num,
+    rent: { left: days * 86400, days, price: o.price, owner: o.owner, auto: !!auto && !o.free } });
+  G.stat('hired'); G.addXP(20); G.emit('res');
+  return ok({ c, cost, days, free: o.free });
+};
+G.act.extendRent = (cid, days = 7) => {
+  const S = G.S, c = G.chikn(S, cid);
+  if (!c || !c.rent) return fail('That Chikn is not rented');
+  if (!D.rent.days.includes(days)) return fail('Pick how many days to add');
+  const price = c.rent.price || G.rentPrice(c), cost = D.rentCost(price, days); // a free starter is extended at the market price
+  if (S.res.egg < cost) return fail(`Not enough EGG: ${days} more day${days === 1 ? '' : 's'} cost ${cost} EGG`);
+  S.res.egg -= cost; S.stats.rentPaid = (S.stats.rentPaid || 0) + cost; S.stats.eggBurned += cost * D.rent.fee;
+  c.rent.price = price; c.rent.left += days * 86400; c.rent.days = days;
+  G.emit('res');
+  return ok({ cost, left: c.rent.left });
+};
+G.act.autoRenew = (cid) => {
+  const c = G.chikn(G.S, cid);
+  if (!c || !c.rent) return fail('That Chikn is not rented');
+  c.rent.auto = !c.rent.auto;
+  return ok({ auto: c.rent.auto });
+};
+// buy a Chikn NFT from another holder (the collection stays at 22,000): Rare or better
+G.act.buyNft = () => {
+  const S = G.S, b = D.buyNft;
+  if (S.chikns.length >= G.coopCap()) return fail(`The coop is full (${S.chikns.length}/${G.coopCap()}). Upgrade it on the Farm.`);
+  if (!G.pay(b.cost)) return lack(b.cost);
+  const c = G.newChikn(G.rollRarity(b.weights), null, { own: true, seller: G.wallet() });
   G.stat('hired'); G.addXP(20);
-  return ok({ c, free });
+  return ok({ c });
+};
+// list one of your own Chikns for rent: it keeps working for you until a renter takes it
+G.act.listRent = (cid, days = 7, k = 1) => {
+  const S = G.S, c = G.chikn(S, cid);
+  if (!c) return fail('Chikn not found');
+  if (c.own === false) return fail(`${c.name} is rented: only its owner can rent it out`);
+  if (c.lease) return fail(`${c.name} is already ${c.lease.left == null ? 'listed' : 'rented out'}`);
+  if (c.status === 'exp' || c.status === 'injured') return fail(`${c.name} is ${c.status === 'exp' ? 'on an expedition' : 'recovering'}: list it when it is back`);
+  if (!D.rent.days.includes(days)) return fail('Pick how many days to rent it out');
+  const price = Math.round(G.rentPrice(c) * (D.rent.priceK.includes(k) ? k : 1) * 100) / 100;
+  c.lease = { price, days, left: null, renter: null, earned: 0, k };
+  return ok({ price });
+};
+G.act.cancelRent = (cid) => {
+  const c = G.chikn(G.S, cid);
+  if (!c || !c.lease) return fail('That Chikn is not listed');
+  if (c.lease.left != null) return fail(`${c.name} is rented out: it comes back when the rental ends`);
+  delete c.lease;
+  return ok();
+};
+G.rentWait = (c) => D.rent.wait * Math.pow(c.lease.price / Math.max(1e-9, G.rentPrice(c)), D.rent.elastic); // mean wait for a renter (s)
+G.rentIncome = () => G.S.chikns.reduce((s, c) => s + (c.lease && c.lease.left != null ? c.lease.price * (1 - D.rent.fee) : 0), 0); // EGG a day
+G.rentSpend = () => G.S.chikns.reduce((s, c) => s + (c.rent ? c.rent.price : 0), 0);   // EGG a day your rentals cost
+// rentals run on game time (also while you are away): rented Chikns go home, renters take your listings, rent is paid
+G.sys.rentTick = (dt, offline) => {
+  const S = G.S, fee = D.rent.fee;
+  for (const c of [...S.chikns]) {
+    if (c.rent) {
+      c.rent.left -= dt;
+      if (c.rent.left > 0) continue;
+      const cost = D.rentCost(c.rent.price || G.rentPrice(c), c.rent.days);
+      if (c.rent.auto && S.res.egg >= cost) {
+        S.res.egg -= cost; S.stats.rentPaid = (S.stats.rentPaid || 0) + cost; S.stats.eggBurned += cost * fee;
+        c.rent.left += c.rent.days * 86400;
+        G.emit('note', { text: `${c.name}'s rental renewed for ${c.rent.days} day${c.rent.days === 1 ? '' : 's'} (−${cost} EGG)`, icon: 'res/egg' });
+      } else if (c.status !== 'exp') {
+        S.chikns.splice(S.chikns.indexOf(c), 1); S.squad = S.squad.filter((id) => id !== c.id);
+        G.emit('note', { text: `${c.name}'s rental ended: the Chikn went back to its owner${c.rent.auto ? ' (not enough EGG to renew)' : ''}.`, icon: 'ui/chikns', bad: true });
+        G.emit('rentEnd', c);
+      }
+      continue;
+    }
+    const L = c.lease;
+    if (!L) continue;
+    if (L.left == null) { // listed: does a renter take it in this slice of time?
+      if (c.status === 'exp' || c.status === 'injured') continue;
+      if (Math.random() < 1 - Math.exp(-dt / G.rentWait(c))) {
+        L.left = L.days * 86400; L.renter = G.wallet();
+        S.squad = S.squad.filter((id) => id !== c.id); c.status = 'away';
+        G.emit('note', { text: `${c.name} was rented for ${L.days} day${L.days === 1 ? '' : 's'}: +${G.fmt(L.price * (1 - fee), 2)} EGG a day for you`, icon: 'res/egg', good: true });
+      }
+      continue;
+    }
+    const t = Math.min(dt, L.left), got = L.price * (1 - fee) * t / 86400; // rent arrives continuously, minus the fee
+    S.res.egg += got; L.earned += got; S.stats.rentEarned = (S.stats.rentEarned || 0) + got; S.stats.eggBurned += L.price * fee * t / 86400;
+    L.left -= t;
+    if (L.left <= 0) {
+      c.status = 'idle';
+      G.emit('note', { text: `${c.name} is back from a rental and earned you ${G.fmt(L.earned, 1)} EGG`, icon: 'res/egg', good: true });
+      delete c.lease;
+    }
+  }
 };
 G.act.toggleSquad = (cid) => {
   const S = G.S, c = G.chikn(S, cid);
@@ -4955,6 +5204,8 @@ G.act.startExp = (siteId, ids) => {
   if (S.exps.some((e) => e.site === siteId)) return fail('A team is already exploring there');
   ids = (ids || []).filter((id) => { const c = G.chikn(S, id); return c && c.status === 'idle'; }).slice(0, site.slots);
   if (!ids.length) return fail('Pick at least one idle Chikn (not in your squad)');
+  const short = ids.map((id) => G.chikn(S, id)).find((c) => c.rent && c.rent.left < site.t && !c.rent.auto);
+  if (short) return fail(`${short.name}'s rental ends before this expedition returns: extend the rental or turn on auto-renew`);
   ids.forEach((id) => (G.chikn(S, id).status = 'exp'));
   S.exps.push({ id: S.nextId++, site: siteId, ids, t: 0, dur: site.t, done: false });
   return ok();
@@ -4984,6 +5235,7 @@ G.act.claimExp = (id) => {
   }
   G.give(rew); G.stat('exps'); G.addXP(25 + site.t / 600);
   S.exps.splice(S.exps.indexOf(e), 1);
+  for (const c of team) if (c.rent && c.rent.left <= 0) G.sys.rentTick(0); // a rental that ran out on the way ends now
   return ok({ rew, injured, site });
 };
 
@@ -5084,7 +5336,7 @@ G.act.claimSeason = (lv) => {
     return fail(`Your coop is full (${G.S.chikns.length}/${G.coopCap()}). Upgrade the Coop on the Farm, then claim your ${D.rarity(r.chikn).name} Chikn.`);
   }
   s.claimed.push(lv);
-  if (r.chikn) { const c = G.newChikn(r.chikn); return ok({ c }); }
+  if (r.chikn) { const c = G.newChikn(r.chikn, null, { own: true }); return ok({ c }); } // from the game's treasury of Chikn NFTs
   G.give(r);
   return ok({ rew: r });
 };
@@ -5111,6 +5363,7 @@ G.sys.hazardTick = () => {
   if (H) { if (H.until && t >= H.until) G.sys.clearHazard(true); return; }
   if (t < S.hazardNext) return;
   S.hazardNext = t + G.rand(R.hazardGap[0], R.hazardGap[1]) * 1000;
+  if (G.speed() > 10) return; // test speed: no hazards you couldn't react to in time
   const open = D.zones.filter((z) => G.zoneOpen(z));
   if (!open.length) return;
   let types = S.player.lv < R.hazardLv ? ['richvein', 'supply'] : ['richvein', 'supply', 'creature', 'bandits', 'collapse'];
@@ -5216,9 +5469,11 @@ G.ensureKg = (c) => {
   c.kg = Math.round(R.kg0 + (R.kgMax - R.kg0) * ((c.lv || 1) - 1) / 29);
 };
 G.chiknEgg = (c) => F.eggsAt(c.kg || G.kgStart(c));                 // EGG per farm day
-G.eggsPerDay = () => G.S.chikns.reduce((s, c) => s + G.chiknEgg(c), 0);
+// a Chikn you rented out lays and eats at its renter's farm, not yours
+const home = () => G.S.chikns.filter((c) => c.status !== 'away');
+G.eggsPerDay = () => home().reduce((s, c) => s + G.chiknEgg(c), 0);
 G.eggRate = () => G.eggsPerDay() / F.day;                              // EGG per second
-G.upkeepPerDay = () => G.S.chikns.reduce((s, c) => s + F.upkeep(c.kg || G.kgStart(c)), 0);
+G.upkeepPerDay = () => home().reduce((s, c) => s + F.upkeep(c.kg || G.kgStart(c)), 0);
 G.nestCap = () => Math.max(2, G.eggsPerDay() * F.nestDays * (G.specIs('farmer') ? 2 : 1));
 G.feedCost = (c) => Math.max(1, Math.ceil(F.step * F.feedPerKg(c.kg) * (G.specIs('farmer') ? 0.8 : 1) *
   (G.liveEvent() && G.liveEvent().id === 'feast' ? 0.7 : 1)));
@@ -5238,7 +5493,8 @@ G.farmTick = (dt, offline) => {
   S.res.feed = 0;
   if (!fm.hungry && !offline) G.emit('hungry');
   fm.hungry = true;
-  for (const c of S.chikns) {
+  for (const c of home()) {
+    if (c.rent) continue; // a rented Chikn never loses weight at your farm: the NFT goes back to its owner unchanged
     const a = G.kgStart(c);
     c.kg = Math.max(a, c.kg - ((c.kg - a) * F.hunger + D.rules.hungerFlat) * dt / F.day);
     G.syncLv(c);
@@ -5249,6 +5505,8 @@ G.farmTick = (dt, offline) => {
 G.act.feed = (cid, times = 1) => {
   const S = G.S, c = G.chikn(S, cid);
   if (!c) return fail('Chikn not found');
+  if (c.rent) return fail(`${c.name} is rented: only its owner can fatten it`);
+  if (c.status === 'away') return fail(`${c.name} is rented out: feed it when it is back`);
   let done = 0, spent = 0;
   for (let i = 0; i < times; i++) {
     if (c.kg >= G.kgCap(c)) break;
@@ -5379,7 +5637,7 @@ G.act.swap = (from, to, amt, minOut = 0) => {
   S.res[to] = (S.res[to] || 0) + q.out;
   const value = amt * G.spot(from, 'henium');
   S.dex.volume += value;
-  S.dex.log.unshift({ t: Date.now(), from, to, amt, out: q.out, value });
+  S.dex.log.unshift({ t: G.now(), from, to, amt, out: q.out, value });
   S.dex.log.length = Math.min(S.dex.log.length, 40);
   G.emit('res');
   return { ok: true, out: q.out, q };
@@ -5455,7 +5713,7 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 ui.$ = $; ui.$$ = $$;
 const esc = ui.esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 G.img = (key) => G.ASSETS[key] || '';
-const now = () => Date.now();
+const now = () => G.now(); // the game clock (moves faster in test mode)
 
 // ---------- small builders ----------
 ui.icon = (r, size = 24, cls = '') => `<img class="ic ${cls}" src="${G.img('res/' + r)}" width="${size}" height="${size}" alt="${esc(D.res[r] ? D.res[r].name : r)}">`;
@@ -5473,9 +5731,13 @@ ui.btn = (label, a, args = [], cls = '', need = null, extra = '') =>
 ui.perH = (perSec) => G.fmt(perSec * 3600) + '/h';
 
 // Chikn card used by several screens
+// rental badge: a Chikn you rent (time left), or one of yours listed for rent
+ui.rentTag = (c) => (c.rent ? ` <span class="tag o" title="Rented from ${c.rent.owner}${c.rent.auto ? ', renews automatically' : ''}">Rented · ${G.fmtTime(Math.max(0, c.rent.left))}</span>`
+  : c.lease && c.lease.left == null ? ' <span class="tag p" title="Listed on the rental market: it keeps working for you until a renter takes it">For rent</span>' : '');
 ui.chiknCard = (c, opts = {}) => {
   const R = D.rarity(c.rarity), role = D.roles[c.role];
-  const st = { squad: '<span class="tag g">Squad</span>', exp: '<span class="tag o">Expedition</span>', injured: '<span class="tag r">Recovering</span>', idle: '<span class="tag">Idle</span>' }[c.status];
+  const st = { squad: '<span class="tag g">Squad</span>', exp: '<span class="tag o">Expedition</span>', injured: '<span class="tag r">Recovering</span>', idle: '<span class="tag">Idle</span>',
+    away: '<span class="tag p">Rented out</span>' }[c.status] + ui.rentTag(c);
   return `<div class="ccard rarity-${c.rarity} ${opts.sel ? 'sel' : ''} ${opts.cls || ''}" ${opts.attrs || ''}>
     <div class="ccard-art">${ui.img('chikn/' + c.role, 'ccard-img', role.name)}<span class="ccard-lv">Lv.${c.lv}</span></div>
     <div class="ccard-name">${esc(c.name)} <span class="dim">#${c.num}</span></div>
@@ -5580,14 +5842,24 @@ const NAV = [['mines', 'Mines'], ['factories', 'Factories'], ['crafting', 'Craft
 ui.renderShell = () => {
   const pill = (r) => `<div class="pill cur"><img src="${G.img('res/' + r)}" alt=""><div><div class="lbl">${D.res[r].name}</div><div class="val" data-b="res:${r}"></div></div>
     <button class="plus" data-a="exchangeDlg" data-args='["${r}"]' aria-label="Get more ${D.res[r].name}">+</button></div>`;
-  const strip = D.topRes.map((r) => `<div class="r" title="${D.res[r].name}"><img src="${G.img('res/' + r)}" alt=""><div><div class="lbl">${r === 'heniumOre' ? 'H. Ore' : D.res[r].name}</div><div class="val num" data-b="res:${r}"></div></div></div>`).join('');
+  const strip = D.barRes.map((r) => `<div class="r" title="${D.res[r].name}"><img src="${G.img('res/' + r)}" alt=""><div><div class="lbl">${D.shortName[r] || D.res[r].name}</div><div class="val num" data-b="res:${r}"></div></div></div>`).join('');
   $('#topbar').innerHTML = `<img class="logo" src="${G.img('ui/logo')}" alt="Chikn Henium Mines" data-a="nav" data-args='["mines"]'>
-    <div class="top-scroll">${pill('egg')}${pill('feed')}${pill('henium')}<div class="pill eth" data-a="nav" data-args='["dex"]' title="Simulated ETH — trade on the DEX"><img src="${G.img('res/eth')}" alt=""><div><div class="lbl">ETH</div><div class="val" data-b="res:eth"></div></div></div><div class="res-strip">${strip}</div></div>
+    <div class="top-scroll">${pill('egg')}${pill('feed')}${pill('henium')}<div class="pill eth" data-a="nav" data-args='["dex"]' title="Simulated ETH — trade on the DEX"><img src="${G.img('res/eth')}" alt=""><div><div class="lbl">ETH</div><div class="val" data-b="res:eth"></div></div></div><button type="button" class="res-strip" data-a="inventory" title="Inventory: every ore and material you have" aria-label="Open inventory">${strip}<span class="res-more" aria-hidden="true">▾</span></button></div>
     <div class="top-icons"><button class="icon-btn" data-a="notes" aria-label="Notifications"><img src="${G.img('ui/bell')}" alt=""><span class="badge" id="note-badge" hidden></span></button>
     <button class="icon-btn" data-a="settings" aria-label="Settings"><img src="${G.img('ui/settings')}" alt=""></button></div>`;
+  setTimeout(ui.speedChip, 0);
   $('#sidenav').innerHTML = NAV.map(([id, label]) => `<button class="nav-btn ${ui.cur === id ? 'on' : ''}" data-view="${id}" data-a="nav" data-args='["${id}"]'>
       <img src="${G.img(id === 'farm' ? 'farm/nest' : 'ui/' + id)}" alt=""><span>${label}</span><span class="badge" data-badge="${id}" hidden></span></button>`).join('') +
     `<div class="nav-player" data-a="profile"><img class="av" src="${G.img('chikn/miner')}" alt=""><div style="flex:1;min-width:0"><div class="row"><span class="lv" data-b="lv"></span><span class="muted" style="font-size:12px">Level</span></div>${ui.bar(0, 'gold', '', 'data-b="xp"')}</div></div>`;
+};
+// Inventory: every resource you hold, grouped like the production chain, with the live amount and the mining rate
+ui.handlers.inventory = () => {
+  const S = G.S, rates = G.rates(), cat = (c) => Object.keys(D.res).filter((r) => D.res[r].cat === c && r in S.res);
+  const item = (r) => `<div class="inv-it" title="${esc(D.res[r].name)}">${ui.icon(r, 34)}<div><b data-b="res:${r}">${G.fmt(S.res[r])}</b><small>${esc(D.res[r].name)}</small>${rates[r] > 0 && r !== 'egg' ? `<i>+${G.fmt(rates[r] * 3600)}/h</i>` : ''}</div></div>`;
+  const group = (title, list) => (list.length ? `<h3 class="inv-h">${title}</h3><div class="inv-grid">${list.map(item).join('')}</div>` : '');
+  ui.modal({ title: 'Inventory', wide: true, html: group('Ores from the mines', cat('raw')) + group('Processed materials (Factories)', cat('mat'))
+    + `<p class="dim" style="font-size:13px;margin:10px 0 0">Crushed Ore comes from the Ore Crusher; the Ore Separator and the Feed Mill use it. EGG, FEED and HENIUM are in the top bar.</p>`,
+    actions: [{ label: 'Factories', cls: 'purple', fn: () => ui.go('factories') }, { label: 'Close', cls: 'green' }] });
 };
 ui.handlers.nav = (el, e, id) => { if (el.closest('#modal-root')) ui.closeModal(); ui.go(id); };
 ui.navBadges = () => {
@@ -5710,14 +5982,43 @@ ui.handlers.notes = () => {
     html: S.notes.length ? S.notes.slice(0, 25).map((n) => `<div class="list-row">${n.icon ? ui.img(n.icon, 'ic', '').replace('class="ic"', 'class="ic" width="28" height="28"') : ''}<div class="sp">${esc(n.text)}</div><span class="dim" style="font-size:12px">${G.fmtTime((now() - n.t) / 1000)} ago</span></div>`).join('') : '<div class="empty">No notifications yet.</div>' });
   ui.navBadges();
 };
+const SPEEDS = [1, 10, 60, 600, 3600];
+const SKIPS = [[3600, '1 h'], [8 * 3600, '8 h'], [86400, '1 day'], [7 * 86400, '7 days']];
+// a chip in the top bar while the game runs faster than real time (click: settings)
+ui.speedChip = () => {
+  const bar = $('#topbar .top-icons'), k = G.speed();
+  if (!bar) return;
+  let chip = bar.querySelector('.speed-chip');
+  if (k <= 1) { if (chip) chip.remove(); return; }
+  if (!chip) { chip = document.createElement('button'); chip.type = 'button'; chip.className = 'speed-chip'; chip.dataset.a = 'settings'; bar.prepend(chip); }
+  chip.textContent = `⏩ ×${G.fmtFull(k)}`; chip.title = `Test speed: the game runs ${G.fmtFull(k)}× faster than real time. Click to change.`;
+};
 ui.handlers.settings = () => {
   const S = G.S;
   ui.modal({ title: `${ui.img('ui/settings', '', '')} Settings`, actions: [{ label: 'Close', cls: 'gray' }],
     html: `<div class="list-row"><div class="sp">Sound effects</div><button class="btn sm ${S.settings.sound ? 'green' : 'gray'}" data-set="sound">${S.settings.sound ? 'On' : 'Off'}</button></div>
+      <div class="set-test"><div class="hx">Test speed</div><div class="muted" style="font-size:13px">The game runs in real time (a day is 24 hours). For testing, make time run faster: at ×60 one real minute is one game hour. Hazards pause above ×10, because you couldn't react to them.</div>
+        <div class="tabs set-speeds">${SPEEDS.map((k) => `<button type="button" class="tab ${G.speed() === k ? 'on' : ''}" data-speed="${k}">×${G.fmtFull(k)}</button>`).join('')}</div>
+        <div class="hx" style="margin-top:8px;font-size:15px">Skip ahead</div><div class="muted" style="font-size:13px">Jump forward as if you played the whole time (floors mine all along).</div>
+        <div class="set-skips">${SKIPS.map(([sec, l]) => `<button type="button" class="btn sm purple" data-skip="${sec}">+${l}</button>`).join('')}</div></div>
       <div class="list-row"><div class="sp"><div class="hx">Start a new game</div><div class="muted" style="font-size:13px">Month 1: The Beginning — a small mine at depth 1.</div></div><button class="btn sm red" data-set="fresh">New Game</button></div>
       <div class="list-row"><div class="sp"><div class="hx">Showcase save</div><div class="muted" style="font-size:13px">Jump to the mockup: Lv. 27, depth 27, Heavy Drill on the Henium Vein.</div></div><button class="btn sm purple" data-set="showcase">Load</button></div>
       <p class="dim" style="font-size:12px;margin-bottom:0">Progress saves automatically in this browser. Prototype build: tokens, NFTs and other players are simulated.</p>` });
   ui.modalEl().addEventListener('click', (ev) => {
+    const sp = ev.target.closest('[data-speed]'), sk = ev.target.closest('[data-skip]');
+    if (sp) {
+      S.settings.speed = +sp.dataset.speed; G.save();
+      ui.modalEl().querySelectorAll('[data-speed]').forEach((x) => x.classList.toggle('on', x === sp));
+      ui.speedChip(); ui.toast(S.settings.speed > 1 ? `Test speed ×${G.fmtFull(S.settings.speed)}: one real minute is ${G.fmtTime(60 * S.settings.speed)} of game time` : 'Real time again', '', 'ui/timer');
+      return;
+    }
+    if (sk) {
+      const r = G.warp(+sk.dataset.skip); G.save(); ui.closeModal(); ui.render();
+      const rows = Object.entries(r.gains).sort((a, b) => b[1] - a[1]).slice(0, 8);
+      ui.modal({ title: `${ui.img('ui/timer', '', '')} Skipped ${G.fmtTime(r.sec)}`, actions: [{ label: 'OK', cls: 'green' }],
+        html: `<p style="text-align:center;margin-top:0">Your mine, factories, farm and rentals ran for <b>${G.fmtTime(r.sec)}</b>.</p><div style="display:flex;justify-content:center">${ui.rew(Object.fromEntries(rows), 24)}</div>` });
+      return;
+    }
     const b = ev.target.closest('[data-set]');
     if (!b) return;
     const k = b.dataset.set;
@@ -5888,7 +6189,7 @@ function actionsHTML() {
         : `${ui.cost(cost, 1, 15)} <span class="dig-time">${ui.img('ui/timer', 'ic', '').replace('class="ic"', 'class="ic" width="14" height="14"')}${G.fmtTime(D.digTime(S.depth + 1) / G.digSpeed())}</span>`}</span></button>`;
   return `<div class="mine-actions">
     ${digCard}
-    <button class="act" data-a="hire">${ui.img('ui/chikns', 'act-ic', '')}<span class="act-l">Hire Chikn</span><span class="act-c">${S.stats.hired === 0 ? 'First one is free!' : ui.cost(D.hires.standard.cost, 1, 15)}</span>${S.stats.hired === 0 ? '<span class="badge">!</span>' : ''}</button>
+    <button class="act" data-a="hire">${ui.img('ui/chikns', 'act-ic', '')}<span class="act-l">Rent a Chikn</span><span class="act-c">${S.stats.hired === 0 ? 'First rental is free!' : `from ${ui.cost({ egg: 1 }, 1, 15)} a day`}</span>${S.stats.hired === 0 ? '<span class="badge">!</span>' : ''}</button>
     <button class="act" data-a="nav" data-args='["factories"]'>${ui.img('ui/factories', 'act-ic', '')}<span class="act-l">Build Factory</span><span class="act-c">${D.factories.filter((f) => S.factories[f.id].lv > 0).length}/${D.factories.length} built</span></button>
     <button class="act gold" data-a="collectAll">${ui.img('prop/chest', 'act-ic', '')}<span class="act-l">Collect All</span><span class="act-c">Nest: ${ui.icon('egg', 15)}<span data-b="nest"></span></span>${collectN ? `<span class="badge">${collectN}</span>` : ''}</button>
     <div class="ticker ${h ? 'haz-' + h.type : ''}" data-a="nav" data-args='["events"]'>${ui.img(h ? 'ui/battle' : 'ui/events', 'act-ic', '')}<div class="col" style="gap:0">${ticker}</div><span class="go">➜</span></div>
@@ -6011,22 +6312,61 @@ ui.handlers.hazardAct = (el, e, choice) => {
   if (r.rew) { const [x, y] = ui.centerOf(el); Object.entries(r.rew).forEach(([res, v], i) => ui.float(`+${ui.amt(res, v)}${ui.icon(res, 20)}`, x + i * 30, y - 10)); }
   ui.render();
 };
-// Hiring dialog (shared with the Chikn NFT screen)
+// Rental market (shared with the Chikn NFT screen): Chikn NFTs are a fixed collection, so you rent one from its holder
+let rentDays = 7, rentAuto = true;
+const rentOfferCard = (o) => {
+  const R = D.rarity(o.rarity), role = D.roles[o.role], c = { rarity: o.rarity, role: o.role, kg: o.kg, lv: 1 };
+  G.syncLv(c);
+  const days = G.rentDays(o, rentDays), cost = o.free ? 0 : D.rentCost(o.price, days), S = G.S, full = S.chikns.length >= G.coopCap();
+  const btn = full ? '<button class="btn gray block" data-a="nav" data-args=\'["farm"]\'>Coop full: upgrade it</button>'
+    : `<button class="btn ${o.free ? 'gold' : 'green'} block" data-rent="${o.id}" ${cost ? `data-need="egg:${cost}"` : ''}>${o.free ? `Rent FREE for ${days} days` : `Rent ${days} day${days === 1 ? '' : 's'} · ${ui.cost({ egg: cost }, 1, 16)}`}</button>`;
+  return `<div class="rent-card rarity-${o.rarity} ${o.free ? 'rent-free' : ''}">
+    <div class="rent-top">${ui.img('chikn/' + o.role, 'rent-img', role.name)}<div class="rent-id"><b style="color:${R.color}">${R.name} ${role.name}</b>
+      <span>${esc(o.name)} #${o.num} · Lv. ${c.lv}</span><small title="The holder who rents it out">Holder ${o.owner}</small></div></div>
+    <div class="rent-kv"><span>Team bonus</span><b>+${G.fmt(G.chiknPct(c), 1)}% ${role.label}</b></div>
+    <div class="rent-kv"><span>Weight</span><b>${Math.round(o.kg)} kg</b></div>
+    <div class="rent-kv"><span>Lays</span><b>${G.fmt(G.chiknEgg(c), 2)} EGG/day</b></div>
+    <div class="rent-kv"><span>Eats</span><b>${G.fmt(D.farm.upkeep(o.kg), 2)} FEED/day</b></div>
+    <div class="rent-kv"><span>Battle power</span><b>${G.fmt(G.chiknPower(c))}</b></div>
+    <div class="rent-price">${o.free ? '<b>Free</b> first rental' : `<b>${G.fmt(o.price * (D.rent.disc[days] || 1), 2)}</b> EGG a day`}</div>
+    ${btn}</div>`;
+};
+const rentHTML = () => {
+  const S = G.S, mk = G.rentMarket(), n = S.chikns.length, cap = G.coopCap();
+  const tabs = D.rent.days.map((d) => `<button type="button" class="tab ${rentDays === d ? 'on' : ''}" data-rdays="${d}">${d} day${d === 1 ? '' : 's'}${D.rent.disc[d] < 1 ? ` <small>−${Math.round((1 - D.rent.disc[d]) * 100)}%</small>` : ''}</button>`).join('');
+  return `<p class="rent-intro">Chikn NFTs are a fixed collection of ${G.fmtFull(D.nftSupply)}: nobody can mint new ones. <b>Rent</b> one from its holder: it joins your coop, works in your Mining Team and lays EGG for you until the rental ends, then goes home. You feed it, but you can't fatten it and it never loses weight. Holders earn the rent as passive income (${Math.round(D.rent.fee * 100)}% market fee is burned).</p>
+    <div class="rent-bar"><div class="tabs rent-days" role="group" aria-label="Rental length">${tabs}</div>
+      <label class="rent-auto"><input type="checkbox" data-rauto ${rentAuto ? 'checked' : ''}> Renew automatically when it ends</label></div>
+    <div class="rent-grid">${mk.offers.map(rentOfferCard).join('') || '<div class="empty">No offers right now.</div>'}</div>
+    <div class="rent-foot"><span>Coop <b>${n}/${cap}</b></span><span>You have ${ui.cost({ egg: Math.floor(S.res.egg) }, 1, 16)}</span><span>New offers in <b data-b="farmday"></b></span>
+      <button type="button" class="btn sm purple" data-a="buyNftDlg">Buy an NFT instead</button></div>`;
+};
 ui.handlers.hire = () => {
-  const S = G.S, free = S.stats.hired === 0;
-  const odds = (w) => { const t = w.reduce((a, b) => a + b, 0); return D.rarities.map((r, i) => w[i] ? `<span style="color:${r.color}">${r.name} ${(w[i] / t * 100).toFixed(w[i] / t < 0.01 ? 1 : 0)}%</span>` : '').filter(Boolean).join(' · '); };
-  ui.modal({ title: `${ui.img('ui/chikns', '', '')} Hire a Chikn`, wide: true, actions: [],
-    html: `<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
-      <div class="card col" style="align-items:center;text-align:center">${ui.img('chikn/miner', 'hire-img', '')}<div class="hx" style="font-size:22px">Standard Hire</div>
-        <div class="dim" style="font-size:12px">${odds(D.hires.standard.weights)}</div>
-        <button class="btn green lg block" data-hire="standard" ${free ? '' : `data-need="${ui.need(D.hires.standard.cost)}"`}>${free ? 'Hire FREE' : 'Hire ' + ui.cost(D.hires.standard.cost, 1, 18)}</button></div>
-      <div class="card col" style="align-items:center;text-align:center">${ui.img('chikn/leader', 'hire-img', '')}<div class="hx" style="font-size:22px">Premium Hire</div>
-        <div class="dim" style="font-size:12px">${odds(D.hires.premium.weights)}</div>
-        <button class="btn purple lg block" data-hire="premium" data-need="${ui.need(D.hires.premium.cost)}">Hire ${ui.cost(D.hires.premium.cost, 1, 18)}</button></div></div>` });
-  ui.modalEl().addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-hire]');
+  ui.modal({ title: `${ui.img('ui/chikns', '', '')} Rent a Chikn`, wide: true, actions: [], html: `<div class="rent-wrap">${rentHTML()}</div>` });
+  const box = ui.modalEl(), redraw = () => { const w = box.querySelector('.rent-wrap'); if (w) w.innerHTML = rentHTML(); };
+  box.addEventListener('click', (ev) => {
+    const t = ev.target.closest('[data-rdays]');
+    if (t) { rentDays = +t.dataset.rdays; G.sfx('click'); redraw(); return; }
+    const b = ev.target.closest('[data-rent]');
     if (!b) return;
-    const r = G.act.hire(b.dataset.hire);
+    const r = G.act.rent(+b.dataset.rent, rentDays, rentAuto);
+    if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); redraw(); return; }
+    ui.reveal(r.c);
+  });
+  box.addEventListener('change', (ev) => { if (ev.target.matches('[data-rauto]')) rentAuto = ev.target.checked; });
+};
+// Buying a Chikn NFT from another holder (the old premium hire): it is yours to keep, fatten and rent out
+ui.handlers.buyNftDlg = () => {
+  const b = D.buyNft, t = b.weights.reduce((x, y) => x + y, 0);
+  const odds = D.rarities.map((r, i) => (b.weights[i] ? `<span style="color:${r.color}">${r.name} ${(b.weights[i] / t * 100).toFixed(b.weights[i] / t < 0.01 ? 1 : 0)}%</span>` : '')).filter(Boolean).join(' · ');
+  ui.modal({ title: `${ui.img('ui/chikns', '', '')} Buy a Chikn NFT`, actions: [],
+    html: `<div class="card col" style="align-items:center;text-align:center">${ui.img('chikn/leader', 'hire-img', '')}
+      <p class="muted" style="margin:4px 0 8px">You buy a random Chikn NFT from another holder on the market: the collection stays at ${G.fmtFull(D.nftSupply)}. It is <b>yours</b>: it works and lays EGG for you, you can fatten it, and you can <b>rent it out</b> for passive EGG.</p>
+      <div class="dim" style="font-size:12px">${odds}</div>
+      <button class="btn purple lg block" data-buynft data-need="${ui.need(b.cost)}" style="margin-top:10px">Buy ${ui.cost(b.cost, 1, 18)}</button></div>` });
+  ui.modalEl().addEventListener('click', (ev) => {
+    if (!ev.target.closest('[data-buynft]')) return;
+    const r = G.act.buyNft();
     if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
     ui.reveal(r.c);
   });
@@ -6034,12 +6374,12 @@ ui.handlers.hire = () => {
 ui.reveal = (c) => {
   const R = D.rarity(c.rarity), role = D.roles[c.role];
   G.sfx('hire');
-  ui.modal({ title: `New Chikn!`, actions: [{ label: 'Awesome!', cls: 'green' }], onClose: () => ui.render(),
+  ui.modal({ title: c.rent ? 'Chikn rented!' : 'New Chikn NFT!', actions: [{ label: 'Awesome!', cls: 'green' }], onClose: () => ui.render(),
     html: `<div class="reveal rarity-${c.rarity}"><div class="rays"></div>${ui.img('chikn/' + c.role, 'reveal-img', role.name)}</div>
       <div style="text-align:center"><div class="hx" style="font-size:26px;color:${R.color}">${R.name} ${role.name}</div>
       <div class="hx" style="font-size:18px">${esc(c.name)} #${c.num}</div>
       <div class="muted">+${G.fmt(G.chiknPct(c), 1)}% ${role.label} · ${Math.round(c.kg)} kg · lays ~${G.chiknEgg(c).toFixed(1)} EGG/day</div>
-      <div style="margin-top:6px">${c.status === 'squad' ? '<span class="tag g">Joined your Mining Team</span>' : '<span class="tag">Waiting in the barracks</span>'}</div></div>` });
+      <div style="margin-top:6px">${c.rent ? `<span class="tag o">Rented for ${G.fmtTime(c.rent.left)}${c.rent.auto ? ' · auto-renew' : ''}</span> ` : '<span class="tag p">Your NFT</span> '}${c.status === 'squad' ? '<span class="tag g">Joined your Mining Team</span>' : '<span class="tag">Waiting in the barracks</span>'}</div></div>` });
 };
 })();
 
@@ -6220,8 +6560,11 @@ function recChip(f, rec, built, on) {
   const inp = built ? G.recipeIn(rec) : rec.in;
   const out = built ? G.recipeOut(f, rec) : rec.out;
   const t = built ? rec.t * G.factorySpeed(f) : rec.t;
+  const have = (list) => list.map((r) => `<span class="fx-hv" title="${esc(D.res[r].name)} you have">${ui.icon(r, 15)}<b data-b="fxAmt:${r}">${G.fmt(G.S.res[r])}</b></span>`).join('');
+  const stock = built || G.S.depth >= f.reqDepth
+    ? `<span class="fx-rc-have"><small>You have</small>${have(Object.keys(inp))}<span class="fx-arr">➜</span>${have(Object.keys(out))}</span>` : '';
   const body = `<span class="fx-radio"></span><span class="fx-rc-nt"><b class="fx-rc-n">${esc(rec.name)}</b><span class="fx-rc-t" title="Time per batch">${plainImg('ui/timer')}${G.fmtTime(t)}</span></span>
-    <span class="fx-rc-io">${ui.cost(inp, 1, 18)}<span class="fx-arr">➜</span>${ui.rew(out, 18)}</span>`;
+    <span class="fx-rc-io">${ui.cost(inp, 1, 18)}<span class="fx-arr">➜</span>${ui.rew(out, 18)}</span>${stock}`;
   if (!built || f.recipes.length < 2) return `<div class="fx-rc ${built ? 'fx-on' : ''} fx-solo">${body}</div>`;
   return `<button type="button" class="fx-rc ${on ? 'fx-on' : ''}" data-a="setRecipe" data-args='${esc(JSON.stringify([f.id, rec.id]))}' aria-pressed="${on}" ${on ? '' : `title="Select ${esc(rec.name)}"`}>${body}</button>`;
 }
@@ -6743,8 +7086,9 @@ function statsHTML(m) {
     ${row('ui/mines', 'Mining speed', `×${a.speed.toFixed(2)}`, `×${b.speed.toFixed(2)}`, 'Multiplies the floor output')}
     ${row('prop/cart', 'Capacity', `+${G.fmt(a.cap)}/h`, `+${G.fmt(b.cap)}/h`, 'Flat ore per hour added to the floor')}
     ${row('ui/energy', 'Energy', `${G.fmt(a.energy)} Coal/h`, '', 'Coal burned while deployed')}
-    ${row('ui/settings', 'Wear', `${m.wear}%/min`, '', 'Durability lost per minute while working')}
+    ${row('ui/settings', 'Wear', `${m.wear}%/min`, '', 'Durability lost per minute while you play (machines don\'t wear out offline)')}
     ${extra}
+    ${row('ui/mines', 'Per floor', '1 machine', '', 'Only one machine works on a floor. Deploying another one there sends the first back to storage: machines on the same floor do not stack')}
     ${row('ui/timer', 'Craft time', G.fmtTime(craftTime(m)), '', G.bonus('craft') ? `Crafter bonus: −${Math.round((1 - 1 / (1 + G.bonus('craft'))) * 100)}% time` : 'Crafter Chikns speed this up')}
     <div class="cr-st-note">${isLocked(m) ? `${plainImg('ui/lock', 'cr-st-ic')}<span>Unlocks at player <b>Lv. ${m.lv}</b></span>` : `${plainImg('ui/trophy', 'cr-st-ic')}<span>Upgrade up to <b>Lv. ${D.machineMaxLv}</b> after crafting</span>`}</div>
   </div>`;
@@ -6795,7 +7139,8 @@ function floorsHTML() {
       ${m ? `<span class="cr-fl-m">${ui.img('machine/' + m.type, 'cr-fl-img', d.name)}<span><b>${esc(d.name)}</b><small>Lv. ${m.lv} · ×${ms.speed.toFixed(2)}</small></span></span>`
         : '<span class="cr-fl-none">No machine</span>'}</div>`;
   }).join('') || '<div class="empty">No mine floors open yet.</div>';
-  return `<section class="panel cr-floors" aria-label="Mine floors"><div class="panel-h">${plainImg('ui/mines')}<span class="sp">Mine Floors</span><small>${open.filter((z) => G.machineOn(z.id)).length}/${open.length} equipped</small></div>${rows}</section>`;
+  return `<section class="panel cr-floors" aria-label="Mine floors"><div class="panel-h">${plainImg('ui/mines')}<span class="sp">Mine Floors</span><small>${open.filter((z) => G.machineOn(z.id)).length}/${open.length} equipped</small></div>
+    <p class="cr-fl-rule"><b>One machine per floor.</b> A second one on the same floor replaces the first (it goes back to storage), so machines don't stack. Its speed multiplies the floor's output together with your Chikn, guild and specialization bonuses. On your deepest floor it also speeds up digging.</p>${rows}</section>`;
 }
 
 // ---------- my machines ----------
@@ -6873,13 +7218,15 @@ document.addEventListener('change', (e) => {
 })();
 
 // ---- view-chikns.js ----
-// Chikn NFT screen: flock stats (coop, squad, eggs per day, nest), hiring (limited by the coop), the Mining Team
+// Chikn NFT screen: flock stats (coop, squad, eggs per day, nest, rent income), renting & buying NFTs (limited by the
+// coop), rentals (Chikns you rent, yours rented out for passive EGG), the Mining Team
 // (squad slots), roster grid with filters and sorting, a detail modal per Chikn (weight, eggs per day, feeding,
 // squad toggle) and the rarity & role guides. Level follows weight; EGG is laid per farm day.
 (() => {
 const G = window.G, D = G.D, ui = G.ui, esc = ui.esc, F = D.farm;
 const RANK = Object.fromEntries(D.rarities.map((r, i) => [r.id, i]));
-const FILTERS = [['all', 'All'], ['squad', 'Squad'], ['idle', 'Idle'], ['exp', 'Expedition'], ['injured', 'Recovering']];
+const FILTERS = [['all', 'All'], ['squad', 'Squad'], ['idle', 'Idle'], ['exp', 'Expedition'], ['injured', 'Recovering'], ['rented', 'Rented'], ['away', 'Rented out']];
+const inFilter = (c, f) => f === 'all' || (f === 'rented' ? !!c.rent : c.status === f);
 const SORTS = [['rarity', 'Rarity'], ['level', 'Level'], ['weight', 'Weight']];
 const BONUS_TYPES = [...new Set(Object.values(D.roles).map((r) => r.bonus))].filter((b) => b !== 'all');
 const bonusLabel = (t) => Object.values(D.roles).find((r) => r.bonus === t).label;
@@ -6900,10 +7247,11 @@ const cmp = {
 };
 let filter = 'all', sort = 'rarity', sig = '', openId = null;
 
-const roster = () => G.S.chikns.filter((c) => filter === 'all' || c.status === filter).sort(cmp[sort]);
+const roster = () => G.S.chikns.filter((c) => inFilter(c, filter)).sort(cmp[sort]);
 const sigOf = () => {
   const S = G.S;
-  return S.chikns.map((c) => c.id + c.status + c.lv + ':' + Math.floor(kgOf(c) / 10)).join() + '|' + S.squad.join() + '|' + G.squadSlots() + '|' + G.coopCap() + '|' + (S.farm.hungry ? 1 : 0);
+  return S.chikns.map((c) => c.id + c.status + c.lv + ':' + Math.floor(kgOf(c) / 10) + (c.rent ? 'r' + (c.rent.auto ? 1 : 0) + Math.floor(c.rent.left / 86400) : '')
+    + (c.lease ? 'l' + (c.lease.left == null ? 'w' : Math.floor(c.lease.left / 86400)) : '')).join() + '|' + S.squad.join() + '|' + G.squadSlots() + '|' + G.coopCap() + '|' + (S.farm.hungry ? 1 : 0);
 };
 const cardAttrs = (c) => `data-a="ckOpen" data-args='[${c.id}]' title="${esc(c.name)}: tap for details" data-kg="${fmtKg(kgOf(c))}"`;
 const coopFull = () => G.S.chikns.length >= G.coopCap();
@@ -6933,12 +7281,8 @@ ui.binders.ckKg = (el, id) => {
 
 function headHTML() {
   const S = G.S, free = S.stats.hired === 0, n = S.chikns.length, cap = G.coopCap(), full = n >= cap;
-  const hire = (kind, cls, art) => {
-    const h = D.hires[kind], isFree = free && kind === 'standard';
-    return `<button class="btn ${cls} ck-hire-btn ${full ? 'cant' : ''}" data-a="${full ? 'ckCoopFull' : 'hire'}" ${full || isFree ? '' : `data-need="${ui.need(h.cost)}"`} ${full ? 'title="The coop is full: upgrade it on the Farm"' : ''}>
-      ${ui.img('chikn/' + art, 'ck-hire-art', '')}<span class="ck-hire-t"><span class="ck-hire-n">${h.name}</span>
-      <span class="ck-hire-c">${full ? 'Coop full' : isFree ? 'First one is FREE!' : ui.cost(h.cost, 1, 18)}</span></span></button>`;
-  };
+  const acq = (a, cls, art, name, line) => `<button class="btn ${cls} ck-hire-btn ${full ? 'cant' : ''}" data-a="${full ? 'ckCoopFull' : a}" ${full ? 'title="The coop is full: upgrade it on the Farm"' : ''}>
+      ${ui.img('chikn/' + art, 'ck-hire-art', '')}<span class="ck-hire-t"><span class="ck-hire-n">${name}</span><span class="ck-hire-c">${full ? 'Coop full' : line}</span></span></button>`;
   const notes = [];
   if (full) notes.push(`<div class="ck-notice ck-n-coop">${ui.img(G.coopImg(), 'ck-n-ic', '')}<span><b>The coop is full (${n}/${cap}).</b> Upgrade the coop on the Farm to house more Chikns.</span>
     <button class="btn sm gold" data-a="ckFarm">Go to Farm</button></div>`);
@@ -6948,18 +7292,19 @@ function headHTML() {
     <div class="ck-flock" aria-hidden="true">${ui.img('chikn/engineer', 'ck-f ck-f1')}${ui.img('chikn/miner', 'ck-f ck-f3')}${ui.img('chikn/leader', 'ck-f ck-f2')}</div>
     <div class="ck-head-main">
       <div class="ck-title">${ui.img('ui/chikns', 'ck-title-ic', '')}<div class="ck-title-t"><h1>Chikn NFT</h1>
-        <div class="ck-sub">Hire, feed and assign your miners. Every Chikn lays about one EGG a day, heavier ones more, and your Mining Team boosts the whole mine.</div></div></div>
+        <div class="ck-sub">Rent, buy, feed and assign your miners. Every Chikn lays about one EGG a day, heavier ones more, and your Mining Team boosts the whole mine. Rent your own NFTs out for passive EGG.</div></div></div>
       <div class="ck-stats">
         <div class="ck-stat ${full ? 'ck-full' : ''}" title="Chikns in the coop / coop capacity">${ui.img(G.coopImg(), 'ck-stat-ic', '')}<div><div class="ck-sl">Coop</div><div class="ck-sv">${n}<small>/${cap}</small></div></div></div>
         <div class="ck-stat">${ui.img('ui/mines', 'ck-stat-ic', '')}<div><div class="ck-sl">Squad</div><div class="ck-sv">${G.squad().length}<small>/${G.squadSlots()}</small></div></div></div>
         <div class="ck-stat" title="Your flock eats ${G.fmt(G.upkeepPerDay(), 1)} FEED a day">${ui.icon('egg', 34, 'ck-stat-ic')}<div><div class="ck-sl">Eggs / day</div><div class="ck-sv">${fmtEgg(G.eggsPerDay())}</div></div></div>
+        ${G.rentIncome() > 0 ? `<div class="ck-stat ck-income" title="Rent from your Chikns that other players are using, after the ${Math.round(D.rent.fee * 100)}% market fee">${ui.icon('egg', 34, 'ck-stat-ic')}<div><div class="ck-sl">Rent income</div><div class="ck-sv">+${fmtEgg(G.rentIncome())}<small>/day</small></div></div></div>` : ''}
         <div class="ck-stat ck-nest">${ui.img('farm/nest', 'ck-stat-ic', '')}<div class="ck-nest-m"><div class="ck-sl">Nest</div>
           <div class="ck-sv">${ui.icon('egg', 18)}<span data-b="ckNestV"></span></div><div class="bar gold ck-nestbar" data-b="ckNest"><i></i></div></div>
           <button class="btn gold sm" data-a="ckCollect" data-b="ckNestBtn">Collect</button></div>
       </div>
       ${notes.join('')}
     </div>
-    <div class="ck-hire">${hire('standard', 'green', 'miner')}${hire('premium', 'purple', 'leader')}</div>
+    <div class="ck-hire">${acq('hire', 'green', 'miner', 'Rent a Chikn', free ? 'First rental is FREE!' : 'EGG a day, from other holders')}${acq('buyNftDlg', 'purple', 'leader', 'Buy a Chikn NFT', ui.cost(D.buyNft.cost, 1, 18))}</div>
   </section>`;
 }
 
@@ -6983,18 +7328,45 @@ function teamHTML() {
   </section>`;
 }
 
+// ---------- rentals: Chikns you rent, and yours rented out for passive EGG ----------
+const left = (sec) => G.fmtTime(Math.max(0, sec));
+function rentalsHTML() {
+  const S = G.S, inn = S.chikns.filter((c) => c.rent), out = S.chikns.filter((c) => c.lease);
+  const own = S.chikns.filter((c) => c.own !== false && !c.lease && (c.status === 'idle' || c.status === 'squad'));
+  const row = (c, right) => `<div class="ck-rent-row rarity-${c.rarity}" ${cardAttrs(c)}>${ui.img('chikn/' + c.role, 'ck-rent-img', '')}
+    <div class="ck-rent-t"><b>${esc(c.name)}</b><small style="color:${D.rarity(c.rarity).color}">${D.rarity(c.rarity).name} ${D.roles[c.role].name}</small></div>${right}</div>`;
+  const inRows = inn.map((c) => row(c, `<div class="ck-rent-r"><b>${left(c.rent.left)}</b><small>${c.rent.auto ? 'auto-renew' : 'then it goes home'} · ${G.fmt(c.rent.price, 2)} EGG/day</small></div>`)).join('');
+  const outRows = out.map((c) => row(c, c.lease.left == null
+    ? `<div class="ck-rent-r"><b>Listed</b><small>${G.fmt(c.lease.price, 2)} EGG/day · waiting for a renter (usually within ${G.fmtTime(G.rentWait(c))})</small></div>`
+    : `<div class="ck-rent-r"><b class="ck-good">+${G.fmt(c.lease.price * (1 - D.rent.fee), 2)}/day</b><small>${left(c.lease.left)} left · earned ${G.fmt(c.lease.earned, 1)} EGG</small></div>`)).join('');
+  const income = G.rentIncome(), spend = G.rentSpend();
+  return `<section class="panel ck-rentals">
+    <div class="panel-h">${ui.icon('egg', 28)}<span class="sp">Rentals</span><small>${inn.length} rented · ${out.length} of yours on the market</small></div>
+    <div class="ck-rent-cols">
+      <div class="ck-rent-col"><div class="ck-rent-h">Rented from other holders <small>${spend ? `${G.fmt(spend, 2)} EGG a day` : ''}</small></div>
+        ${inRows || `<div class="ck-rent-empty">None. Rented Chikns work and lay EGG for you until the rental ends.</div>`}
+        <button class="btn sm green" data-a="hire">Rent a Chikn</button></div>
+      <div class="ck-rent-col"><div class="ck-rent-h">Your NFTs for rent: passive income <small>${income ? `<b class="ck-good">+${G.fmt(income, 2)} EGG a day</b>` : ''}</small></div>
+        ${outRows || `<div class="ck-rent-empty">List a Chikn you own: it keeps working for you until a renter takes it, then earns you EGG every day without eating your FEED.</div>`}
+        ${own.length ? '<button class="btn sm purple" data-a="ckRentPick">Rent out a Chikn</button>' : ''}
+        ${S.stats.rentEarned ? `<div class="ck-rent-tot">Earned from rent so far: <b>${G.fmt(S.stats.rentEarned, 1)} EGG</b></div>` : ''}</div>
+    </div>
+  </section>`;
+}
+
 function rosterHTML() {
   const S = G.S, n = { all: S.chikns.length };
-  for (const c of S.chikns) n[c.status] = (n[c.status] || 0) + 1;
+  for (const c of S.chikns) { n[c.status] = (n[c.status] || 0) + 1; if (c.rent) n.rented = (n.rented || 0) + 1; }
   const list = roster();
   const tabs = FILTERS.map(([k, l]) => `<button class="tab ${filter === k ? 'on' : ''}" data-a="ckFilter" data-args='["${k}"]'>${l}<span class="ck-n">${n[k] || 0}</span></button>`).join('');
   const sorts = SORTS.map(([k, l]) => `<button class="tab ${sort === k ? 'on' : ''}" data-a="ckSort" data-args='["${k}"]'>${l}</button>`).join('');
   const empty = {
-    all: S.stats.hired === 0 ? 'No Chikns yet. Your first hire is free!' : 'No Chikns yet. Hire one to get started.',
+    all: S.stats.hired === 0 ? 'No Chikns yet. Your first rental is free!' : 'No Chikns yet. Rent one to get started.',
     squad: 'Your Mining Team is empty.', idle: 'No idle Chikns. Everyone is busy!',
     exp: 'No Chikns are on an expedition.', injured: 'Nobody is recovering. Great job keeping them safe!',
+    rented: 'You are not renting any Chikns.', away: 'None of your Chikns is rented out right now.',
   }[filter];
-  const hireBtn = coopFull() ? '<button class="btn gold" data-a="ckFarm">Upgrade the coop</button>' : '<button class="btn gold" data-a="hire">Hire a Chikn</button>';
+  const hireBtn = coopFull() ? '<button class="btn gold" data-a="ckFarm">Upgrade the coop</button>' : '<button class="btn gold" data-a="hire">Rent a Chikn</button>';
   return `<section class="panel ck-roster">
     <div class="panel-h">${ui.img('ui/chikns', '', '')}<span class="sp">Roster</span><small>${S.chikns.length} Chikn${S.chikns.length === 1 ? '' : 's'} · ${fmtEgg(G.eggsPerDay())} EGG a day</small></div>
     <div class="ck-tools"><div class="tabs ck-filt">${tabs}</div><div class="tabs ck-sort"><span class="ck-sort-l">Sort</span>${sorts}</div></div>
@@ -7005,16 +7377,16 @@ function rosterHTML() {
 }
 
 function rarityHTML() {
-  const std = D.hires.standard.weights, pre = D.hires.premium.weights;
+  const std = D.rent.weights, pre = D.buyNft.weights;
   return `<section class="panel ck-legend">
-    <div class="panel-h">${ui.img('ui/trophy', '', '')}<span class="sp">Rarity</span><small>Hire odds</small></div>
-    <div class="ck-rhead"><span>Weight & eggs per day</span><span>Standard</span><span>Premium</span></div>
+    <div class="panel-h">${ui.img('ui/trophy', '', '')}<span class="sp">Rarity</span><small>Odds</small></div>
+    <div class="ck-rhead"><span>Weight & eggs per day</span><span title="Share of each rarity on the rental market">Rent</span><span title="Odds when you buy a Chikn NFT">Buy</span></div>
     ${D.rarities.map((r, i) => {
       const a = G.kgStart({ rarity: r.id }), b = G.kgCap({ rarity: r.id });
       return `<div class="ck-rrow rarity-${r.id}">
       <div class="ck-frame">${ui.img('chikn/miner', '', '')}</div>
       <div class="ck-rinfo"><b style="color:${r.color}">${r.name}</b><span>+${r.pct}% squad bonus</span>
-        <span class="ck-rw" title="Weight from ${a} kg (hired) up to ${b} kg (fully fed); eggs per day at those weights">
+        <span class="ck-rw" title="Weight from ${a} kg (start) up to ${b} kg (fully fed); eggs per day at those weights">
           <span class="ck-rk">${G.fmtFull(a)}–${G.fmtFull(b)} kg</span><span class="ck-re">${ui.icon('egg', 13)}${fmtEgg(F.eggsAt(a))}–${fmtEgg(F.eggsAt(b))}/day</span></span></div>
       <span class="ck-odds">${odds(std, i)}</span><span class="ck-odds pre">${odds(pre, i)}</span></div>`;
     }).join('')}
@@ -7048,11 +7420,13 @@ function detailHTML(c) {
     idle: '<span class="tag">Idle</span>',
     exp: `<span class="tag o">Exploring${exp ? ' ' + esc(G.expSite(exp.site).name) : ''}</span>`,
     injured: `<span class="tag r">Recovering · <span data-b="until:${c.until}"></span></span>`,
+    away: '<span class="tag p">Rented out</span>',
   }[c.status] || '';
   const full = S.squad.length >= G.squadSlots();
   const squadBtn = c.status === 'squad' ? `<button class="btn red" data-a="ckSquad" data-args='[${c.id}]'>Remove from Team</button>`
     : c.status === 'idle' ? `<button class="btn ${full ? 'cant' : ''}" data-a="ckSquad" data-args='[${c.id}]' ${full ? 'title="Your Mining Team is full"' : ''}>Add to Mining Team</button>`
-    : `<button class="btn gray" disabled>${c.status === 'exp' ? 'On expedition' : 'Recovering'}</button>`;
+    : `<button class="btn gray" disabled>${c.status === 'exp' ? 'On expedition' : c.status === 'away' ? 'Rented out' : 'Recovering'}</button>`;
+  const rentBox = rentBoxHTML(c);
   // next: [label, value] shown under the stat, or null when there is nothing more to gain
   const stat = (lbl, cur, next, sub, cls = '') => `<div class="ck-ds ${cls}"><span class="ck-ds-l">${lbl}</span><b class="ck-ds-v">${cur}</b>
     <span class="ck-ds-s">${sub}</span>${next ? `<span class="ck-ds-n">${next[0]} <b>${next[1]}</b></span>` : `<span class="ck-ds-n">${maxed ? 'Max weight' : 'Max level'}</span>`}</div>`;
@@ -7066,15 +7440,18 @@ function detailHTML(c) {
       <div class="ck-wrow">${ui.img('farm/scale', 'ck-w-ic', '')}<div class="ck-w-m">
         <div class="ck-w-t"><span class="ck-w-l">Weight</span><span class="ck-lvchip" title="A Chikn's level follows its weight">Lv. ${c.lv} <small>from weight</small></span></div>
         ${ui.bar((w - a) / Math.max(1, cap - a) * 100, 'gold lg ck-wbar', `${Math.round(w)} / ${cap} kg`, `data-b="ckKg:${c.id}"`)}
-        <div class="ck-w-s">Hired at ${a} kg · ${nk ? `Lv. ${nl.lv} at <b>${nk} kg</b>` : `max ${cap} kg`} · eats ${G.fmt(F.upkeep(w), 1)} FEED a day</div></div></div>
+        <div class="ck-w-s">Starts at ${a} kg · ${nk ? `Lv. ${nl.lv} at <b>${nk} kg</b>` : `max ${cap} kg`} · eats ${G.fmt(F.upkeep(w), 1)} FEED a day</div></div></div>
       <div class="ck-dstats">
         ${stat('Bonus', '+' + G.fmt(G.chiknPct(c), 1) + '%', nl && [`Lv. ${nl.lv}`, '+' + G.fmt(G.chiknPct(nl), 1) + '%'], esc(role.label), 'good')}
         ${stat('Power', G.fmtFull(G.chiknPower(c)), nl && [`Lv. ${nl.lv}`, G.fmtFull(G.chiknPower(nl))], 'Battle strength')}
         ${stat('Eggs / day', fmtEgg(G.chiknEgg(c)), !maxed && [`+${Math.round(p1.kg - w)} kg`, fmtEgg(F.eggsAt(p1.kg))], 'Laid into the nest', 'egg')}
       </div>
+      ${rentBox}
       ${S.farm.hungry ? `<div class="ck-hungry">${ui.icon('feed', 22)}<span><b>Hungry!</b> No FEED for daily meals: your Chikns are slowly losing weight.</span></div>` : ''}
       <div class="ck-det-acts ck-feeds">
-        ${maxed ? '<button class="btn gold lg" disabled>★ Max weight reached</button>'
+        ${c.rent ? '<button class="btn gray lg" disabled title="The weight of a rented NFT belongs to its holder">Rented Chikns can\'t be fattened</button>'
+          : c.status === 'away' ? '<button class="btn gray lg" disabled>Rented out: feed it when it is back</button>'
+          : maxed ? '<button class="btn gold lg" disabled>★ Max weight reached</button>'
           : `<button class="btn green lg ck-feed" data-a="ckFeed" data-args='[${c.id},1]' data-need="feed:${p1.cost}" title="Feed ${esc(c.name)}: +${F.step} kg for ${p1.cost} FEED">${ui.img('res/feed', '', '')}<span class="ck-feed-t">Feed<small>+${F.step} kg</small></span>${ui.cost({ feed: p1.cost }, 1, 18)}</button>
             ${p5.k > 1 ? `<button class="btn green ck-feed ck-feed5" data-a="ckFeed" data-args='[${c.id},${p5.k}]' data-need="feed:${p5.cost}" title="Feed ${p5.k} times: +${gain5} kg for ${p5.cost} FEED">
               <span class="ck-feed-t">×${p5.k}<small>+${gain5} kg</small></span>${ui.cost({ feed: p5.cost }, 1, 18)}</button>` : ''}`}
@@ -7084,6 +7461,19 @@ function detailHTML(c) {
         ${list.length > 1 && i >= 0 ? `<span class="ck-det-nav"><button class="btn sm gray ff" data-a="ckNav" data-args='[-1]' aria-label="Previous Chikn">◀</button><span class="dim">${i + 1} / ${list.length}</span><button class="btn sm gray ff" data-a="ckNav" data-args='[1]' aria-label="Next Chikn">▶</button></span>` : ''}</div>
     </div>
   </div>`;
+}
+// ownership & rental box in the detail modal
+function rentBoxHTML(c) {
+  if (c.rent) return `<div class="ck-rentbox ck-rb-in"><div><b>Rented</b> from holder ${c.rent.owner} · <b>${left(c.rent.left)}</b> left · ${G.fmt(c.rent.price, 2)} EGG a day
+      <label class="ck-auto"><input type="checkbox" data-a="ckAuto" data-args='[${c.id}]' ${c.rent.auto ? 'checked' : ''}> Renew automatically</label></div>
+    <div class="ck-rb-btns">${D.rent.days.map((d) => `<button class="btn sm green" data-a="ckExtend" data-args='[${c.id},${d}]' data-need="egg:${D.rentCost(c.rent.price || G.rentPrice(c), d)}">+${d}d · ${ui.cost({ egg: D.rentCost(c.rent.price || G.rentPrice(c), d) }, 1, 14)}</button>`).join('')}</div></div>`;
+  if (c.lease && c.lease.left == null) return `<div class="ck-rentbox ck-rb-out"><div><b>Listed for rent</b>: ${G.fmt(c.lease.price, 2)} EGG a day for ${c.lease.days} day${c.lease.days === 1 ? '' : 's'}. It keeps working for you until a renter takes it (usually within ${G.fmtTime(G.rentWait(c))}).</div>
+    <div class="ck-rb-btns"><button class="btn sm red" data-a="ckCancelRent" data-args='[${c.id}]'>Cancel listing</button></div></div>`;
+  if (c.lease) return `<div class="ck-rentbox ck-rb-out"><div><b>Rented out</b> to ${c.lease.renter}: <b class="ck-good">+${G.fmt(c.lease.price * (1 - D.rent.fee), 2)} EGG a day</b> for you, ${left(c.lease.left)} left · earned ${G.fmt(c.lease.earned, 1)} EGG so far. It comes back exactly as it left.</div></div>`;
+  if (c.own === false) return '';
+  const can = c.status === 'idle' || c.status === 'squad';
+  return `<div class="ck-rentbox"><div><b>Your NFT.</b> Rent it out for passive income: about <b>${G.fmt(G.rentPrice(c) * (1 - D.rent.fee), 2)} EGG a day</b> at today's market price, and it doesn't eat your FEED while it is away.</div>
+    <div class="ck-rb-btns"><button class="btn sm purple ${can ? '' : 'cant'}" data-a="ckRentOut" data-args='[${c.id}]' ${can ? '' : 'title="Wait until it is back"'}>Rent it out</button></div></div>`;
 }
 function openDetail(id) {
   if (!G.chikn(G.S, id)) return;
@@ -7138,7 +7528,7 @@ ui.handlers.ckPick = () => {
   ui.modal({ title: `${ui.img('ui/chikns', '', '')} Assign to Mining Team`, wide: true, actions: [{ label: 'Close', cls: 'gray' }],
     html: idle.length ? `<p class="muted" style="margin-top:0">Pick an idle Chikn. Squad Chikns boost your whole mine with their role bonus.</p>
       <div class="ck-grid ck-pick">${idle.map((c) => ui.chiknCard(c, { attrs: `data-a="ckAssign" data-args='[${c.id}]'`, noStatus: true })).join('')}</div>`
-      : `<div class="empty">No idle Chikns right now.<div style="margin-top:10px">${coopFull() ? '<button class="btn gold" data-a="ckFarm">Upgrade the coop</button>' : '<button class="btn gold" data-a="hire">Hire a Chikn</button>'}</div></div>` });
+      : `<div class="empty">No idle Chikns right now.<div style="margin-top:10px">${coopFull() ? '<button class="btn gold" data-a="ckFarm">Upgrade the coop</button>' : '<button class="btn gold" data-a="hire">Rent a Chikn</button>'}</div></div>` });
 };
 ui.handlers.ckAssign = (el, e, id) => {
   const c = G.chikn(G.S, id), r = G.act.toggleSquad(id);
@@ -7157,10 +7547,61 @@ ui.handlers.ckCollect = (el) => {
   G.sfx('coin');
   ui.refresh();
 };
-// Hiring is limited by the coop: point the player to the Farm.
+// ---------- renting out ----------
+let outDays = 7, outK = 1;
+function rentOutHTML(c) {
+  const fair = G.rentPrice(c), price = Math.round(fair * outK * 100) / 100, wait = D.rent.wait * Math.pow(outK, D.rent.elastic);
+  const total = price * outDays * (1 - D.rent.fee);
+  const days = D.rent.days.map((d) => `<button type="button" class="tab ${outDays === d ? 'on' : ''}" data-odays="${d}">${d} day${d === 1 ? '' : 's'}</button>`).join('');
+  const ks = D.rent.priceK.map((k) => `<button type="button" class="tab ${outK === k ? 'on' : ''}" data-ok="${k}">${k === 1 ? 'Market' : (k > 1 ? '+' : '−') + Math.round(Math.abs(k - 1) * 100) + '%'}</button>`).join('');
+  return `<div class="ck-ro">${ui.chiknCard(c, { noStatus: true })}<div class="ck-ro-m">
+    <p class="muted" style="margin-top:0">List <b>${esc(c.name)}</b> on the rental market. It keeps working for you until a renter takes it. While it is rented out it works and lays EGG for the renter, doesn't eat your FEED, and earns you rent every day, also while you are offline. It comes back exactly as it left.</p>
+    <div class="ck-ro-l">Length</div><div class="tabs">${days}</div>
+    <div class="ck-ro-l">Price <small>market: ${G.fmt(fair, 2)} EGG a day</small></div><div class="tabs">${ks}</div>
+    <div class="ck-ro-sum"><div><span>Rent</span><b>${G.fmt(price, 2)} EGG a day</b></div><div><span>You get</span><b class="ck-good">${G.fmt(price * (1 - D.rent.fee), 2)} EGG a day</b></div>
+      <div><span>Whole rental</span><b>${G.fmt(total, 1)} EGG</b></div><div><span>A renter usually within</span><b>${G.fmtTime(wait)}</b></div></div>
+    <small class="dim">${Math.round(D.rent.fee * 100)}% market fee is burned. A higher price waits longer for a renter.</small>
+    <button class="btn purple lg block" data-ro="${c.id}" style="margin-top:10px">List for rent</button></div></div>`;
+}
+ui.handlers.ckRentOut = (el, e, id) => {
+  const c = G.chikn(G.S, id);
+  if (!c) return;
+  ui.modal({ title: `${ui.icon('egg', 26)} Rent out ${esc(c.name)}`, wide: true, actions: [], html: `<div id="ck-ro">${rentOutHTML(c)}</div>` });
+  const box = ui.modalEl(), redraw = () => { const w = box.querySelector('#ck-ro'); if (w) w.innerHTML = rentOutHTML(c); };
+  box.addEventListener('click', (ev) => {
+    const d = ev.target.closest('[data-odays]'), k = ev.target.closest('[data-ok]'), go = ev.target.closest('[data-ro]');
+    if (d) { outDays = +d.dataset.odays; redraw(); return; }
+    if (k) { outK = +k.dataset.ok; redraw(); return; }
+    if (!go) return;
+    const r = G.act.listRent(c.id, outDays, outK);
+    if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
+    ui.closeModal(); G.sfx('ok');
+    ui.toast(`${c.name} is listed for ${G.fmt(r.price, 2)} EGG a day. You'll get a message when a renter takes it.`, 'good', 'res/egg', 3.6);
+    ui.render();
+  });
+};
+ui.handlers.ckRentPick = () => {
+  const own = G.S.chikns.filter((c) => c.own !== false && !c.lease && (c.status === 'idle' || c.status === 'squad')).sort(cmp.rarity);
+  ui.modal({ title: `${ui.icon('egg', 26)} Rent out a Chikn`, wide: true, actions: [{ label: 'Close', cls: 'gray' }],
+    html: `<p class="muted" style="margin-top:0">Pick one of your own Chikn NFTs (rented ones can't be rented out).</p>
+      <div class="ck-grid ck-pick">${own.map((c) => ui.chiknCard(c, { attrs: `data-a="ckRentOut" data-args='[${c.id}]'` })).join('')}</div>` });
+};
+ui.handlers.ckCancelRent = (el, e, id) => {
+  const r = G.act.cancelRent(id);
+  if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
+  G.sfx('ok'); refreshDetail(); ui.render();
+};
+ui.handlers.ckExtend = (el, e, id, days) => {
+  const c = G.chikn(G.S, id), r = G.act.extendRent(id, days);
+  if (!r.ok) { ui.toast(r.msg, 'bad', 'res/egg'); G.sfx('err'); return; }
+  G.sfx('coin'); ui.toast(`${c.name} stays ${days} more day${days === 1 ? '' : 's'} (−${r.cost} EGG)`, 'good', 'res/egg');
+  refreshDetail(); ui.render();
+};
+ui.handlers.ckAuto = (el, e, id) => { const r = G.act.autoRenew(id); if (r.ok) { G.sfx('click'); ui.toast(r.auto ? 'Auto-renew on: the rental renews when it ends, if you have the EGG' : 'Auto-renew off: the Chikn goes home when the rental ends', '', 'res/egg'); } refreshDetail(); };
+// Renting and buying are limited by the coop: point the player to the Farm.
 ui.handlers.ckCoopFull = () => {
   G.sfx('err');
-  ui.toast(`The coop is full (${G.S.chikns.length}/${G.coopCap()}). Upgrade it on the Farm to hire more Chikns.`, 'bad', G.coopImg(), 3.4);
+  ui.toast(`The coop is full (${G.S.chikns.length}/${G.coopCap()}). Upgrade it on the Farm to rent or buy more Chikns.`, 'bad', G.coopImg(), 3.4);
 };
 ui.handlers.ckFarm = () => {
   if (!ui.views.farm) { ui.toast('The Egg Farm is not open yet', '', 'farm/nest'); return; }
@@ -7175,7 +7616,7 @@ document.addEventListener('keydown', (e) => {
 ui.views.chikns = {
   render(el) {
     sig = sigOf();
-    el.innerHTML = `${headHTML()}<div class="ck-page"><div class="ck-main">${teamHTML()}${rosterHTML()}</div>
+    el.innerHTML = `${headHTML()}<div class="ck-page"><div class="ck-main">${teamHTML()}${rentalsHTML()}${rosterHTML()}</div>
       <aside class="ck-side">${rarityHTML()}${rolesHTML()}</aside></div>`;
   },
   update() { // re-render when chikns are hired, return from expeditions, recover, change weight/level, or the coop/hunger changes
@@ -7253,7 +7694,7 @@ function feedPlan(c, n) {
 }
 // "Fatten all": feed the lightest Chikn, again and again, while RESERVE_DAYS of upkeep stay in stock
 function fattenPlan() {
-  const S = G.S, flock = S.chikns.map((c) => ({ c, kg: c.kg, cap: G.kgCap(c), n: 0 }));
+  const S = G.S, flock = S.chikns.filter((c) => !c.rent && c.status !== 'away').map((c) => ({ c, kg: c.kg, cap: G.kgCap(c), n: 0 })); // only your own Chikns at home
   let feed = S.res.feed, up = G.upkeepPerDay(), spent = 0, n = 0, eggs = 0;
   for (let guard = 0; guard < 5000; guard++) {
     let x = null;
@@ -7268,7 +7709,7 @@ function fattenPlan() {
 }
 
 const KEY = { kg: (c) => c.kg, egg: (c) => G.chiknEgg(c) };
-const flock = () => G.S.chikns.slice().sort((a, b) => (KEY[sortBy](a) - KEY[sortBy](b)) * (desc ? -1 : 1) || a.id - b.id);
+const flock = () => G.S.chikns.filter((c) => c.status !== 'away').sort((a, b) => (KEY[sortBy](a) - KEY[sortBy](b)) * (desc ? -1 : 1) || a.id - b.id);
 const scaleChikn = () => {
   const S = G.S;
   let c = scaleId != null && G.chikn(S, scaleId);
@@ -7339,6 +7780,7 @@ ui.binders.fmCard = (el, id) => {
   if (nx.dataset.h !== nh) { nx.dataset.h = nh; nx.innerHTML = nh; }
   nx.title = max ? '' : `Next feeding: ${two(G.chiknEgg(c))} → ${two(next)} EGG/day`;
   const b1 = q('.fm-f1', el), b5 = q('.fm-f5', el);
+  if (c.rent) { b1.disabled = true; b5.hidden = true; setT(q('.fm-f1l', b1), 'Rented'); setT(q('.fm-fcv', b1), '—'); b1.title = `${c.name} is rented: only its owner can fatten it`; return; }
   b1.disabled = max || feed + 1e-9 < cost;
   setT(q('.fm-f1l', b1), max ? 'Max weight' : 'Feed ×1');
   setT(q('.fm-fcv', b1), String(cost));
@@ -7490,7 +7932,7 @@ function cardHTML(c) {
       ${ui.img('chikn/' + c.role, 'fm-art-img', role.name)}<span class="fm-lv">Lv.<b class="fm-lvv">${c.lv}</b></span></button>
     <div class="fm-cm">
       <div class="fm-c1"><b class="fm-name">${esc(c.name)}</b><span class="fm-rar" style="color:${R.color}">${R.name}</span></div>
-      <div class="fm-c2"><span>${role.name} #${c.num}</span>${TAGS[c.status] || ''}</div>
+      <div class="fm-c2"><span>${role.name} #${c.num}</span>${TAGS[c.status] || ''}${ui.rentTag(c)}</div>
       <div class="bar fm-wbar"><i class="fm-wfill"></i><b class="fm-wtxt"></b></div>
       <div class="fm-eggs"><span class="fm-epd">${ui.icon('egg', 18)}<b class="fm-ev"></b><small>EGG/day</small></span><span class="fm-next"></span></div>
       <div class="fm-btns">
@@ -7987,7 +8429,7 @@ const rival = (name, i) => {
   return { i, name, base: 1500 + a % 9500, rate: 20 + b % 80, lv: 3 + c % 9, members: 96 + d % 104, hue: 25 + i * 43 };
 };
 const RIVALS = D.rivals.map(rival);
-const rivalScore = (r) => Math.floor(r.base + r.rate * Math.max(0, (Date.now() - G.S.created) / 3600e3)); // grows slowly over time
+const rivalScore = (r) => Math.floor(r.base + r.rate * Math.max(0, (G.now() - G.S.created) / 3600e3)); // grows slowly over time
 const myScore = () => Math.floor(G.S.guild.contrib + G.S.guild.warPts);
 const board = () => {
   const g = G.S.guild;
@@ -8668,7 +9110,7 @@ function sinksHTML() {
   const rows = [
     ['ui/mines', 'Digging below depth 21', dig, 'mines'],
     ['ui/factories', 'Building levels 5+', `Lv. 5 → 6 costs ${D.factoryUpCost(f, 5).henium}, Lv. 9 → 10 costs ${D.factoryUpCost(f, 9).henium} HENIUM`, 'factories'],
-    ['ui/chikns', 'Premium hires', `${D.hires.premium.cost.henium} HENIUM per hire, rare or better`, 'chikns'],
+    ['ui/chikns', 'Buying Chikn NFTs', `${D.buyNft.cost.henium} HENIUM per NFT, rare or better`, 'chikns'],
     ['ui/guild', 'Guild license & zone', `${g.license ? 'License owned' : `License ${D.licenseCost.henium} HENIUM`} · zone Lv. ${g.zoneLv + 1}: ${D.guildZoneCost(g.zoneLv).henium} HENIUM`, 'guild'],
     ['ui/timer', 'Speed-ups', `${G.speedCost(60)} HENIUM per minute skipped (digs and builds cost double; refinery batches can't be rushed)`, 'factories'],
     ['ui/dex', 'Every DEX swap', `A third of the ${pct(G.dexFee(), 3)} fee is burned`, null],
@@ -8801,7 +9243,7 @@ function historyHTML() {
 
 // ---------- live binders ----------
 ui.binders.dxTick = (el) => { if (dexReady()) setT(el, Math.max(0, Math.ceil(D.dex.tick - G.S.dex.t)) + 's'); };
-ui.binders.dxAgo = (el, t) => { const s = (Date.now() - +t) / 1000; setT(el, s < 5 ? 'just now' : G.fmtTime(s) + ' ago'); };
+ui.binders.dxAgo = (el, t) => { const s = (G.now() - +t) / 1000; setT(el, s < 5 ? 'just now' : G.fmtTime(s) + ' ago'); };
 ui.binders.dxPx = (el, a) => { const [x, y] = a.split(','); setH(el, px(G.spot(x, y))); };
 ui.binders.dxSpark = (el, a) => { const [x, y] = a.split(','); setH(el, sparkSVG(series(x, y), 200, 44)); };
 ui.binders.dxVal = (el, k) => {
@@ -9209,7 +9651,7 @@ function showResults(r, hadMedic) {
       <p class="ex-res-t">Your team is back from <b>${esc(r.site.name)}</b> with:</p>
       <div class="ex-res-rew">${ui.rew(r.rew, 30)}</div>
       ${inj.length ? `<div class="ex-res-inj"><div class="ex-res-h">${inj.length} Chikn${inj.length > 1 ? 's' : ''} got hurt and ${inj.length > 1 ? 'are' : 'is'} recovering</div>
-          ${inj.map((c) => `<div class="ex-res-c">${avatar(c)}<span class="sp"><b>${esc(c.name)}</b> <span class="muted">${D.roles[c.role].name}</span></span><span class="tag r">Back in <span data-b="until:${c.until}">${G.fmtTime((c.until - Date.now()) / 1000)}</span></span></div>`).join('')}
+          ${inj.map((c) => `<div class="ex-res-c">${avatar(c)}<span class="sp"><b>${esc(c.name)}</b> <span class="muted">${D.roles[c.role].name}</span></span><span class="tag r">Back in <span data-b="until:${c.until}">${G.fmtTime((c.until - G.now()) / 1000)}</span></span></div>`).join('')}
           <div class="dim ex-res-tip">${hadMedic ? 'Your Medic helped, but risky sites still bite. Level up your Medics for better protection.' : 'Tip: bring a Medic to cut the injury risk.'}</div></div>`
         : '<div class="ex-res-safe">✔ Everyone came back safe!</div>'}
     </div>` });
@@ -9284,7 +9726,7 @@ ui.handlers.exClaim = (el, e, id) => {
 // Battle screen: arena hero, squad power, PvE missions, PvP guild wars and the animated battle modal.
 (() => {
 const G = window.G, D = G.D, ui = G.ui, esc = ui.esc;
-const now = () => Date.now();
+const now = () => G.now(); // the game clock (moves faster in test mode)
 const STEP = 450; // ms per battle round
 
 let mode = 'pve'; // 'pve' | 'pvp'
@@ -9574,7 +10016,7 @@ ui.handlers.btDone = () => ui.closeModal();
 // Events screen: Season 1 pass + reward track, daily missions, live events & hazards, and the 6-month journey.
 (() => {
 const G = window.G, D = G.D, ui = G.ui, esc = ui.esc;
-const now = () => Date.now();
+const now = () => G.now(); // the game clock (moves faster in test mode)
 
 const MIS_IC = { mined: 'ui/mines', processed: 'ui/factories', crafted: 'ui/crafting', wins: 'ui/battle', exps: 'ui/expeditions', upgrades: 'ui/energy', taps: 'res/stone' };
 const EV_IC = { vein: 'res/heniumOre', comp: 'ui/trophy', collapse: 'prop/rubble', rush: 'res/copper', feast: 'res/feed', stoneday: 'res/stone' };
@@ -9604,7 +10046,7 @@ let trackX = null; // remembered scroll position of the reward track
 const amt = (r, v) => (r === 'henium' ? ui.amt(r, v) : G.fmtFull(Math.round(v)));
 const rewFull = (rew, size) => `<span class="cost gain">${Object.entries(rew).filter(([, v]) => v > 0).map(([r, v]) => `<span class="c">${ui.icon(r, size)}+${amt(r, v)}</span>`).join('')}</span>`;
 
-const nextReset = () => { const d = new Date(); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1); };
+const nextReset = () => { const d = new Date(G.now()); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1); };
 const claimable = () => { const s = G.S.season; return Array.from({ length: s.lv }, (_, i) => i + 1).filter((l) => !s.claimed.includes(l)); };
 const rewOf = (lv) => D.seasonReward(lv, G.S.depth);
 const seasonFrac = () => { const s = G.S.season; return s.lv >= D.seasonMax ? 1 : Math.min(1, s.xp / D.seasonNeed(s.lv)); };
@@ -9873,8 +10315,8 @@ const WORLD_CHIKNS = 22000; // Chikn NFTs in the real collection (the same figur
 // Rule numbers the code uses outside the data tables (hazards, battle, expeditions, guild, timings...) live in D.rules
 // (data.js) and the game reads them from there, so the wiki always shows the live rules.
 const RULE = D.rules;
-// "an Uncommon Miner": the free first hire (G.act.hire)
-const freeHire = () => { const n = `${(D.rarity(RULE.freeHire.rarity) || {}).name || RULE.freeHire.rarity} ${(D.roles[RULE.freeHire.role] || {}).name || RULE.freeHire.role}`; return (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n; };
+// "an Uncommon Miner": the free first rental (D.rent.free)
+const freeHire = () => { const f = D.rent.free, n = `${(D.rarity(f.rarity) || {}).name || f.rarity} ${(D.roles[f.role] || {}).name || f.role}`; return (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n; };
 
 // ---------- module state (survives visits to other screens) ----------
 let cur = 'home';
@@ -10138,7 +10580,7 @@ function aStart() {
     ${OL([
       `<b>Tap</b> the Stone Zone floor to mine by hand, then <b>upgrade</b> it (Lv. 2 costs ${chips(D.floorCost(D.zones[0], 1), 16)}) so it mines faster on its own. See ${L('zones')}.`,
       `<b>Dig deeper.</b> The first dig costs ${chips(D.digCost(1), 16)} and takes ${tm(D.digTime(2))}. Every dig costs more and takes longer: ${L('digging')}.`,
-      `<b>Hire your first Chikn.</b> It's free (${freeHire()}). Chikns in your Mining Team boost everything they're good at: ${L('chikns')}.`,
+      `<b>Rent your first Chikn.</b> The first rental is free: ${freeHire()} for ${D.rent.free.days} days. Chikns in your Mining Team boost everything they're good at: ${L('chikns')}.`,
       `At depth ${crusher.reqDepth} build the ${L('b-crusher', 'Ore Crusher')} (${chips(crusher.build, 16)}), at depth ${mill.reqDepth} the ${L('b-feedmill', 'Feed Mill')} (${chips(mill.build, 16)}). You need the crusher to break into the Coal Zone.`,
       `Follow the <b>quests</b> on the Mines screen. They walk you through every unlock and pay ores and materials for the next step, a little FEED and, at the big milestones, HENIUM (${L('events', 'quests')}).`,
       `Craft your first ${L('machines', 'machine')} and deploy it on a floor: it mines faster, and you need one to break into the Iron Zone.`,
@@ -10163,7 +10605,7 @@ function aStart() {
 }
 
 function aCurrencies() {
-  const S = G.S, x = G.exRate(), st = D.hires.standard.cost, fr = freshState().res;
+  const S = G.S, x = G.exRate(), fr = freshState().res, cheap = D.rentCost(D.rent.base.common, 30);
   const card = (r, t, line, id) => `<a class="wk-tok" href="#wiki/${id}" data-a="wkGo" data-args='${args([id])}'>${ic(r, 46)}<div><b>${t}</b><span>${line}</span></div></a>`;
   const eggUps = D.fUpgrades.filter((u) => u.base.egg).map((u) => u.name);
   const dep = PLAY() ? S.depth : 25;
@@ -10174,7 +10616,7 @@ function aCurrencies() {
     ${P(`EGG is the everyday currency of the Chikn world, and it is <b>scarce</b>: only Chikns lay it, about one per farm day each (a 100 kg Chikn lays ${sig(F.eggsAt(100))}, an 800 kg one ${sig(F.eggsAt(800))}). Eggs collect in the nest, which holds ${F.nestDays} days of laying; collect them on the ${L('farm', 'Farm')} or with Collect All before it fills up.`)}
     ${P('Spending EGG <b>burns</b> it: it leaves the economy for good instead of going to another player. Where EGG goes:')}
     ${UL([
-      `Hiring Chikns: a Standard Hire costs ${chips(st, 16)} (${L('chikns')}).`,
+      `Renting Chikns from other holders: from about ${sig(D.rent.base.common)} EGG a day (a Common for 30 days: ${chips({ egg: cheap }, 16)}). ${pc(D.rent.fee, 0)} of every rent is burned, the rest goes to the holder (${L('chikns', 'Chikns')}).`,
       `Coop upgrades: ${chips({ egg: F.coopCost(1).egg }, 16)} up to ${chips({ egg: F.coopCost(F.coopMax - 1).egg }, 16)} (${L('b-coop', 'Coop')}).`,
       eggUps.length ? `Global factory upgrades (${eggUps.join(', ')}), see ${L('buildings')}.` : '',
       `Guild: donations, zone expansions and the Guild License (${chips(D.licenseCost, 16)}), see ${L('guild')}.`,
@@ -10249,8 +10691,8 @@ function usesOf(r, scan) {
   const fl = D.zones.filter((z) => z.up[r]);
   if (fl.length) push('Floors', `upgrading ${fl.map((z) => esc(z.short)).join(', ')}`);
   if (scan[r]) push('Digging', `${L('digging', 'digs')} from depth ${segTxt(scan[r])}`);
-  const hires = Object.values(D.hires).filter((h) => h.cost[r]);
-  if (hires.length) push('Hiring', hires.map((h) => esc(h.name)).join(', '));
+  if (r === 'egg') push('Rentals', 'renting Chikns from other holders');
+  if (D.buyNft.cost[r]) push('NFTs', esc(D.buyNft.name));
   if (r === 'feed') push('Farm', 'feeding & daily upkeep');
   const gd = [];
   if (D.donations.some((d) => d.res === r)) gd.push('donations');
@@ -10530,7 +10972,7 @@ function aChikns() {
   const S = myPlay(), pct1 = G.chiknPct(fakeChikn({ lv: 2 })) / G.chiknPct(fakeChikn({ lv: 1 })) - 1;
   const RM = D.rarities[D.rarities.length - 1], pow1 = (G.chiknPower(fakeChikn({ rarity: RM.id, lv: D.chiknMaxLv })) / G.chiknPower(fakeChikn({ rarity: RM.id })) - 1) / (D.chiknMaxLv - 1);
   const guardK = G.chiknPower(fakeChikn({ role: 'guardian' })) / G.chiknPower(fakeChikn({}));
-  const so = odds(D.hires.standard.weights), po = odds(D.hires.premium.weights), max = D.chiknMaxLv;
+  const so = odds(D.rent.weights), po = odds(D.buyNft.weights), max = D.chiknMaxLv;
   const roles = Object.entries(D.roles).map(([id, r]) => [`<span class="wk-mname">${pic('chikn/' + id, 'wk-chikn', r.name)}<b>${esc(r.name)}</b></span>`, esc(r.label), `<span class="wk-sm">${(() => { const t = BONUS_TXT[r.bonus]; return typeof t === 'function' ? safe(t, '') : t || ''; })()}</span>`,
     ['explore'].includes(r.bonus) ? 'expedition team' : r.bonus === 'safety' ? 'squad & expedition' : 'Mining Team']);
   const rar = D.rarities.map((R, i) => {
@@ -10543,14 +10985,32 @@ function aChikns() {
   const lvEx = kgs.map((kg) => { const lv = lvAt(ex.id, kg); return [{ h: `${kg} kg`, c: 'wk-n' }, { h: `Lv. ${lv}`, c: 'wk-n' }, { h: `+${sig(G.chiknPct(fakeChikn({ rarity: ex.id, lv })))}%`, c: 'wk-n' }, { h: sig(F.eggsAt(kg), 3), c: 'wk-n' }, { h: n0(G.chiknPower(fakeChikn({ rarity: ex.id, lv }))), c: 'wk-n' }]; });
   const leaderTo = Object.values(D.roles).map((r) => r.bonus).filter((b, i, a) => a.indexOf(b) === i && b !== 'all')
     .filter((b) => withS({ chikns: [fakeChikn({ id: -7, role: 'leader', status: 'squad' })], squad: [-7] }, () => G.bonus(b)) > 0);
-  const st = D.hires.standard, pr = D.hires.premium;
-  return `${P(`Chikns are your workers (in the real game, Chikn NFTs). Every Chikn has a <b>role</b> (what it's good at), a <b>rarity</b> (how good) and a <b>weight</b>, which sets its level. Chikns in your <b>Mining Team</b> (squad) give their bonus to the whole mine; Explorers and Medics shine on ${L('expeditions', 'expeditions')}. All Chikns lay EGG on the ${L('farm', 'farm')} and eat FEED.`)}
+  const pr = D.buyNft, rr = D.rarities.map((R) => [`<b style="color:${R.color}">${esc(R.name)}</b>`, { h: `${sig(D.rentPrice(R.id, R.kg0))} → ${sig(D.rentPrice(R.id, R.kgMax))}`, c: 'wk-n' },
+    { h: `${sig(F.eggsAt(R.kg0))} → ${sig(F.eggsAt(R.kgMax))}`, c: 'wk-n' }, { h: chips({ egg: D.rentCost(D.rentPrice(R.id, R.kg0), 30) }, 14), c: 'wk-n' }]);
+  const out = S ? S.chikns.filter((c) => c.lease) : [];
+  return `${P(`Chikns are your workers (in the real game, Chikn NFTs).`)}
+    ${box(`<b>A fixed collection.</b> There are exactly ${G.fmtFull(D.nftSupply)} Chikn NFTs and the game never mints one. You get Chikns by <b>renting</b> them from their holders (EGG a day) or <b>buying</b> one from another holder; the season track hands out a few from the game's own treasury. Holders <b>rent theirs out</b> for passive income.`, 'info')}
+    ${P(`Every Chikn has a <b>role</b> (what it's good at), a <b>rarity</b> (how good) and a <b>weight</b>, which sets its level. Chikns in your <b>Mining Team</b> (squad) give their bonus to the whole mine; Explorers and Medics shine on ${L('expeditions', 'expeditions')}. All Chikns lay EGG on the ${L('farm', 'farm')} and eat FEED.`)}
     ${H('The 10 roles', 'roles')}
     ${T(['Role', 'Bonus', 'What it does', 'Counts in'], roles, { min: 640, cls: 'wk-roles' })}
     ${P(`A Leader adds half its bonus to: ${leaderTo.map((b) => esc((Object.values(D.roles).find((r) => r.bonus === b) || {}).label || b)).join(', ')}. Guardians have ×${sig(guardK)} battle power of their own.`)}
     ${H('Rarities', 'rarity')}
-    ${T(['Rarity', ['Bonus (Lv. 1 → ' + max + ')', 'wk-n'], ['Weight (start → max)', 'wk-n'], ['EGG/day (start → max)', 'wk-n'], ['Battle power (Lv. 1 → ' + max + ')', 'wk-n'], ['Hire odds (standard · premium)', 'wk-n']], rar, { min: 700 })}
-    ${P(`The bonus grows by ${pc(pct1, 0)} of the base per level, battle power by ${pc(pow1, 0)} per level. ${esc(st.name)}: ${chips(st.cost, 16)} · ${esc(pr.name)}: ${chips(pr.cost, 16)} (Rare or better guaranteed). Your very first hire is free: ${freeHire()}. Hiring, and claiming a Chikn from the season track, needs a free spot in the ${L('b-coop', 'Coop')}.`)}
+    ${T(['Rarity', ['Bonus (Lv. 1 → ' + max + ')', 'wk-n'], ['Weight (start → max)', 'wk-n'], ['EGG/day (start → max)', 'wk-n'], ['Battle power (Lv. 1 → ' + max + ')', 'wk-n'], ['Odds (rental market · buy)', 'wk-n']], rar, { min: 700 })}
+    ${P(`The bonus grows by ${pc(pct1, 0)} of the base per level, battle power by ${pc(pow1, 0)} per level. ${esc(pr.name)}: ${chips(pr.cost, 16)} (Rare or better guaranteed). Renting, buying, and claiming a Chikn from the season track, needs a free spot in the ${L('b-coop', 'Coop')}.`)}
+    ${H('Renting Chikns', 'rent')}
+    ${P(`The rental market shows ${D.rent.offers} Chikns from other holders, new ones every farm day. Pick ${D.rent.days.map((d) => `${d} day${d === 1 ? '' : 's'}`).join(', ')}; longer rentals are cheaper per day (${D.rent.days.filter((d) => D.rent.disc[d] < 1).map((d) => `${d} days −${pc(1 - D.rent.disc[d], 0)}`).join(', ')}). You pay the whole rental up front in EGG. Your very first rental is free: ${freeHire()} for ${D.rent.free.days} days.`)}
+    ${UL([
+      'A rented Chikn joins your coop and Mining Team, lays EGG for you and fights for you until the rental ends.',
+      'You feed it (its daily FEED upkeep), but you can\'t fatten it, and it never loses weight: the NFT goes back to its holder unchanged.',
+      '<b>Auto-renew</b> extends a rental for the same length when it ends, if you have the EGG; otherwise the Chikn goes home. You can extend any time.',
+      'A rented Chikn can\'t join an expedition that comes back after its rental ends (unless auto-renew is on).',
+    ])}
+    ${T(['Rarity', ['Fair rent, EGG a day (start → max weight)', 'wk-n'], ['It lays, EGG a day', 'wk-n'], ['30 days at start weight', 'wk-n']], rr, { min: 560 })}
+    ${P(`Heavier Chikns cost more to rent: the fair price grows with weight like the eggs they lay. Offers vary ±15% around it.`)}
+    ${H('Renting yours out: passive income', 'passive')}
+    ${P(`List a Chikn you own (rented ones can't be sublet) for ${D.rent.days.join(', ')} days at the market price, ${D.rent.priceK.filter((k) => k !== 1).map((k) => (k > 1 ? '+' : '−') + pc(Math.abs(k - 1), 0)).join(', ')}. It keeps working for you until a renter takes it: at the market price that usually happens within about ${tm(D.rent.wait)}, slower the higher your price. While it is rented out it works and lays EGG for the renter and doesn't eat your FEED, and you earn the rent every day minus the ${pc(D.rent.fee, 0)} market fee (burned), also while you are offline. When the rental ends it comes back exactly as it left.`)}
+    ${box(`Renting out pays most for Chikns that would sit idle: a full coop, more Chikns than Mining Team slots, or simply not playing for a while. A Chikn in your Mining Team is usually worth more to you than its rent.`, 'tip')}
+    ${S ? you(out.length ? `${out.length} of your Chikns ${out.length === 1 ? 'is' : 'are'} on the rental market; rent income <b>${sig(G.rentIncome())} EGG a day</b>, ${sig(S.stats.rentEarned || 0)} EGG earned so far.` : 'None of your Chikns is on the rental market.') : ''}
     ${H('Weight sets the level', 'weight')}
     ${P(`A Chikn's level follows its weight: it starts at its rarity's start weight (Lv. 1) and reaches Lv. ${max} at its rarity's max weight. Feeding adds ${F.step} kg for a little FEED (more the heavier it is); hungry Chikns lose weight and levels. Example, a ${esc(ex.name)} Chikn:`)}
     ${T([['Weight', 'wk-n'], ['Level', 'wk-n'], ['Bonus', 'wk-n'], ['EGG/day', 'wk-n'], ['Battle power', 'wk-n']], lvEx, { min: 440 })}
@@ -10608,7 +11068,7 @@ function aFarm() {
       `Keep FEED for at least two days of upkeep before you fatten anybody.`,
       `Fatten the <b>lightest</b> Chikns first: they are the cheapest to feed and gain the most eggs per kg.`,
       `When FEED is your bottleneck, keep more Chikns light; when coop space is the bottleneck, make them heavy.`,
-      `Sell surplus EGG on the ${L('dex', 'DEX')} (1 EGG = ${sig(pE)} HENIUM right now) or use it for hires, coop upgrades and the guild.`,
+      `Sell surplus EGG on the ${L('dex', 'DEX')} (1 EGG = ${sig(pE)} HENIUM right now) or use it for rentals, coop upgrades and the guild.`,
     ])}
     ${H('The world view', 'world')}
     ${P(`There are about <b>${G.fmtFull(WORLD_CHIKNS)}</b> Chikns in the world. At 100 kg each they lay <b>${G.fmtFull(Math.round(e100))} EGG</b> a day and eat <b>${G.fmtFull(Math.round(u100))} FEED</b>. Fattening them all to 400 kg would mean ${G.fmtFull(Math.round(WORLD_CHIKNS * F.eggsAt(400)))} EGG a day, but also ${G.fmtFull(Math.round(WORLD_CHIKNS * F.upkeep(400)))} FEED. FEED is the brake: it comes from Feed Mills with daily quotas (a maxed mill grinds ${F.millQuota(D.factoryMaxLv)} FEED a day, which feeds ${Math.floor(F.millQuota(D.factoryMaxLv) / F.upkeep(100))} Chikns at 100 kg, while a maxed coop holds ${fullCoop}) and from burning EGG at ${G.exRate().e2f}:1. So the world's egg supply can only grow as fast as its FEED supply, and every egg spent is burned.`)}
@@ -10715,7 +11175,7 @@ function aHenium() {
     ${T(['Sink', 'Cost', 'Notes'], [
       [`${L('digging', 'Digging')} from depth ${hd}`, `${chips({ henium: D.digCost(hd).henium }, 15)} → ${chips({ henium: D.digCost(D.maxDepth - 1).henium }, 15)}`, `${chips({ henium: digH }, 15)} to reach depth ${D.maxDepth}`],
       [`${L('buildings', 'Building upgrades')} from Lv. ${fh} → ${fh + 1}`, `${chips({ henium: D.factoryUpCost(D.factories[0], fh).henium }, 15)} → ${chips({ henium: D.factoryUpCost(D.factories[0], D.factoryMaxLv - 1).henium }, 15)}`, `${chips({ henium: upH }, 15)} to max all ${D.factories.length}`],
-      [`${L('chikns', 'Premium hire')}`, chips(D.hires.premium.cost, 15), 'Rare or better'],
+      [`${L('chikns', 'Buying a Chikn NFT')}`, chips(D.buyNft.cost, 15), 'Rare or better, from another holder'],
       [`${L('guild', 'Guild License')}`, chips(D.licenseCost, 15), 'needed for the Core Zone'],
       [`${L('guild', 'Guild zone')}`, `${chips({ henium: D.guildZoneCost(1).henium }, 15)} and up`, 'per expansion'],
       [`${L('buildings', 'Factory upgrades')}`, chips({ henium: fupH }, 15), 'all levels of all global upgrades'],
@@ -10731,7 +11191,7 @@ function aHenium() {
       `<b>Fixed supply</b>: no more than ${G.fmt(sp.cap)}, ever.`,
       `<b>Halvings</b>: new supply shrinks every epoch.`,
       `<b>Rising difficulty</b>: the world's refinery power grows every day, so each refinery earns less.`,
-      `<b>Burns</b>: everything spent on digs, upgrades, hires and fees is gone for good.`,
+      `<b>Burns</b>: everything spent on digs and upgrades, and the market fees on trades and rentals, is gone for good.`,
       `<b>Market makers follow it</b>: the DEX's NPC market makers value HENIUM higher in every epoch, so resources cost fewer HENIUM and HENIUM costs more ETH:`,
     ])}
     ${T([['Epoch', 'wk-n'], ['Value factor', 'wk-n'], ['Fair price of 1 HENIUM (ETH)', 'wk-n'], ['Fair price of 1 Stone (HENIUM)', 'wk-n'], ['Emission / day', 'wk-n']], kRows, { min: 560, me: (i) => i === ep })}`;
@@ -10956,6 +11416,8 @@ const GLOSS = [
   ['Nest', 'Where laid eggs collect until you pick them up.', 'farm'],
   ['Pool', 'Two tokens locked together on the DEX for trading.', 'dex'],
   ['Price impact', 'How much your own trade moves the price.', 'dex'],
+  ['Rental', `Using another holder's Chikn NFT for EGG a day; it goes home when the rental ends.`, 'chikns'],
+  ['Passive income', 'Rent you earn every day from your own Chikns that other players rent.', 'chikns'],
   ['Quota', 'The FEED a Feed Mill may grind per farm day.', 'b-feedmill'],
   ['Refinery power', 'Sets your share of the refiners\' HENIUM.', 'henium'],
   ['Route', 'The path of a swap; through HENIUM when there is no direct pool.', 'dex'],
@@ -11012,7 +11474,7 @@ const ARTS = [
   ...D.factories.map((f) => ({ id: 'b-' + f.id, cat: 'build', title: f.name, icon: artOf(f.id), sub: `${f.desc}. Unlocks at depth ${f.reqDepth}.`, body: () => aFactory(f), kw: `factory building ${f.recipes.map((r) => r.name).join(' ')}` })),
   { id: 'b-coop', cat: 'build', title: 'Coop', icon: 'farm/coop', sub: 'Where your Chikns live: capacity, upgrades and its 10 looks.', body: aCoop, kw: 'coop capacity chikn house' },
   { id: 'b-hq', cat: 'build', title: 'Headquarters', icon: 'prop/hq', sub: 'Your company HQ: a new look every few depth levels.', body: aHQ, kw: 'hq headquarters' },
-  { id: 'chikns', cat: 'chikn', title: 'Chikns', icon: 'ui/chikns', sub: 'The 10 roles, the 6 rarities, hiring, weight and levels, and the Mining Team.', body: aChikns, kw: 'nft role rarity hire squad team level weight' },
+  { id: 'chikns', cat: 'chikn', title: 'Chikns', icon: 'ui/chikns', sub: 'The 10 roles, the 6 rarities, renting and buying NFTs, passive income from rent, weight and levels, and the Mining Team.', body: aChikns, kw: 'nft role rarity rent rental lease passive income buy hire squad team level weight' },
   { id: 'farm', cat: 'chikn', title: 'The Egg Farm', icon: 'farm/nest', sub: 'Eggs by weight, FEED upkeep and hunger, coop and mill, and the Egg Farmer strategy.', body: aFarm, kw: 'egg feed weight kg nest upkeep hunger farmer' },
   { id: 'specs', cat: 'chikn', title: 'Specializations', icon: 'ui/trophy', sub: 'Seven permanent play styles to choose at player Lv. 8.', body: aSpecs, kw: 'specialization miner industrialist trader explorer commander farmer guild leader' },
   { id: 'henium', cat: 'econ', title: 'HENIUM Tokenomics', icon: 'res/henium', sub: 'The 21M cap, halvings, the emission split, refinery shares, faucets, sinks and burns.', body: aHenium, kw: 'supply halving emission epoch refinery share war hunt faucet sink burn value' },
@@ -11264,7 +11726,7 @@ G.start = (S) => {
 
 const note = (n) => {
   const S = G.S;
-  S.notes.unshift({ text: n.text, icon: n.icon || null, t: Date.now(), read: false });
+  S.notes.unshift({ text: n.text, icon: n.icon || null, t: G.now(), read: false });
   if (S.notes.length > 40) S.notes.length = 40;
   ui.toast(n.text, n.bad ? 'bad' : n.good ? 'good' : '', n.icon || null, 3.4);
 };
@@ -11340,7 +11802,7 @@ function boot() {
   G.S = saved || G.newState('fresh');
   ui.renderShell();
   let off = null;
-  if (saved) off = G.offline((Date.now() - G.S.last) / 1000);
+  if (saved) off = G.offline((G.now() - G.S.last) / 1000);
   ui.go('mines');
   if (!saved) welcome();
   else if (off && Object.keys(off.gains).length) showOffline(off);
@@ -11349,7 +11811,9 @@ function boot() {
   const loop = (t) => {
     const dt = Math.min(1, Math.max(0, (t - last) / 1000));
     last = t;
-    G.tick(dt);
+    const k = G.speed(); // test speed: the game clock runs k times faster
+    if (k > 1) G.S.clockOff = (G.S.clockOff || 0) + dt * (k - 1) * 1000;
+    G.tick(dt * k);
     acc += dt; saveAcc += dt;
     if (acc >= 0.25) { acc = 0; ui.refresh(); }
     if (saveAcc >= 8) { saveAcc = 0; G.save(); }
@@ -11358,7 +11822,7 @@ function boot() {
   requestAnimationFrame(loop);
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { G.save(); return; }
-    const gap = (Date.now() - G.S.last) / 1000;
+    const gap = (G.now() - G.S.last) / 1000;
     if (gap >= 30) { const o = G.offline(gap); if (o && Object.keys(o.gains).length) showOffline(o); ui.render(); }
     else if (gap > 1) G.tick(gap);
     last = performance.now();
