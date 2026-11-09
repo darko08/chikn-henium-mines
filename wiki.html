@@ -372,6 +372,29 @@ h1, h2, h3, h4 { font-family: var(--font-h); font-weight: 400; margin: 0; letter
   .mascot { right: 16%; width: 60px; } .bubble { font-size: 12px; }
 }
 
+/* next floor upgrade: cost and progress right on the floor bar */
+.ratebox { flex-direction: column; align-items: stretch; gap: 2px; padding: 4px 5px 5px 8px; }
+.rb-main { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+.rb-next { display: flex; align-items: center; gap: 4px; font-size: 12px; }
+.rb-next .cost { gap: 2px 6px; }
+.rb-next .cost .c { font-size: 12px; }
+.rb-lv { font: 400 11px var(--font-h); color: var(--muted); }
+.rb-prog { height: 5px; min-width: 0; border: 0; }
+.rb-prog.ready > i { background: linear-gradient(#ffe27a, #f2b01a); box-shadow: 0 0 6px #ffd54a; }
+/* tap energy */
+.tap-energy { position: absolute; left: 10px; top: 10px; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 3px 9px 3px 4px; border-radius: 12px; background: rgba(10, 12, 40, .82); border: 2px solid #4a55b0; font-family: var(--font-h); font-size: 14px; }
+.te-ic { width: 22px; height: 22px; object-fit: contain; position: static !important; filter: none !important; }
+.te-bar { position: relative; width: 70px; height: 9px; border-radius: 6px; background: #080b22; overflow: hidden; }
+.te-bar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(#ffe27a, #f29b1a); border-radius: 6px; transition: width .25s; }
+.tap-energy.low { border-color: #ff6b6b; }
+.tap-energy.low .te-bar i { background: linear-gradient(#ff9aa3, #e0283c); }
+@media (max-width: 700px) {
+  .rb-next .cost .c img { width: 11px; height: 11px; }
+  .rb-next { font-size: 10px; } .rb-next .cost .c { font-size: 10px; }
+  .rb-lv { display: none; }
+  .tap-energy { left: 6px; top: 6px; font-size: 12px; } .te-bar { width: 46px; }
+}
+
 /* factories.css */
 /* Factories screen: "Industrial Processing Hub" (prefix fx-) */
 /* every view-level query names fxwrap: each factory card is a container too (fxcard) */
@@ -3770,19 +3793,19 @@ D.topRes = ['stone', 'coal', 'copper', 'iron', 'heniumOre', 'rareEarth'];
 // Mine zones (vertical floors). base = units/sec at floor level 1.
 D.zones = [
   { id: 'stone',  name: 'Stone Zone',      short: 'Stone',      res: 'stone',     from: 1,  to: 5,  base: 2.0,  tint: '#7d8399', glow: '#c9cfdf',
-    up: { stone: 40 }, dig: 45 },
+    up: { stone: 40 }, dig: 0 },
   { id: 'coal',   name: 'Coal Zone',       short: 'Coal',       res: 'coal',      from: 6,  to: 10, base: 1.5,  tint: '#3c3f4c', glow: '#8b93ad',
-    up: { coal: 45, stone: 60 }, dig: 160, gate: { factory: 'crusher' } },
+    up: { coal: 45, stone: 60 }, dig: 5e6, gate: { factory: 'crusher' } },
   { id: 'copper', name: 'Copper Zone',     short: 'Copper',     res: 'copper',    from: 11, to: 15, base: 1.1,  tint: '#8a4a1c', glow: '#ff9a3c',
-    up: { copper: 45, coal: 60 }, dig: 420, gate: { factory: 'smelter' } },
+    up: { copper: 45, coal: 60 }, dig: 6e6, gate: { factory: 'smelter' } },
   { id: 'iron',   name: 'Iron Zone',       short: 'Iron',       res: 'iron',      from: 16, to: 20, base: 0.9,  tint: '#56607a', glow: '#cfe0ff',
-    up: { iron: 45, copperIngot: 4 }, dig: 900, gate: { machine: true } },
+    up: { iron: 45, copperIngot: 4 }, dig: 2e6, gate: { machine: true } },
   { id: 'henium', name: 'Henium Vein',     short: 'Henium',     res: 'heniumOre', from: 21, to: 30, base: 0.32, tint: '#5a1d8f', glow: '#c77dff',
-    up: { heniumOre: 18, ironIngot: 6 }, dig: 260, gate: { factory: 'forge' } },
+    up: { heniumOre: 18, ironIngot: 6 }, dig: 8e5, gate: { factory: 'forge' } },
   { id: 'rare',   name: 'Rare Earth Zone', short: 'Rare Earth', res: 'rareEarth', from: 31, to: 40, base: 0.07, tint: '#1b4f9e', glow: '#6fd8ff',
-    up: { rareEarth: 6, alloy: 2 }, dig: 70, gate: { factory: 'refinery' } },
+    up: { rareEarth: 6, alloy: 2 }, dig: 1.5e5, gate: { factory: 'refinery' } },
   { id: 'core',   name: 'Core Zone',       short: 'Core',       res: 'heniumOre', extra: { rareEarth: 0.18 }, from: 41, to: 50, base: 1.1, tint: '#7a1a8c', glow: '#ff7df0',
-    up: { heniumOre: 120, circuit: 3 }, dig: 900, gate: { refineryLv: 5, license: true } },
+    up: { heniumOre: 120, circuit: 3 }, dig: 3e6, gate: { refineryLv: 5, license: true } },
 ];
 D.maxDepth = 50;
 D.zoneOf = (d) => D.zones.find((z) => d >= z.from && d <= z.to) || D.zones[D.zones.length - 1];
@@ -3794,27 +3817,33 @@ D.floorRate = (z, lv, dug) => {
   const milestones = [10, 25, 50, 100].filter((m) => lv >= m).length;
   return z.base * lv * (1 + 0.22 * (dug - 1)) * pow(2, milestones);
 };
-D.floorCost = (z, lv) => { // cost to go from lv -> lv+1
-  const k = pow(1.3, lv - 1), c = {};
+D.floorCost = (z, lv) => { // cost to go from lv -> lv+1; grows 45% a level, so floors keep improving for months
+  const k = pow(1.45, lv - 1), c = {};
   for (const r in z.up) c[r] = Math.ceil(z.up[r] * k);
   return c;
 };
-// Cost to dig from depth d to d+1. Stone grows ×1.38 per level down to depth 30, then ×1.25, so the last digs cost
-// hundreds of millions of Stone instead of billions.
+// Cost to dig from depth d to d+1, sized to the production a player has at that depth (all times are real time).
+// The first depths are cheap so the first session ends deeper; after that every dig costs a day or two of output.
 D.digCost = (d) => {
   const z = D.zoneOf(d), c = {};
-  c.stone = Math.ceil(400 * pow(1.38, Math.min(d - 1, 29)) * pow(1.25, Math.max(0, d - 30)));
-  if (z.res !== 'stone') c[z.res] = Math.ceil(z.dig * 3 * pow(1.45, d - z.from));
-  if (d >= 11) c.copperIngot = Math.ceil(25 * pow(1.3, d - 11));
-  if (d >= 16) c.ironIngot = Math.ceil(35 * pow(1.3, d - 16));
-  if (d >= 21) c.machinePart = Math.ceil(6 * pow(1.28, d - 21));
-  if (d >= 21) c.henium = Math.ceil(2 * pow(1.25, d - 21));
-  if (d >= 31) c.alloy = Math.ceil(8 * pow(1.25, d - 31));
-  if (d >= 41) c.circuit = Math.ceil(6 * pow(1.25, d - 41));
+  const early = [200, 1500, 250e3, 3e6];                    // 1→2, 2→3, 3→4, 4→5
+  c.stone = Math.ceil(d <= 4 ? early[d - 1] : 15e6 * pow(1.08, d - 5));
+  if (z.res !== 'stone') c[z.res] = Math.ceil(z.dig * pow(1.12, d - z.from));
+  if (d >= 11) c.copperIngot = Math.ceil(2000 * pow(1.1, d - 11));
+  if (d >= 16) c.ironIngot = Math.ceil(2000 * pow(1.1, d - 16));
+  if (d >= 21) c.machinePart = Math.ceil(100 * pow(1.1, d - 21));
+  if (d >= 21) c.henium = Math.ceil(2 * pow(1.18, d - 21));
+  if (d >= 31) c.alloy = Math.ceil(100 * pow(1.1, d - 31));
+  if (d >= 41) c.circuit = Math.ceil(40 * pow(1.1, d - 41));
   return c;
 };
-// Digging takes time: depth 2 ~20s, depth 10 ~1.5min, depth 20 ~9min, depth 30 ~50min, depth 40 ~5h, depth 50 ~1 day.
-D.digTime = (d) => Math.round(20 * pow(1.19, d - 1));
+// Digging takes real time: a minute for the first depth, hours on day one, then days. From depth 15 every dig takes
+// 8 days of digging work; a machine on the deepest floor works faster (G.digSpeed), so later digs go quicker.
+// Paced to the 6-month journey: Henium Vein (21) around month 3, the Core Zone (41) around month 6.
+D.digTime = (d) => { // d = the depth being dug TO (G.act.dig uses D.digTime(depth + 1); D.digCost takes the depth dug FROM)
+  const early = [30, 300, 4 * 3600, 12 * 3600];             // 1→2, 2→3, 3→4, 4→5
+  return d <= 5 ? early[Math.max(0, d - 2)] : Math.round(86400 * Math.min(8, 1.5 + 0.65 * (d - 5)));
+};
 // Reward bundle for progress d (a depth; season levels count as depths): k × the dig cost at that depth of the zone's ore
 // plus the newest material digging needs there (Stone in the Coal Zone), so rewards grow with you and help the next dig.
 // Missions, the season track, hazards and fights pay these. EGG is never a reward: only Chikns lay it.
@@ -3829,47 +3858,51 @@ D.bundle = (d, k) => {
 // Factories: reqDepth to build; recipes run in the production queue. t = seconds at Lv 1.
 D.factories = [
   { id: 'crusher', name: 'Ore Crusher', desc: 'Crushes raw ore', reqDepth: 3, accent: '#f5b800',
-    build: { stone: 400 },
-    recipes: [{ id: 'crush', name: 'Crush Stone', in: { stone: 100 }, out: { crushedOre: 60 }, t: 10 }] },
+    build: { stone: 50e3 },
+    recipes: [{ id: 'crush', name: 'Crush Stone', in: { stone: 100 }, out: { crushedOre: 60 }, t: 120 }] },
   { id: 'separator', name: 'Ore Separator', desc: 'Sorts & concentrates', reqDepth: 6, accent: '#7aa7ff',
-    build: { stone: 1200, coal: 400 },
-    recipes: [{ id: 'separate', name: 'Separate Ore', in: { crushedOre: 120 }, out: { copper: 26, iron: 20, heniumOre: 4, rareEarth: 1 }, t: 14 }] },
+    build: { stone: 5e6, coal: 50e3 },
+    recipes: [{ id: 'separate', name: 'Separate Ore', in: { crushedOre: 120 }, out: { copper: 26, iron: 20, heniumOre: 4, rareEarth: 1 }, t: 300 }] },
   { id: 'smelter', name: 'Smelter', desc: 'Melts ore to ingots', reqDepth: 9, accent: '#ff7a2f',
-    build: { stone: 2000, coal: 900 },
+    build: { stone: 20e6, coal: 3e6 },
     recipes: [
-      { id: 'smeltCopper', name: 'Copper Ingot', in: { copper: 60, coal: 30 }, out: { copperIngot: 30 }, t: 14 },
-      { id: 'smeltIron', name: 'Iron Ingot', in: { iron: 60, coal: 30 }, out: { ironIngot: 30 }, t: 17 }] },
-  { id: 'forge', name: 'Iron Forge', desc: 'Creates components', reqDepth: 14, accent: '#ffb347',
-    build: { stone: 4000, copperIngot: 80, coal: 1500 },
+      { id: 'smeltCopper', name: 'Copper Ingot', in: { copper: 60, coal: 30 }, out: { copperIngot: 30 }, t: 600 },
+      { id: 'smeltIron', name: 'Iron Ingot', in: { iron: 60, coal: 30 }, out: { ironIngot: 30 }, t: 720 }] },
+  { id: 'forge', name: 'Iron Forge', desc: 'Creates components', reqDepth: 14, accent: '#ffb347', upG: 1.8,
+    build: { stone: 40e6, copperIngot: 3000, coal: 10e6 },
     recipes: [
-      { id: 'gears', name: 'Components', in: { ironIngot: 20, copperIngot: 10 }, out: { components: 6 }, t: 18 },
-      { id: 'parts', name: 'Machine Part', in: { ironIngot: 30, coal: 40 }, out: { machinePart: 5 }, t: 22 }] },
-  { id: 'advanced', name: 'Advanced Factory', desc: 'High-tech assembly', reqDepth: 19, accent: '#5fd0ff',
-    build: { ironIngot: 250, components: 40, copper: 4000 },
+      { id: 'gears', name: 'Components', in: { ironIngot: 20, copperIngot: 10 }, out: { components: 6 }, t: 1200 },
+      { id: 'parts', name: 'Machine Part', in: { ironIngot: 30, coal: 40 }, out: { machinePart: 5 }, t: 1800 }] },
+  { id: 'advanced', name: 'Advanced Factory', desc: 'High-tech assembly', reqDepth: 19, accent: '#5fd0ff', upG: 1.75,
+    build: { ironIngot: 8000, components: 600, copper: 30e6 },
     recipes: [
-      { id: 'alloy', name: 'Alloy', in: { copperIngot: 20, ironIngot: 20, rareEarth: 2 }, out: { alloy: 6 }, t: 26 },
-      { id: 'circuit', name: 'Circuit', in: { copperIngot: 15, components: 4, rareEarth: 3 }, out: { circuit: 4 }, t: 30 }] },
-  { id: 'refinery', name: 'Henium Refinery', desc: 'Processes Henium ore', reqDepth: 21, accent: '#c77dff',
-    build: { machinePart: 50, alloy: 25, iron: 10000 },
-    recipes: [{ id: 'refine', name: 'Refine Henium', in: { heniumOre: 100, coal: 200, rareEarth: 4 }, out: { henium: 10 }, t: 36 }] },
+      { id: 'alloy', name: 'Alloy', in: { copperIngot: 20, ironIngot: 20, rareEarth: 2 }, out: { alloy: 6 }, t: 2700 },
+      { id: 'circuit', name: 'Circuit', in: { copperIngot: 15, components: 4, rareEarth: 3 }, out: { circuit: 4 }, t: 3600 }] },
+  { id: 'refinery', name: 'Henium Refinery', desc: 'Processes Henium ore', reqDepth: 21, accent: '#c77dff', upG: 1.75,
+    build: { machinePart: 800, alloy: 200, iron: 20e6 },
+    recipes: [{ id: 'refine', name: 'Refine Henium', in: { heniumOre: 100, coal: 200, rareEarth: 4 }, out: { henium: 10 }, t: 3600 }] },
   { id: 'feedmill', name: 'Feed Mill', desc: 'Grinds mineral FEED · daily quota', reqDepth: 4, accent: '#e8c28a',
-    build: { stone: 1500 },
-    recipes: [{ id: 'feed', name: 'Mill FEED', in: { crushedOre: 40, stone: 80 }, out: { feed: 2 }, t: 30 }] },
+    build: { stone: 500e3 },
+    recipes: [{ id: 'feed', name: 'Mill FEED', in: { crushedOre: 40, stone: 80 }, out: { feed: 2 }, t: 1800 }] },
 ];
 D.factoryById = (id) => D.factories.find((f) => f.id === id);
 D.factoryMaxLv = 10;
-D.factoryUpCost = (f, lv) => { // lv -> lv+1: every level is much pricier and needs better materials
-  const c = {}, k = pow(1.85, lv);
-  for (const r in f.build) c[r] = Math.ceil(f.build[r] * k);
+// lv -> lv+1: ores ×1.9 a level (f.upG for the buildings that cost the deeper ores), materials ×1.5, and better materials
+// from Lv. 2 on. Sized so the last levels take weeks of a late-game mine's output, not years (×2.6 made Lv. 10 of the
+// Smelter, Forge, Advanced Factory and Refinery cost 1–7 years of ore, and the Forge stuck at Lv. 5 starved everything)
+D.factoryUpCost = (f, lv) => {
+  const c = {}, k = f.id === 'refinery' ? 1.5 : 1, g = f.upG || 1.9; // the refinery (the HENIUM engine) needs 1.5× the materials
+  for (const r in f.build) c[r] = Math.ceil(f.build[r] * (D.res[r].cat === 'raw' ? pow(g, lv) : k * pow(1.5, lv)));
   const need = (r, v) => { c[r] = Math.max(c[r] || 0, Math.ceil(v)); };
-  if (lv >= 2) need('components', 5 * pow(1.6, lv - 2));
-  if (lv >= 4) need('machinePart', 6 * pow(1.6, lv - 4));
-  if (lv >= 5) need('henium', 25 * pow(1.9, lv - 5));
-  if (lv >= 6) need('alloy', 8 * pow(1.55, lv - 6));
-  if (lv >= 8) need('circuit', 6 * pow(1.5, lv - 8));
+  if (lv >= 2) need('components', 200 * pow(1.5, lv - 2));
+  if (lv >= 4) need('machinePart', 150 * pow(1.5, lv - 4));
+  if (lv >= 5) need('henium', 10 * pow(1.7, lv - 5));
+  if (f.id === 'refinery') need('henium', 15 * pow(1.8, lv - 1)); // every refinery upgrade costs HENIUM: 15, 27, 49 … 1,700
+  if (lv >= 6) need('alloy', 150 * pow(1.5, lv - 6));
+  if (lv >= 8) need('circuit', 60 * pow(1.5, lv - 8));
   return c;
 };
-D.buildTime = (lv) => Math.round(30 * pow(1.75, lv - 1)); // seconds to build level lv: 30s, 53s, 1.5min … Lv.10 ~1.3h
+D.buildTime = (lv) => Math.round(300 * pow(2.5, lv - 1)); // real time to build level lv: 5 min, 12 min, 31 min … Lv. 10 ≈ 13 days
 D.tier = (lv) => Math.min(10, Math.max(1, Math.round(lv)));      // every level has its own, richer look (10 per building)
 D.hqTier = (depth) => Math.min(10, 1 + Math.floor((depth - 1) / 5)); // HQ gets a new look every 5 depth levels
 D.factorySpeed = (lv) => pow(0.9, lv - 1);            // time multiplier
@@ -3886,24 +3919,24 @@ D.fUpCost = (u, lv) => { const c = {}; for (const r in u.base) c[r] = Math.ceil(
 
 // Machines (crafted). lv = player level required. energy = coal/h, wear = %/min, cap = flat ore/h added.
 D.machines = [
-  { id: 'basic',     name: 'Basic Drill',      lv: 1,  speed: 1.3, energy: 240,  wear: 2.6, cap: 120,  t: 15,
-    cost: { stone: 600, copper: 60, coal: 150 } },
-  { id: 'improved',  name: 'Improved Drill',   lv: 5,  speed: 1.7, energy: 520,  wear: 2.2, cap: 260,  t: 30,
-    cost: { copperIngot: 40, ironIngot: 30, coal: 400 } },
-  { id: 'heavy',     name: 'Heavy Drill',      lv: 10, speed: 2.5, energy: 1000, wear: 1.8, cap: 500,  t: 60,
-    cost: { stone: 1500, coal: 800, copper: 500, iron: 1000, rareEarth: 25, machinePart: 10 } },
-  { id: 'scanner',   name: 'Deep Scanner',     lv: 16, speed: 1.6, energy: 700,  wear: 1.4, cap: 200,  t: 75, rare: 0.06,
-    cost: { circuit: 12, alloy: 10, copperIngot: 120 } },
-  { id: 'rig',       name: 'Auto Mining Rig',  lv: 22, speed: 3.2, energy: 2000, wear: 1.2, cap: 1500, t: 110,
-    cost: { machinePart: 60, components: 60, alloy: 30 } },
-  { id: 'extractor', name: 'Henium Extractor', lv: 28, speed: 2.0, energy: 3000, wear: 1.0, cap: 900,  t: 160,
+  { id: 'basic',     name: 'Basic Drill',      lv: 1,  speed: 1.3, energy: 5000,  wear: 2.6, cap: 120,  t: 600,
+    cost: { stone: 200e3, copper: 5000, coal: 50e3 } },
+  { id: 'improved',  name: 'Improved Drill',   lv: 5,  speed: 1.7, energy: 12000, wear: 2.2, cap: 260,  t: 3600,
+    cost: { copperIngot: 2000, ironIngot: 1500, coal: 2e6 } },
+  { id: 'heavy',     name: 'Heavy Drill',      lv: 10, speed: 2.5, energy: 30000, wear: 1.8, cap: 500,  t: 14400,
+    cost: { stone: 30e6, coal: 10e6, copper: 2e6, iron: 1e6, rareEarth: 2000, machinePart: 150 } },
+  { id: 'scanner',   name: 'Deep Scanner',     lv: 16, speed: 1.6, energy: 20000, wear: 1.4, cap: 200,  t: 28800, rare: 0.06,
+    cost: { circuit: 120, alloy: 150, copperIngot: 10e3 } },
+  { id: 'rig',       name: 'Auto Mining Rig',  lv: 22, speed: 3.2, energy: 60000, wear: 1.2, cap: 1500, t: 57600,
+    cost: { machinePart: 600, components: 1200, alloy: 400 } },
+  { id: 'extractor', name: 'Henium Extractor', lv: 28, speed: 2.0, energy: 100000, wear: 1.0, cap: 900,  t: 129600,
     zones: ['henium', 'core'], zoneSpeed: 4.5,
-    cost: { circuit: 40, alloy: 60, heniumOre: 2000, henium: 120 } },
+    cost: { circuit: 300, alloy: 800, heniumOre: 3e6, henium: 120 } },
 ];
 D.machineById = (id) => D.machines.find((m) => m.id === id);
 D.machineMaxLv = 10;
-D.machineUpCost = (m, lv) => { const i = D.machines.indexOf(m); const c = { machinePart: Math.ceil(3 * lv * (1 + i * 0.6)), ironIngot: Math.ceil(20 * lv * (1 + i * 0.4)) }; if (lv >= 5) c.alloy = Math.ceil(2 * (lv - 3) * (1 + i * 0.5)); return c; };
-D.machineServiceCost = (dur) => { const miss = 100 - dur; return { machinePart: Math.max(1, Math.ceil(miss / 25)), coal: Math.ceil(miss * 12) }; };
+D.machineUpCost = (m, lv) => { const i = D.machines.indexOf(m); const c = { machinePart: Math.ceil(30 * lv * (1 + i * 0.6)), ironIngot: Math.ceil(300 * lv * (1 + i * 0.4)) }; if (lv >= 5) c.alloy = Math.ceil(20 * (lv - 3) * (1 + i * 0.5)); return c; };
+D.machineServiceCost = (dur) => { const miss = 100 - dur; return { machinePart: Math.max(1, Math.ceil(miss / 10)), coal: Math.ceil(miss * 20000) }; };
 
 // Chikns
 D.roles = {
@@ -3940,7 +3973,7 @@ D.squadSlots = (lv) => 3 + (lv >= 15 ? 1 : 0) + (lv >= 30 ? 1 : 0);
 // Egg farm: every Chikn lays about 1 EGG per day; heavier Chikns lay more (with diminishing returns).
 // Chikns eat FEED every day to keep their weight; without FEED they slowly lose weight.
 D.farm = {
-  day: 300,                                   // seconds per farm day in this prototype (the real game would use 86,400)
+  day: 86400,                                 // a farm day is a real day: each Chikn lays about 1 EGG a day
   eggsAt: (kg) => Math.pow(kg / 100, 0.6),    // eggs per day: 100kg = 1, 200kg = 1.5, 400kg = 2.3, 800kg = 3.5
   upkeep: (kg) => kg / 200,                   // FEED eaten per day: 100kg = 0.5
   hunger: 0.02,                               // share of extra weight lost per hungry day
@@ -3949,7 +3982,7 @@ D.farm = {
   nestDays: 2,                                // the nest holds this many days of eggs
   coop: (lv) => 6 + 3 * (lv - 1),             // how many Chikns the coop houses
   coopMax: 10,
-  coopCost: (lv) => ({ stone: Math.ceil(2000 * pow(2.1, lv - 1)), copper: Math.ceil(400 * pow(2.1, lv - 1)), egg: Math.ceil(20 * pow(1.8, lv - 1)) }),
+  coopCost: (lv) => ({ stone: Math.ceil(2e6 * pow(2.1, lv - 1)), copper: Math.ceil(4e5 * pow(2.1, lv - 1)), egg: Math.ceil(20 * pow(1.8, lv - 1)) }),
   millQuota: (lv) => 4 + 3 * (lv - 1),        // FEED the Feed Mill may grind per day (your share of the world pool)
 };
 
@@ -3958,11 +3991,11 @@ D.xpNeed = (lv) => 140 + 180 * lv;       // 5,000 at Lv. 27 (matches the mockup)
 D.seasonNeed = (lv) => 950 + 150 * lv;
 D.seasonMax = 40;
 // odd levels: an ore & material bundle as if the season level were your depth; even levels: a little FEED
-D.seasonReward = (lv) => {
+D.seasonReward = (lv, depth) => {
   if (lv === D.seasonMax) return { chikn: 'mythic' };
   if (lv % 10 === 0) return { chikn: 'legendary' };
   if (lv % 5 === 0) return { henium: 3 + Math.floor(lv / 5) };
-  return lv % 2 ? D.bundle(lv, 0.25) : { feed: Math.ceil(lv / 3) };
+  return lv % 2 ? D.bundle(depth || lv, 0.15) : { feed: Math.ceil(lv / 3) };
 };
 D.specs = [
   { id: 'miner',  name: 'Miner',        desc: '+15% resource yield from every floor.' },
@@ -3976,23 +4009,29 @@ D.specs = [
 
 // Market: base prices in HENIUM. Prices drift around these.
 D.market = { stone: 0.0004, coal: 0.001, copper: 0.0025, iron: 0.0032, heniumOre: 0.06, rareEarth: 0.095,
-  crushedOre: 0.0009, copperIngot: 0.012, ironIngot: 0.018, components: 0.07, machinePart: 0.11, alloy: 0.16, circuit: 0.28 };
+  crushedOre: 0.0009, copperIngot: 0.012, ironIngot: 0.018, components: 0.1, machinePart: 0.14, alloy: 0.16, circuit: 0.28 };
 D.buySpread = 0.03;   // buyers pay 3% over the market price
 D.sellFee = 0.02;     // sellers pay a 2% fee, half of it is burned
 D.priceBand = 0.15;   // prices stay within ±15% of the reference price
 D.exchange = { eggPerHenium: 5, eggPerFeed: 2 }; // EGG can only be burned for FEED (EGG → HENIUM goes through the DEX); nothing mints EGG
 
-// HENIUM works like bitcoin: fixed total supply, refinery yield halves at each epoch threshold.
-// The rest of the world (NPC guilds) keeps refining in the background.
+// HENIUM works like bitcoin, on the same schedule as the HeniumEmission contract: the whole world can mint 7,200 a day,
+// halving every 1,458 days (≈ 4 years): 10.5M in the first epoch and never more than 21M. The clock starts at launch.
 D.supply = {
-  cap: 21e6, start: 8.4e6, halvings: [10.5e6, 15.75e6, 18.375e6, 19.6875e6, 20.34375e6],
-  daily: 720,               // HENIUM the whole world can mint per game day (epoch 1), halves every epoch
+  cap: 21e6, daily: 7200, halvingDays: 1458, genesis: Date.UTC(2026, 10, 1),
   split: { refinery: 0.7, war: 0.2, boss: 0.1 },  // refiners, guild-war fighters, monster hunters
-  worldPower0: 900,         // refinery power of all other players at launch
-  worldGrowth: 0.004,       // the world builds ~0.4% more refinery power every game day
-  worldWar0: 4000,          // war points of the other guilds
-  worldHunt0: 1500,         // hunt points of all other monster hunters
+  worldPower0: 6700,        // refinery power of all other players at launch (a Lv. 1 refinery earns ~5 HENIUM a day)
+  worldGrowth: 0.004,       // the world builds ~0.4% more refinery power every day
+  worldWar0: 600e3,         // war points of all other guild fighters
+  worldHunt0: 25e3,         // hunt points of all other monster hunters
 };
+// HENIUM minted by the whole world after `days` days (closed form per epoch, like the contract's cumulativeEmission)
+D.cumEmission = (days) => {
+  const H = D.supply.halvingDays, e = Math.floor(Math.max(0, days) / H);
+  const full = D.supply.daily * H * 2 * (1 - Math.pow(0.5, e));
+  return Math.min(D.supply.cap, full + (Math.max(0, days) - e * H) * D.supply.daily * Math.pow(0.5, e));
+};
+D.supply.halvings = Array.from({ length: 6 }, (_, i) => D.cumEmission((i + 1) * D.supply.halvingDays)); // world supply at each halving
 D.refPower = (lv) => (lv > 0 ? Math.round(10 * pow(1.6, lv - 1)) : 0); // refinery power by level
 
 // Guild
@@ -4004,41 +4043,41 @@ D.guildProjects = [
   { name: 'Guild Citadel',    need: 18000, bonus: 12 },
 ];
 D.donations = [ // pts per unit
-  { res: 'stone', amt: 2000, pts: 20 }, { res: 'coal', amt: 1000, pts: 22 }, { res: 'copperIngot', amt: 100, pts: 40 },
-  { res: 'ironIngot', amt: 100, pts: 55 }, { res: 'egg', amt: 5, pts: 45 }, { res: 'henium', amt: 10, pts: 110 },
+  { res: 'stone', amt: 2e6, pts: 20 }, { res: 'coal', amt: 1e6, pts: 22 }, { res: 'copperIngot', amt: 500, pts: 40 },
+  { res: 'ironIngot', amt: 500, pts: 55 }, { res: 'egg', amt: 5, pts: 45 }, { res: 'henium', amt: 10, pts: 110 },
 ];
-D.guildZoneCost = (lv) => ({ henium: Math.ceil(20 * pow(1.8, lv)), alloy: Math.ceil(8 * pow(1.6, lv)), egg: Math.ceil(10 * pow(1.7, lv)) });
+D.guildZoneCost = (lv) => ({ henium: Math.ceil(20 * pow(1.8, lv)), alloy: Math.ceil(80 * pow(1.6, lv)), egg: Math.ceil(10 * pow(1.7, lv)) });
 D.licenseCost = { henium: 250, egg: 60 };
 D.rivals = ['Crystal Claws', 'Deep Diggers', 'Golden Yolks', 'Ember Hens', 'Rock Raiders', 'Coop Kings', 'Feather Forge', 'Quartz Quackers'];
 
 // Expeditions. r = [min,max] rewards (ores & materials; never EGG); risk = injury chance per chikn.
 D.expeditions = [
-  { id: 'shaft',  name: 'Abandoned Shaft',     risk: 0.05, riskName: 'Low',     t: 60,  slots: 1, lv: 1,  x: 49, y: 44,
-    r: { stone: [500, 1100], coal: [120, 320], crushedOre: [40, 120] } },
-  { id: 'cavern', name: 'Crystal Cavern',      risk: 0.12, riskName: 'Medium',  t: 150, slots: 2, lv: 5,  x: 9,  y: 49,
-    r: { copper: [200, 500], iron: [150, 380], rareEarth: [2, 6], copperIngot: [6, 16] } },
-  { id: 'lava',   name: 'Lava Tubes',          risk: 0.2,  riskName: 'High',    t: 240, slots: 2, lv: 11, x: 62, y: 70,
-    r: { coal: [900, 2200], ironIngot: [30, 80], machinePart: [2, 6], components: [3, 8] } },
-  { id: 'field',  name: 'Henium Field',        risk: 0.24, riskName: 'High',    t: 300, slots: 3, lv: 17, x: 90, y: 45,
-    r: { heniumOre: [80, 200], rareEarth: [6, 16], henium: [1, 2] } },
-  { id: 'ruins',  name: 'Ancient Chikn Ruins', risk: 0.34, riskName: 'Extreme', t: 480, slots: 3, lv: 24, x: 67, y: 24,
-    r: { henium: [2, 6], alloy: [6, 16], circuit: [3, 8], machinePart: [8, 20] } },
+  { id: 'shaft',  name: 'Abandoned Shaft',     risk: 0.05, riskName: 'Low',     t: 1800,  slots: 1, lv: 1,  x: 49, y: 44,
+    r: { stone: [200e3, 500e3], coal: [50e3, 150e3], crushedOre: [10e3, 30e3] } },
+  { id: 'cavern', name: 'Crystal Cavern',      risk: 0.12, riskName: 'Medium',  t: 7200, slots: 2, lv: 5,  x: 9,  y: 49,
+    r: { copper: [100e3, 300e3], iron: [80e3, 200e3], rareEarth: [50, 150], copperIngot: [300, 800] } },
+  { id: 'lava',   name: 'Lava Tubes',          risk: 0.2,  riskName: 'High',    t: 14400, slots: 2, lv: 11, x: 62, y: 70,
+    r: { coal: [1e6, 3e6], ironIngot: [1000, 3000], machinePart: [20, 60], components: [30, 90] } },
+  { id: 'field',  name: 'Henium Field',        risk: 0.24, riskName: 'High',    t: 28800, slots: 3, lv: 17, x: 90, y: 45,
+    r: { heniumOre: [50e3, 150e3], rareEarth: [200, 600], henium: [1, 2] } },
+  { id: 'ruins',  name: 'Ancient Chikn Ruins', risk: 0.34, riskName: 'Extreme', t: 43200, slots: 3, lv: 24, x: 67, y: 24,
+    r: { henium: [2, 6], alloy: [50, 150], circuit: [15, 40], machinePart: [100, 250] } },
 ];
-D.veinExpedition = { id: 'vein', name: 'Henium Vein (Depth 29)', risk: 0.18, riskName: 'Medium', t: 120, slots: 2, lv: 1, x: 84, y: 76,
-  r: { heniumOre: [150, 320], rareEarth: [4, 10], henium: [1, 3] }, event: true };
+D.veinExpedition = { id: 'vein', name: 'Henium Vein (Depth 29)', risk: 0.18, riskName: 'Medium', t: 7200, slots: 2, lv: 1, x: 84, y: 76,
+  r: { heniumOre: [100e3, 300e3], rareEarth: [100, 300], henium: [1, 3] }, event: true };
 
 // Battle: PvE stages (power = enemy power). r = loot per win (ores & materials; never EGG), first = one-time bounty.
 D.stages = [
-  { name: 'Cave Bats',         mon: 'bat',    power: 40,    r: { stone: 600, coal: 100 } },
-  { name: 'Coal Beast',        mon: 'beast',  power: 110,   r: { coal: 600, crushedOre: 150 } },
-  { name: 'Copper Crab',       mon: 'crab',   power: 240,   r: { copperIngot: 30, copper: 300 } },
-  { name: 'Iron Golem',        mon: 'golem',  power: 480,   r: { ironIngot: 60, machinePart: 4, components: 4 } },
-  { name: 'Crystal Spider',    mon: 'spider', power: 900,  r: { rareEarth: 10, alloy: 2 }, first: { henium: 15 } },
-  { name: 'Henium Golem',      mon: 'hgolem', power: 1600,  r: { heniumOre: 300, alloy: 8 }, first: { henium: 40 } },
-  { name: 'Core Wraith',       mon: 'wraith', power: 2800,  r: { heniumOre: 600, circuit: 8 }, first: { henium: 90 } },
-  { name: 'Ancient Rock King', mon: 'king',   power: 5000, r: { heniumOre: 1200, alloy: 30 }, first: { henium: 200 } },
+  { name: 'Cave Bats',         mon: 'bat',    power: 40,    r: { stone: 600e3, coal: 100e3 } },
+  { name: 'Coal Beast',        mon: 'beast',  power: 110,   r: { coal: 600e3, crushedOre: 15e3 } },
+  { name: 'Copper Crab',       mon: 'crab',   power: 240,   r: { copperIngot: 600, copper: 300e3 } },
+  { name: 'Iron Golem',        mon: 'golem',  power: 480,   r: { ironIngot: 1200, machinePart: 40, components: 40 } },
+  { name: 'Crystal Spider',    mon: 'spider', power: 900,  r: { rareEarth: 300, alloy: 20 }, first: { henium: 15 } },
+  { name: 'Henium Golem',      mon: 'hgolem', power: 1600,  r: { heniumOre: 300e3, alloy: 80 }, first: { henium: 40 } },
+  { name: 'Core Wraith',       mon: 'wraith', power: 2800,  r: { heniumOre: 600e3, circuit: 30 }, first: { henium: 90 } },
+  { name: 'Ancient Rock King', mon: 'king',   power: 5000, r: { heniumOre: 1.2e6, alloy: 200 }, first: { henium: 200 } },
 ];
-D.pvpTicketTime = 180;
+D.pvpTicketTime = 7200; // a battle ticket refills every 2 hours
 D.pvpTickets = 3;
 
 // Daily missions: the target n scales with player level, the reward r(depth) with your depth (an ore & material
@@ -4057,31 +4096,31 @@ D.missions = [
 // little FEED and, at the big milestones, HENIUM (paid out of the world's emission like every HENIUM reward). Never EGG.
 const built = (S, id) => (S.factories[id] && S.factories[id].lv > 0 ? 1 : 0);
 D.quests = [
-  { id: 'tap10',     text: 'Tap the Stone Zone 10 times',  p: (S) => [S.stats.taps, 10],              r: { stone: 150 } },
-  { id: 'stone3',    text: 'Upgrade Stone Zone to Lv. 3',  p: (S) => [S.zones.stone.lv, 3],          r: { stone: 300 } },
-  { id: 'depth3',    text: 'Dig to depth 3',               p: (S) => [S.depth, 3],                    r: { stone: 400, feed: 4 } },
+  { id: 'tap10',     text: 'Tap the Stone Zone 10 times',  p: (S) => [S.stats.taps, 10],              r: { stone: 150000 } },
+  { id: 'stone3',    text: 'Upgrade Stone Zone to Lv. 3',  p: (S) => [S.zones.stone.lv, 3],          r: { stone: 300000 } },
+  { id: 'depth3',    text: 'Dig to depth 3',               p: (S) => [S.depth, 3],                    r: { stone: 400000, feed: 4 } },
   { id: 'hire1',     text: 'Hire your first Chikn',        p: (S) => [S.stats.hired, 1],              r: { feed: 5 } },
-  { id: 'crusher',   text: 'Build the Ore Crusher',        p: (S) => [built(S, 'crusher'), 1],        r: { stone: 800 } },
+  { id: 'crusher',   text: 'Build the Ore Crusher',        p: (S) => [built(S, 'crusher'), 1],        r: { stone: 800000 } },
   { id: 'depth6',    text: 'Reach the Coal Zone (depth 6)', p: (S) => [S.depth, 6],                   r: { henium: 3 } },
-  { id: 'process300', text: 'Process 300 ore in factories', p: (S) => [S.stats.processed, 300],       r: { crushedOre: 200, coal: 300 } },
-  { id: 'separator', text: 'Build the Ore Separator',      p: (S) => [built(S, 'separator'), 1],      r: { coal: 500, feed: 5 } },
-  { id: 'smelter',   text: 'Build the Smelter',            p: (S) => [built(S, 'smelter'), 1],        r: { copper: 300, coal: 600 } },
-  { id: 'drill',     text: 'Craft a Basic Drill',          p: (S) => [S.stats.crafted, 1],            r: { copperIngot: 20, coal: 600 } },
-  { id: 'deploy',    text: 'Deploy a machine on a floor',  p: (S) => [S.machines.some((m) => m.zone) ? 1 : 0, 1], r: { coal: 1000, feed: 5 } },
+  { id: 'process300', text: 'Process 300 ore in factories', p: (S) => [S.stats.processed, 300],       r: { crushedOre: 200000, coal: 300000 } },
+  { id: 'separator', text: 'Build the Ore Separator',      p: (S) => [built(S, 'separator'), 1],      r: { coal: 500000, feed: 5 } },
+  { id: 'smelter',   text: 'Build the Smelter',            p: (S) => [built(S, 'smelter'), 1],        r: { copper: 300000, coal: 600000 } },
+  { id: 'drill',     text: 'Craft a Basic Drill',          p: (S) => [S.stats.crafted, 1],            r: { copperIngot: 400, coal: 600000 } },
+  { id: 'deploy',    text: 'Deploy a machine on a floor',  p: (S) => [S.machines.some((m) => m.zone) ? 1 : 0, 1], r: { coal: 1000000, feed: 5 } },
   { id: 'depth11',   text: 'Reach the Copper Zone (depth 11)', p: (S) => [S.depth, 11],               r: { henium: 5 } },
-  { id: 'ingots',    text: 'Smelt 150 ingots',             p: (S) => [S.stats.ingots, 150],           r: { copperIngot: 40, ironIngot: 30 } },
-  { id: 'battle1',   text: 'Win your first battle',        p: (S) => [S.stats.wins, 1],               r: { ironIngot: 40, copper: 800 } },
-  { id: 'forge',     text: 'Build the Iron Forge',         p: (S) => [built(S, 'forge'), 1],          r: { ironIngot: 60, feed: 6 } },
-  { id: 'exp1',      text: 'Complete an expedition',       p: (S) => [S.stats.exps, 1],               r: { components: 10, iron: 1000 } },
+  { id: 'ingots',    text: 'Smelt 150 ingots',             p: (S) => [S.stats.ingots, 150],           r: { copperIngot: 800, ironIngot: 600 } },
+  { id: 'battle1',   text: 'Win your first battle',        p: (S) => [S.stats.wins, 1],               r: { ironIngot: 800, copper: 800000 } },
+  { id: 'forge',     text: 'Build the Iron Forge',         p: (S) => [built(S, 'forge'), 1],          r: { ironIngot: 1200, feed: 6 } },
+  { id: 'exp1',      text: 'Complete an expedition',       p: (S) => [S.stats.exps, 1],               r: { components: 200, iron: 1000000 } },
   { id: 'depth16',   text: 'Reach the Iron Zone (depth 16)', p: (S) => [S.depth, 16],                 r: { henium: 8 } },
-  { id: 'guild1',    text: 'Contribute to the guild project', p: (S) => [S.guild.contrib > 0 ? 1 : 0, 1], r: { machinePart: 8, ironIngot: 60 } },
+  { id: 'guild1',    text: 'Contribute to the guild project', p: (S) => [S.guild.contrib > 0 ? 1 : 0, 1], r: { machinePart: 160, ironIngot: 1200 } },
   { id: 'advanced',  text: 'Build the Advanced Factory',   p: (S) => [built(S, 'advanced'), 1],       r: { henium: 10 } },
   { id: 'depth21',   text: 'Reach the Henium Vein (depth 21)', p: (S) => [S.depth, 21],               r: { henium: 12 } },
-  { id: 'refinery',  text: 'Build the Henium Refinery',    p: (S) => [built(S, 'refinery'), 1],       r: { heniumOre: 800, coal: 3000, rareEarth: 40 } },
+  { id: 'refinery',  text: 'Build the Henium Refinery',    p: (S) => [built(S, 'refinery'), 1],       r: { heniumOre: 800000, coal: 3000000, rareEarth: 800 } },
   { id: 'refine100', text: 'Refine 100 Henium',            p: (S) => [Math.floor(S.stats.refined), 100], r: { henium: 25 } },
-  { id: 'heavy',     text: 'Craft a Heavy Drill',          p: (S) => [S.machines.some((m) => m.type === 'heavy') ? 1 : 0, 1], r: { machinePart: 25, feed: 8 } },
+  { id: 'heavy',     text: 'Craft a Heavy Drill',          p: (S) => [S.machines.some((m) => m.type === 'heavy') ? 1 : 0, 1], r: { machinePart: 500, feed: 8 } },
   { id: 'depth30',   text: 'Reach depth 30',               p: (S) => [S.depth, 30],                   r: { henium: 40 } },
-  { id: 'license',   text: 'Buy a Guild License',          p: (S) => [S.guild.license ? 1 : 0, 1],    r: { alloy: 40, circuit: 15 } },
+  { id: 'license',   text: 'Buy a Guild License',          p: (S) => [S.guild.license ? 1 : 0, 1],    r: { alloy: 800, circuit: 300 } },
   { id: 'ref5',      text: 'Upgrade the Refinery to Lv. 5', p: (S) => [S.factories.refinery.lv, 5],    r: { henium: 60 } },
   { id: 'depth41',   text: 'Break into the Core Zone (depth 41)', p: (S) => [S.depth, 41],            r: { henium: 100 } },
   { id: 'depth50',   text: 'Reach depth 50 — Mining Empire!', p: (S) => [S.depth, 50],                r: { henium: 250 } },
@@ -4099,12 +4138,12 @@ D.journey = [
 
 // Live events rotate; hazards pop up at random.
 D.liveEvents = [
-  { id: 'vein',     name: 'Henium Vein Discovered!', desc: 'Depth 29 — limited quantity. Henium Vein output ×1.5 and a special expedition.', dur: 600, zone: 'henium', mult: 1.5, minDepth: 18 },
-  { id: 'comp',     name: 'Guild Mining Competition', desc: 'Top guilds earn exclusive machines! All mining +20%.', dur: 900, mult: 1.2 },
-  { id: 'collapse', name: 'Cave Collapse Warning',   desc: 'Increased cave-in risk in depths 21–30!', dur: 480, minDepth: 21 },
-  { id: 'rush',     name: 'Copper Rush',             desc: 'Copper Zone output ×2.', dur: 360, zone: 'copper', mult: 2, minDepth: 11 },
-  { id: 'feast',    name: 'Feed Festival',           desc: 'Fattening Chikns costs 30% less FEED.', dur: 600 },
-  { id: 'stoneday', name: 'Stone Surge',             desc: 'Stone Zone output ×2.', dur: 300, zone: 'stone', mult: 2 },
+  { id: 'vein',     name: 'Henium Vein Discovered!', desc: 'Depth 29 — limited quantity. Henium Vein output ×1.5 and a special expedition.', dur: 36000, zone: 'henium', mult: 1.5, minDepth: 18 },
+  { id: 'comp',     name: 'Guild Mining Competition', desc: 'Top guilds earn exclusive machines! All mining +20%.', dur: 54000, mult: 1.2 },
+  { id: 'collapse', name: 'Cave Collapse Warning',   desc: 'Increased cave-in risk in depths 21–30!', dur: 28800, minDepth: 21 },
+  { id: 'rush',     name: 'Copper Rush',             desc: 'Copper Zone output ×2.', dur: 21600, zone: 'copper', mult: 2, minDepth: 11 },
+  { id: 'feast',    name: 'Feed Festival',           desc: 'Fattening Chikns costs 30% less FEED.', dur: 36000 },
+  { id: 'stoneday', name: 'Stone Surge',             desc: 'Stone Zone output ×2.', dur: 18000, zone: 'stone', mult: 2 },
 ];
 D.hazards = ['collapse', 'bandits', 'creature', 'richvein', 'supply'];
 
@@ -4114,27 +4153,28 @@ D.hazards = ['collapse', 'bandits', 'creature', 'richvein', 'supply'];
 D.rules = {
   specLv: 8,                                        // G.act.chooseSpec: player level that unlocks the specialization
   freeHire: { rarity: 'uncommon', role: 'miner' },  // G.act.hire: the first standard hire is free
-  hazardLv: 4, hazardGap: [110, 210], hazardMin: 40, // G.sys.hazardTick: hostile hazards from this player level; gap; min. squad power
-  collapse: { sec: 90, stone: (d) => Math.round(150 + d * 45) },
+  hazardLv: 4, hazardGap: [300, 900], hazardMin: 40, // G.sys.hazardTick: hostile hazards from this player level; gap while playing (s); min. squad power
+  collapse: { sec: 90, stone: (d) => Math.round(D.digCost(Math.max(5, d)).stone * 0.002) },
   rich: { sec: 25, mult: 10, taps: 8 },
-  supply: { sec: 60, loot: (d) => D.bundle(d, 0.08), feed: (d) => 1 + Math.floor(d / 15) },
-  creature: { sec: 60, power: [0.5, 0.9], loot: (d) => D.bundle(d, 0.12), feed: (d) => 1 + Math.floor(d / 15), hunt: 1, mons: ['bat', 'beast', 'crab', 'spider'] },
-  bandits: { sec: 45, power: [0.6, 1.2], toll: (d) => 2 + Math.floor(d / 4), ignore: [0.05, 0.03], lose: [0.08, 0.05], keep: 20,
+  supply: { sec: 60, loot: (d) => D.bundle(d, 0.08), feed: (d) => 1 + Math.floor(d / 25) },
+  creature: { sec: 60, power: [0.5, 0.9], loot: (d) => D.bundle(d, 0.12), feed: () => 0, hunt: 1, mons: ['bat', 'beast', 'crab', 'spider'] },
+  bandits: { sec: 45, power: [0.6, 1.2], toll: (d) => 1 + Math.floor(d / 10), ignore: [0.05, 0.02], lose: [0.08, 0.03], keep: 20,
+    gap: 8 * 3600, // at most one raid per 8 h: hazards come every few minutes you play, raids must not scale with time online
     win: { loot: (d) => D.bundle(d, 0.15), henium: 1, hunt: 2 } }, // ignore/lose: [share of the floor's ore, share of your HENIUM]
   medicCap: 0.8, collapseEvent: 0.6,                // Medic cave-in save chance cap; share of cave-ins during a Collapse Warning
-  tap: { share: 0.6, base: 1.5 },                   // G.tapYield
-  liveGap: [150, 300], seasonDays: 30,
-  levelFeed: (lv) => 2 + Math.floor(lv / 5),        // FEED paid at every player level-up (systems.js 'levelUp')
-  injuredSec: 150,
+  tap: { share: 0.6, base: 1.5, energyMax: 40, regen: 1 / 3 }, // G.tapYield; tapping costs 1 energy, +1 every 3 s
+  liveGap: [6 * 3600, 14 * 3600], seasonDays: 30,
+  levelFeed: (lv) => 1 + Math.floor(lv / 10),       // FEED paid at every player level-up (systems.js 'levelUp')
+  injuredSec: 7200,
   exp: { base: 0.7, per: 0.15, powCap: 0.6, powDiv: 900, feed: 0.15, feedExp: 0.2, feedAmt: [1, 3], riskMin: 0.2, specRisk: 0.6, specLoot: 0.3 },
-  rest: { win: 40, lose: 20 },                      // PvE stage cooldown after a fight
+  rest: { win: 1800, lose: 900 },                   // PvE stage cooldown after a fight (seconds)
   win: { base: 0.5, div: 1.6, min: 0.05, max: 0.97 }, // G.winChance = base + (P − E) ÷ (div × E), clamped to [min, max]
   pveHunt: (i) => i + 1,                            // hunt points for a win on PvE stage i (0-based)
   rivals: { n: 4, power: [0.7, 1.35], min: 60, lv: [3, 9] },
   pvp: { pts: [20, 40], lose: 10, henium: 1, loot: (d) => D.bundle(d, 0.05) },
   warDecay: 0.15, worldWar: 0.003, worldHunt: 0.003, huntKeep: 0.5, // daily: your war points cool, the world's war & hunt points grow
   projHenium: (i) => 5 + 5 * (i + 1),               // G.guildProjectReward: HENIUM paid when guild project i (0-based) completes
-  memberRate: 0.00022, licenseGuildLv: 5,           // project points guildmates add per second (× need); guild level for the License
+  memberRate: 2.3e-6, licenseGuildLv: 5,              // project points guildmates add per second (× need); guild level for the License
   guildZone: { heniumOre: 0.08, rareEarth: 0.05, refine: 0.08 }, // bonus per guild zone level above 1 (ore output, refinery power)
   refund: 0.5, offlineH: 8, hungerFlat: 0.2,        // cancelled started job; offline progress cap (hours); kg a hungry Chikn loses per day
   mm: { noise: 0.04 },                              // dex.js npcRound: the fair-price target is randomised by ±4%
@@ -4148,7 +4188,7 @@ D.chiknLines = ['Deeper we go!', 'Dig deeper!', 'Build factories!', 'Refine Heni
 // Game state, persistence, formatting, bonuses, production rates and the simulation tick.
 (() => {
 const G = window.G, D = G.D, R = D.rules;
-const SAVE_KEY = 'chikn-henium-mines-v1';
+const SAVE_KEY = 'chikn-henium-mines-v2'; // v2: real-time economy (old saves from the fast prototype are not loaded)
 const now = () => Date.now();
 G.now = now;
 
@@ -4202,11 +4242,13 @@ G.newState = (kind = 'fresh') => {
     daily: { day: G.dayKey(), prog: {}, claimed: {} },
     quests: { done: [] },
     stats: { mined: 0, processed: 0, crafted: 0, refined: 0, taps: 0, hired: 0, wins: 0, exps: 0, upgrades: 0, ingots: 0, eggBurned: 0, feeBurned: 0 },
-    world: { mined: D.supply.start, war: D.supply.worldWar0, hunt: D.supply.worldHunt0, debt: 0 }, hunt: 0,
+    world: { mined: 0, war: D.supply.worldWar0, hunt: D.supply.worldHunt0, paid: 0 }, worldT: Math.max(0, (now() - D.supply.genesis) / 1000),
+    hunt: 0, tapEnergy: D.rules.tap.energyMax,
     live: { id: null, until: 0, next: now() + 75e3 },
     hazard: null, hazardNext: now() + 100e3,
     notes: [], settings: { sound: true }, saveT: 0,
   };
+  S.world.mined = D.cumEmission(S.worldT / 86400);
   G.dexInit(S);
   if (kind === 'showcase') showcase(S);
   return S;
@@ -4215,8 +4257,8 @@ G.newState = (kind = 'fresh') => {
 function showcase(S) {
   Object.assign(S.player, { lv: 27, xp: 4200 });
   S.spec = 'miner';
-  Object.assign(S.res, { egg: 1250, feed: 348, henium: 1842.75, stone: 2.4e6, coal: 1.1e6, copper: 540000, iron: 812000,
-    heniumOre: 18500, rareEarth: 14600, crushedOre: 8250, copperIngot: 4120, ironIngot: 3760, components: 420, machinePart: 260, alloy: 180, circuit: 90 });
+  Object.assign(S.res, { egg: 1250, feed: 348, henium: 1842.75, stone: 240e6, coal: 110e6, copper: 54e6, iron: 81e6,
+    heniumOre: 1.85e6, rareEarth: 14600, crushedOre: 82500, copperIngot: 41200, ironIngot: 37600, components: 4200, machinePart: 2600, alloy: 1800, circuit: 900 });
   S.depth = 27; S.sel = 'henium';
   Object.assign(S.zones, { stone: { lv: 18 }, coal: { lv: 15 }, copper: { lv: 12 }, iron: { lv: 10 }, henium: { lv: 6 } });
   const fl = { crusher: 3, separator: 3, smelter: 3, forge: 3, advanced: 2, refinery: 2 };
@@ -4236,23 +4278,23 @@ function showcase(S) {
   S.squad = S.chikns.slice(0, 3).map((c) => c.id);
   S.squad.forEach((id) => (G.chikn(S, id).status = 'squad'));
   S.jobs = [
-    { id: 1, f: 'smelter', r: 'smeltCopper', t: 4, dur: 11.3, repeat: true },
-    { id: 2, f: 'forge', r: 'parts', t: 6, dur: 17.8, repeat: true },
-    { id: 3, f: 'refinery', r: 'refine', t: 12, dur: 32.4, repeat: true },
+    { id: 1, f: 'smelter', r: 'smeltCopper', t: 200, dur: 485, repeat: true },
+    { id: 2, f: 'forge', r: 'parts', t: 600, dur: 1458, repeat: true },
+    { id: 3, f: 'refinery', r: 'refine', t: 1200, dur: 3600, repeat: true },
   ];
-  S.crafts = [{ id: 4, type: 'scanner', t: 20, dur: 75 }, { id: 5, type: 'improved', t: 8, dur: 30 }];
+  S.crafts = [{ id: 4, type: 'scanner', t: 7200, dur: 28800 }, { id: 5, type: 'improved', t: 900, dur: 3600 }];
   S.craftSlots = 5; S.fup.craft = 2; // "Crafting Queue (2/5)" as in the mockup
-  S.farm = { coopLv: 4, day: 41, dayT: 120, milled: 2, hungry: false };
+  S.farm = { coopLv: 4, day: 41, dayT: 30000, milled: 2, hungry: false };
   S.factories.feedmill.lv = 3; S.nest = 6;
-  S.factories.advanced.con = { t: 40, dur: D.buildTime(3), to: 3 };   // an upgrade under construction
-  S.dig = { t: 600, dur: D.digTime(28), to: 28 };                      // digging towards depth 28
+  S.factories.advanced.con = { t: 600, dur: D.buildTime(3), to: 3 };  // an upgrade under construction
+  S.dig = { t: 86400 * 2.5, dur: D.digTime(28), to: 28 };            // digging towards depth 28
   Object.assign(S.guild, { lv: 7, proj: 0, pts: Math.round(D.guildProjects[0].need * 0.68), contrib: 5200, zoneLv: 3, warPts: 180 });
   Object.assign(S.season, { lv: 27, xp: 4200 });
   S.battle.cleared = 4;
   Object.assign(S.stats, { mined: 4.2e6, processed: 260000, crafted: 6, refined: 24, taps: 900, hired: 12, wins: 22, exps: 9, upgrades: 230, ingots: 12000 });
   S.daily.prog = { mined: 3200, processed: 2000 };
   S.quests.done = D.quests.slice(0, D.quests.findIndex((q) => q.id === 'refinery')).map((q) => q.id);
-  S.live = { id: 'vein', until: now() + 9 * 60e3, next: now() + 12 * 60e3 };
+  S.live = { id: 'vein', until: now() + 9 * 3600e3, next: now() + 20 * 3600e3 };
 }
 
 G.chikn = (S, id) => S.chikns.find((c) => c.id === id);
@@ -4273,9 +4315,11 @@ G.load = () => {
     const S = merge(G.newState(), saved);
     for (const id in S.factories) if (S.factories[id].con === undefined) S.factories[id].con = null;
     S.chikns.forEach((c) => G.ensureKg(c));
-    // saves from before the emission debt and the world hunt pool: nothing owed yet, the world starts at its launch value
-    if (!(typeof S.world.debt === 'number' && S.world.debt >= 0)) S.world.debt = 0;
+    // saves from before the world clock and the world hunt pool
+    if (!(typeof S.worldT === 'number' && S.worldT >= 0)) S.worldT = Math.max(0, (now() - D.supply.genesis) / 1000);
     if (!(typeof S.world.hunt === 'number' && S.world.hunt > 0)) S.world.hunt = D.supply.worldHunt0;
+    if (!(typeof S.world.paid === 'number')) S.world.paid = 0;
+    S.world.mined = D.cumEmission(S.worldT / 86400);
     // a supply crate or creature saved while rewards still paid EGG: re-roll its loot with today's rules
     const H = S.hazard, HR = H && (H.type === 'creature' ? R.creature : H.type === 'supply' ? R.supply : null);
     if (HR && H.reward && 'egg' in H.reward) H.reward = { ...HR.loot(S.depth), feed: HR.feed(S.depth) };
@@ -4287,18 +4331,17 @@ G.wipe = () => { try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* ignor
 // ---------- costs ----------
 G.has = (cost, k = 1) => Object.keys(cost).every((r) => G.S.res[r] + 1e-9 >= cost[r] * k);
 G.pay = (cost, k = 1) => { if (!G.has(cost, k)) return false; for (const r in cost) G.S.res[r] -= cost[r] * k; G.emit('res'); return true; };
-// transfer=true for HENIUM that only changes hands (refunds, trades). Any other HENIUM is newly minted: it is capped by
-// what is left of the 21M, counts as mined at once and goes on the world's debt, so the rest of the world mints that much
-// less (G.tick). Every HENIUM a player earns therefore comes out of the fixed daily emission. Returns what was given.
+// transfer=true for HENIUM that only changes hands (refunds, trades). Any other HENIUM is newly minted: it is part of the
+// world's scheduled emission (S.world.mined follows the schedule exactly, so whatever you earn the rest of the world does
+// not), and nothing is paid once all 21M are mined. Returns what was given.
 G.give = (rew, k = 1, transfer = false) => {
   const S = G.S, got = {};
   for (const r in rew) {
     if (!(r in S.res)) continue;
     let v = rew[r] * k;
     if (r === 'henium' && v > 0 && !transfer && S.world) {
-      v = Math.min(v, Math.max(0, D.supply.cap - S.world.mined));
-      S.world.mined += v;
-      S.world.debt = (S.world.debt || 0) + v;
+      if (S.world.mined >= D.supply.cap) v = 0;
+      S.world.paid = (S.world.paid || 0) + v;
     }
     S.res[r] += v; got[r] = v;
   }
@@ -4399,14 +4442,16 @@ const tierKey = (id, t) => { for (let n = t; n >= 1; n--) { const k = 'tier/' + 
 G.bImg = (fid, lv) => tierKey(fid, D.tier(Math.max(1, lv || 1)));
 G.hqImg = () => tierKey('hq', D.hqTier(G.S.depth));
 G.coopImg = () => tierKey('coop', D.tier(G.S.farm.coopLv));
-G.epoch = () => D.supply.halvings.filter((h) => G.S.world.mined >= h).length;
+G.worldDays = () => (G.S.worldT || 0) / 86400;                          // days since the game's launch (world clock)
+G.epoch = () => Math.floor(G.worldDays() / D.supply.halvingDays);
 G.halving = () => (G.S.world.mined >= D.supply.cap ? 0 : Math.pow(0.5, G.epoch())); // 0 once all 21M are mined
-G.nextHalving = () => D.supply.halvings.find((h) => G.S.world.mined < h) || D.supply.cap;
+G.nextHalving = () => D.cumEmission((G.epoch() + 1) * D.supply.halvingDays);        // world supply at the next halving
+G.nextHalvingIn = () => ((G.epoch() + 1) * D.supply.halvingDays - G.worldDays()) * 86400; // seconds to the next halving
 // HENIUM emission: the world mints D.supply.daily per game day; you earn a share of it by refining (work),
 // by guild wars (fighting other guilds) and by hunting monsters. Shares shrink as the world grows.
 G.emission = () => D.supply.daily * G.halving();                         // whole world, per game day
 G.myRefPower = () => D.refPower(G.S.factories.refinery.lv) * (1 + G.bonus('refine') + R.guildZone.refine * (G.S.guild.zoneLv - 1) + (G.specIs('miner') ? 0.05 : 0));
-G.worldRefPower = () => D.supply.worldPower0 * Math.pow(1 + D.supply.worldGrowth, G.S.farm ? G.S.farm.day : 0);
+G.worldRefPower = () => D.supply.worldPower0 * Math.pow(1 + D.supply.worldGrowth, G.worldDays());
 G.refShare = () => { const m = G.myRefPower(); return m > 0 ? m / (m + G.worldRefPower()) : 0; };
 G.refPerDay = () => G.emission() * D.supply.split.refinery * G.refShare();  // HENIUM/day if the refinery never stops
 G.warShare = () => { const w = G.S.guild.warPts; return w > 0 ? w / (w + G.S.world.war) : 0; };
@@ -4430,19 +4475,20 @@ G.addXP = (n) => {
 };
 
 // ---------- simulation ----------
-G.tick = (dt, offline = false) => {
+// mineK (0..1) is the share of dt the floors mine: offline mining stops after the offline cap (G.offline)
+G.tick = (dt, offline = false, mineK = 1) => {
   const S = G.S;
   if (!(dt > 0)) return;
   // mining
-  for (const z of D.zones) {
+  if (mineK > 0) for (const z of D.zones) {
     const o = G.zoneOutputs(z);
-    for (const r in o) { const a = o[r] * dt; S.res[r] += a; if (r === z.res) G.stat('mined', a); }
+    for (const r in o) { const a = o[r] * dt * mineK; S.res[r] += a; if (r === z.res) G.stat('mined', a); }
   }
   // machines: coal and wear
   const coalPer = {};
   for (const m of S.machines) {
-    if (!m.zone || m.dur <= 0) { m.off = false; continue; }
-    const ms = G.machineStats(m), need = ms.energy / 3600 * dt;
+    if (!m.zone || m.dur <= 0 || mineK <= 0) { m.off = false; continue; }
+    const ms = G.machineStats(m), need = ms.energy / 3600 * dt * mineK;
     if (S.res.coal >= need) { S.res.coal -= need; m.off = false; } else { if (!m.off && !offline) G.emit('noCoal', m); m.off = true; continue; }
     coalPer[m.id] = need;
     if (offline) continue; // machines only wear while you play
@@ -4451,6 +4497,8 @@ G.tick = (dt, offline = false) => {
     m.dur = Math.max(0, m.dur - wear);
     if (before > 0 && m.dur === 0 && !offline) G.emit('broken', m);
   }
+  // tap energy refills over time
+  S.tapEnergy = Math.min(D.rules.tap.energyMax, (S.tapEnergy ?? D.rules.tap.energyMax) + D.rules.tap.regen * dt);
   // farm: eggs, FEED upkeep, hunger
   G.farmTick(dt, offline);
   // construction and digging timers
@@ -4462,9 +4510,15 @@ G.tick = (dt, offline = false) => {
     if (seen.has(j.f)) continue;
     seen.add(j.f);
     if (S.factories[j.f].con) continue; // paused while the building is under construction
-    const f = D.factoryById(j.f);
-    j.t += dt;
-    if (j.t >= j.dur) G.sys.finishJob(j, offline);
+    // a long tick can finish several batches: the leftover time carries into the next job of the same factory
+    let job = j, guard = 0;
+    job.t += dt;
+    while (job && job.t >= job.dur && guard++ < 2000) {
+      const over = job.t - job.dur;
+      G.sys.finishJob(job, offline);
+      job = G.activeJob(j.f);
+      if (job) job.t += over;
+    }
   }
   // crafting (all slots run in parallel)
   for (const c of [...S.crafts]) { c.t += dt; if (c.t >= c.dur) G.sys.finishCraft(c, offline); }
@@ -4472,18 +4526,21 @@ G.tick = (dt, offline = false) => {
   for (const e of S.exps) if (!e.done) { e.t += dt; if (e.t >= e.dur) { e.done = true; if (!offline) G.emit('expDone', e); } }
   for (const c of S.chikns) if (c.status === 'injured' && now() >= c.until) c.status = 'idle';
   // pvp tickets
-  if (S.battle.tickets < D.pvpTickets) { S.battle.tt += dt; if (S.battle.tt >= D.pvpTicketTime) { S.battle.tt = 0; S.battle.tickets++; } } else S.battle.tt = 0;
+  if (S.battle.tickets < D.pvpTickets) { // a long (offline) tick can refill several tickets
+    S.battle.tt += dt;
+    while (S.battle.tt >= D.pvpTicketTime && S.battle.tickets < D.pvpTickets) { S.battle.tt -= D.pvpTicketTime; S.battle.tickets++; }
+  }
+  if (S.battle.tickets >= D.pvpTickets) S.battle.tt = 0;
   // market drift
   S.market.t += dt;
   if (S.market.t >= 8) { S.market.t = 0; G.sys.marketDrift(); }
   // guild members contribute over time
   G.sys.guildTick(dt, offline);
-  // the world mints exactly the daily emission: this tick's slice first repays the HENIUM already paid to you (the debt
-  // from G.give), the rest is what the other players mint
-  const W = S.world, slice = G.emission() * dt / D.farm.day, repay = Math.min(slice, Math.max(0, W.debt || 0));
-  W.debt = (W.debt || 0) - repay;
-  W.mined = Math.min(D.supply.cap, W.mined + slice - repay);
-  G.dexTick(dt, slice - repay);
+  // the world clock runs on: the world's supply follows the HENIUM schedule exactly (what you earn is part of it)
+  S.worldT = (S.worldT || 0) + dt;
+  const slice = G.emission() * dt / D.farm.day;
+  S.world.mined = D.cumEmission(S.worldT / 86400);
+  G.dexTick(dt, slice);
   if (!offline) {
     G.sys.liveTick();
     G.sys.hazardTick();
@@ -4495,14 +4552,21 @@ G.tick = (dt, offline = false) => {
 
 G.offline = (sec) => {
   const S = G.S;
-  sec = Math.min(sec, R.offlineH * 3600);
-  if (sec < 30) return null;
+  if (!(sec >= 30)) return null;
+  const mineSec = Math.min(sec, R.offlineH * 3600);       // the floors mine for at most offlineH hours while you are away
+  const total = Math.min(sec, 60 * 86400);                // timers, factories, the farm and the world run the whole time
   const before = { ...S.res };
-  const steps = Math.min(240, Math.ceil(sec / 20));
-  for (let i = 0; i < steps; i++) G.tick(sec / steps, true);
+  const steps = Math.min(600, Math.max(1, Math.ceil(total / 60)));
+  const dt = total / steps;
+  let mined = 0;
+  for (let i = 0; i < steps; i++) {
+    const m = Math.max(0, Math.min(dt, mineSec - mined));
+    mined += m;
+    G.tick(dt, true, m / dt);
+  }
   const gains = {};
   for (const r in S.res) { const d = S.res[r] - before[r]; if (d > 0.5) gains[r] = d; }
-  return { sec, gains };
+  return { sec: total, mineSec, gains };
 };
 })();
 
@@ -4524,6 +4588,9 @@ G.act.tap = (zid) => {
   if (!G.zoneOpen(z)) return fail('This floor is locked');
   const h = S.hazard;
   if (h && h.type === 'collapse' && h.zone === zid) return fail('Cave-in! Clear the rubble first.');
+  // tapping costs pickaxe energy, which refills slowly: tapping helps, but cannot replace real production
+  if (S.tapEnergy < 1) return fail(`Your Chikns are catching their breath: tap energy refills 1 every ${Math.round(1 / R.tap.regen)}s.`);
+  S.tapEnergy -= 1;
   let amt = G.tapYield(z), rich = false;
   if (h && h.type === 'richvein' && h.zone === zid) { amt *= R.rich.mult; rich = true; h.taps = (h.taps || 0) + 1; if (h.taps >= R.rich.taps) G.sys.clearHazard(); }
   S.res[z.res] += amt; G.stat('mined', amt); G.stat('taps');
@@ -4549,7 +4616,8 @@ G.digGate = (d) => {
   if (g.license && !S.guild.license) return 'Requires a Guild License';
   return null;
 };
-G.digSpeed = () => { const m = G.machineOn(D.zoneOf(G.S.depth).id); return m && G.machineStats(m).working ? G.machineStats(m).speed : 1; };
+// a working machine on the deepest floor digs faster: half of its speed bonus (Heavy Drill Lv. 10: ×1.75)
+G.digSpeed = () => { const m = G.machineOn(D.zoneOf(G.S.depth).id); return m && G.machineStats(m).working ? 1 + (G.machineStats(m).speed - 1) * 0.5 : 1; };
 G.act.dig = () => {
   const S = G.S;
   if (S.dig) return fail(`Already digging to depth ${S.dig.to}`);
@@ -4635,7 +4703,7 @@ G.sys.finishJob = (j, offline) => {
   if (out.copperIngot || out.ironIngot) G.stat('ingots', (out.copperIngot || 0) + (out.ironIngot || 0));
   if (out.henium) G.stat('refined', out.henium); // G.give already counted it toward the world supply
   if (j.f === 'feedmill') S.farm.milled += out.feed || 0;
-  G.addXP(4 + units / 25);
+  G.addXP(1 + units / 500); // factories run all day (and offline): a little XP per batch
   S.jobs.splice(S.jobs.indexOf(j), 1);
   if (j.repeat) {
     const cost = G.recipeIn(rec);
@@ -4647,7 +4715,7 @@ G.sys.finishJob = (j, offline) => {
   }
   if (!offline) G.emit('jobDone', { j, out, f }); // after re-queueing, so screens never show a stale idle factory
 };
-G.speedCost = (rem) => Math.max(1, Math.ceil(rem / 15));
+G.speedCost = (rem) => Math.max(1, Math.ceil(rem / 600)); // 1 HENIUM per 10 minutes left
 G.canRush = (j) => !!j && j.f !== 'refinery'; // refinery batches pay HENIUM for refining time, so they can't be rushed
 G.act.speedJob = (id) => {
   const j = G.S.jobs.find((x) => x.id === id);
@@ -4914,7 +4982,7 @@ G.act.claimExp = (id) => {
   for (const c of team) {
     if (Math.random() < o.risk) { c.status = 'injured'; c.until = now() + R.injuredSec * 1000; injured.push(c); } else c.status = 'idle';
   }
-  G.give(rew); G.stat('exps'); G.addXP(25 + site.t / 10);
+  G.give(rew); G.stat('exps'); G.addXP(25 + site.t / 600);
   S.exps.splice(S.exps.indexOf(e), 1);
   return ok({ rew, injured, site });
 };
@@ -5011,7 +5079,7 @@ G.act.claimSeason = (lv) => {
   if (!Number.isInteger(lv) || lv < 1 || lv > D.seasonMax) return fail('Unknown reward');
   if (lv > s.lv) return fail(`Reach season level ${lv} first`);
   if (s.claimed.includes(lv)) return fail('Already claimed');
-  const r = D.seasonReward(lv);
+  const r = D.seasonReward(lv, G.S.depth);
   if (r.chikn && G.S.chikns.length >= G.coopCap()) {
     return fail(`Your coop is full (${G.S.chikns.length}/${G.coopCap()}). Upgrade the Coop on the Farm, then claim your ${D.rarity(r.chikn).name} Chikn.`);
   }
@@ -5049,6 +5117,7 @@ G.sys.hazardTick = () => {
   const ev = G.liveEvent();
   let type = ev && ev.id === 'collapse' && Math.random() < R.collapseEvent ? 'collapse' : G.pick(types);
   if (type === 'collapse' && Math.random() < Math.min(R.medicCap, G.bonus('safety'))) type = 'richvein';
+  if (type === 'bandits') { if (t < (S.banditNext || 0)) type = G.pick(types.filter((x) => x !== 'bandits')); else S.banditNext = t + R.bandits.gap * 1000; }
   const heniumOpen = G.zoneOpen(D.zoneById('henium'));
   const zone = type === 'collapse' && ev && ev.id === 'collapse' && heniumOpen ? 'henium' : G.pick(open).id;
   const P = Math.max(R.hazardMin, G.squadPower()), d = S.depth, C = R.creature, B = R.bandits;
@@ -5110,12 +5179,13 @@ G.act.hazard = (choice) => {
 };
 
 // daily HENIUM payouts for fighters (game-day rollover): shares of the war and hunt pools of the emission
-G.on('farmDay', () => {
+G.on('farmDay', (day, offline) => {
   const S = G.S, war = Math.round(G.warPerDay() * 100) / 100;
   const hunt = Math.round(G.huntPerDay() * 100) / 100;
   if (war > 0) G.give({ henium: war });
   if (hunt > 0) G.give({ henium: hunt });
-  if (war > 0 || hunt > 0) G.emit('note', { text: `Daily payout: +${G.fmt(war + hunt, 2)} HENIUM (guild wars ${G.fmt(war, 2)}, monster hunts ${G.fmt(hunt, 2)})`, icon: 'res/henium', good: true });
+  // while away the payouts land in the "while you were away" summary instead of one toast per day
+  if (!offline && (war > 0 || hunt > 0)) G.emit('note', { text: `Daily payout: +${G.fmt(war + hunt, 2)} HENIUM (guild wars ${G.fmt(war, 2)}, monster hunts ${G.fmt(hunt, 2)})`, icon: 'res/henium', good: true });
   S.guild.warPts = Math.round(S.guild.warPts * (1 - R.warDecay));
   S.hunt = Math.floor((S.hunt || 0) * R.huntKeep);
   S.world.war = Math.round(S.world.war * (1 + R.worldWar));
@@ -5161,7 +5231,7 @@ G.farmDayLeft = () => F.day - G.S.farm.dayT;                           // second
 G.farmTick = (dt, offline) => {
   const S = G.S, fm = S.farm;
   fm.dayT += dt;
-  while (fm.dayT >= F.day) { fm.dayT -= F.day; fm.day++; fm.milled = 0; if (!offline) G.emit('farmDay', fm.day); }
+  while (fm.dayT >= F.day) { fm.dayT -= F.day; fm.day++; fm.milled = 0; G.emit('farmDay', fm.day, offline); } // also while away: daily payouts and decay must not be skipped
   S.nest = Math.min(G.nestCap(), S.nest + G.eggRate() * dt);
   const need = G.upkeepPerDay() * dt / F.day;
   if (S.res.feed >= need) { S.res.feed -= need; fm.hungry = false; return; }
@@ -5222,7 +5292,7 @@ D.dex = {
   burnShare: 1 / 3,        // a third of each fee is burned (HENIUM, EGG, or the token sold)
   tick: 6,                 // seconds between NPC market-maker rounds
   depth: { raw: 4000, mat: 2500, egg: 2500, feed: 1200, eth: 12000 }, // starting HENIUM on the HENIUM side of each pool
-  oreValueK: 0.1,          // ores and materials are cheap next to HENIUM (× the reference prices in D.market)
+  oreValueK: 1e-4,         // ores and materials are cheap next to HENIUM (× the reference prices in D.market): a mine makes millions a day
   eggInHenium: 0.25,       // fair EGG price in HENIUM at launch
   feedInHenium: 0.4,       // fair FEED price in HENIUM at launch (FEED is scarce)
   heniumInEth: 0.0004,     // fair HENIUM price in ETH at launch (rises with every halving)
@@ -5693,6 +5763,19 @@ let lineIdx = 0, popT = 0;
 
 ui.binders.zrate = (el, zid) => { el.textContent = ui.perH(G.zoneRate(D.zoneById(zid))); };
 ui.binders.depth = (el) => { el.textContent = `${G.S.depth} / ${D.maxDepth}`; };
+// progress toward the next floor upgrade: the scarcest cost resource decides
+ui.binders.fprog = (el, zid) => {
+  const z = D.zoneById(zid), cost = D.floorCost(z, G.S.zones[zid].lv);
+  const pct = Math.min(1, ...Object.entries(cost).map(([r, v]) => (G.S.res[r] || 0) / v)) * 100;
+  el.querySelector('i').style.width = pct + '%';
+  el.classList.toggle('ready', pct >= 100);
+};
+ui.binders.tapen = (el) => {
+  const e = Math.floor(G.S.tapEnergy || 0), max = D.rules.tap.energyMax;
+  el.querySelector('b').textContent = `${e}/${max}`;
+  el.querySelector('i').style.width = (e / max * 100) + '%';
+  el.classList.toggle('low', e < 5);
+};
 
 function floorHTML(z) {
   const S = G.S, open = G.zoneOpen(z), st = S.zones[z.id], h = S.hazard && S.hazard.zone === z.id ? S.hazard : null;
@@ -5722,8 +5805,10 @@ function floorHTML(z) {
   return `<div class="floor ${sel} ${h ? 'h-' + h.type : ''}" data-zone="${z.id}" data-a="tapFloor" data-args='["${z.id}"]' style="background-image:url(${G.img('bg/floor-' + z.id)});--glow:${z.glow}">
     ${label}<div class="stage">${stage}</div>
     ${deepest ? `<div class="depth-chip">Depth <b data-b="depth"></b>${S.dig ? ` <span class="dig-chip">→ ${S.dig.to}</span>${ui.bar(0, 'gold dig-bar', '', 'data-b="dig"')}` : ''}</div>` : ''}
-    <div class="ratebox"><span class="rb-v">${ui.icon(z.res, 18)}<span data-b="zrate:${z.id}"></span></span>
-      <button class="up" data-a="upgradeZone" data-args='["${z.id}"]' data-need="${ui.need(D.floorCost(z, st.lv))}" title="Upgrade floor" aria-label="Upgrade ${z.name}">▲</button></div>
+    <div class="ratebox"><div class="rb-main"><span class="rb-v">${ui.icon(z.res, 18)}<span data-b="zrate:${z.id}"></span></span>
+      <button class="up" data-a="upgradeZone" data-args='["${z.id}"]' data-need="${ui.need(D.floorCost(z, st.lv))}" title="Upgrade to Lv. ${st.lv + 1}" aria-label="Upgrade ${z.name}">▲</button></div>
+      <div class="rb-next" title="Cost of the next floor upgrade (Lv. ${st.lv} → ${st.lv + 1})"><span class="rb-lv">Lv.${st.lv + 1}</span>${ui.cost(D.floorCost(z, st.lv), 1, 13)}</div>
+      ${ui.bar(0, 'green rb-prog', '', `data-b="fprog:${z.id}"`)}</div>
     ${haz}</div>`;
 }
 
@@ -5743,6 +5828,7 @@ function surfaceHTML() {
     ${facs}
     <img class="sf-head" src="${G.img('prop/headframe')}" alt="Mine headframe">
     <div class="sf-sign">My Mine<br><b>Lv. ${S.depth}</b></div>
+    <div class="tap-energy" data-b="tapen" title="Tap energy: every tap on a floor costs 1, and it refills 1 every ${Math.round(1 / D.rules.tap.regen)} s">${ui.img('ui/energy', 'te-ic', '')}<div class="te-bar"><i></i></div><b></b></div>
     <div class="mascot"><div class="bubble" id="bubble">${esc(line)}</div>${ui.img('chikn/explorer', 'mascot-img', '')}</div>
   </div>`;
 }
@@ -5865,8 +5951,12 @@ ui.views.mines = {
 ui.handlers.tapFloor = (el, e, zid) => {
   const r = G.act.tap(zid);
   if (G.S.sel !== zid) { G.S.sel = zid; document.querySelectorAll('.floor.sel').forEach((f) => f.classList.remove('sel')); el.classList.add('sel'); document.getElementById('mine-side').innerHTML = sideHTML(); }
-  if (!r.ok) { ui.toast(r.msg, 'bad'); G.sfx('err'); return; }
+  if (!r.ok) {
+    if ((G.S.tapEnergy || 0) < 1) { ui.float('<span style="color:#ff8a95">No energy</span>', e.clientX, e.clientY - 10); G.sfx('err'); return; }
+    ui.toast(r.msg, 'bad'); G.sfx('err'); return;
+  }
   ui.float(`+${ui.amt(r.res, r.amt)}${ui.icon(r.res, 20)}`, e.clientX, e.clientY - 10, r.rich ? '#ffe27a' : '#fff');
+  const side = document.getElementById('mine-side'); if (side) side.innerHTML = sideHTML(); // quests and costs follow every tap
   ui.sparks(e.clientX, e.clientY, D.res[r.res].color, r.rich ? 14 : 6);
   G.sfx('tap');
   ui.refresh();
@@ -9516,7 +9606,7 @@ const rewFull = (rew, size) => `<span class="cost gain">${Object.entries(rew).fi
 
 const nextReset = () => { const d = new Date(); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1); };
 const claimable = () => { const s = G.S.season; return Array.from({ length: s.lv }, (_, i) => i + 1).filter((l) => !s.claimed.includes(l)); };
-const rewOf = (lv) => D.seasonReward(lv);
+const rewOf = (lv) => D.seasonReward(lv, G.S.depth);
 const seasonFrac = () => { const s = G.S.season; return s.lv >= D.seasonMax ? 1 : Math.min(1, s.xp / D.seasonNeed(s.lv)); };
 
 const stateSig = () => {
@@ -9858,7 +9948,8 @@ function withS(patch, fn) {
 const BARE = { squad: [], spec: null, hazard: null, 'live.id': null, 'guild.bonus': 0, 'guild.zoneLv': 1, 'fup.eff': 0, 'fup.waste': 0, 'fup.energy': 0 };
 const pureRate = (z, extra = {}) => withS(Object.assign({}, BARE, { depth: z.from, machines: [], ['zones.' + z.id + '.lv']: 1 }, extra), () => G.zoneRate(z));
 const mstat = (m, lv, zone = null) => withS({ squad: [], 'fup.energy': 0 }, () => G.machineStats({ type: m.id, lv, zone, dur: 100 }));
-const atEpoch = (mined, fn) => withS({ 'world.mined': mined }, fn);
+// the world as it is at the start of epoch e (halvings follow the world clock, like the contract)
+const atEpoch = (e, fn) => withS({ worldT: e * D.supply.halvingDays * 86400, 'world.mined': D.cumEmission(e * D.supply.halvingDays) }, fn);
 
 // natural pixel size of a WebP data URI, read from its header (building art keeps its natural size: later looks are bigger)
 const natCache = {};
@@ -9977,7 +10068,9 @@ function refineVsSell() {
   const rest = Object.fromEntries(Object.entries(rec.in).filter(([r]) => r !== 'heniumOre'));
   return { own, lv, ore, rest, perJob: perDay * jobT / F.day, sell: G.dexQuote('heniumOre', 'henium', ore).out };
 }
-const supplyBounds = () => [D.supply.start, ...D.supply.halvings, D.supply.cap];
+const EPOCHS = 7; // epochs shown in the supply table and chart (the 7th ends in 2054)
+const supplyBounds = () => Array.from({ length: EPOCHS + 1 }, (_, i) => D.cumEmission(i * D.supply.halvingDays));
+const epochDate = (e) => new Date(D.supply.genesis + e * D.supply.halvingDays * 86400e3).toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 // the most FEED daily missions can pay in one day: the fixed missions plus the best rotating one
 const missionFeedMax = () => { const f = (m) => G.missionReward(m, 1).feed || 0;
   return D.missions.filter((m) => !RULE.rotating.includes(m.id)).reduce((t, m) => t + f(m), 0) + Math.max(0, ...D.missions.filter((m) => RULE.rotating.includes(m.id)).map(f)); };
@@ -10061,11 +10154,11 @@ function aStart() {
     ${P('The roadmap of Season 1. Each month is a chapter with a goal; the game ticks it off when you get there.')}
     ${T(['Month', 'Chapter', 'Goal', 'What happens', ...(S ? [''] : [])], D.journey.map((j, i) => [{ h: `<b>${i + 1}</b>`, c: 'wk-n' }, `<b>${esc(j.name)}</b>`, esc(j.goal), `<span class="wk-sm">${j.items.map(esc).join(' · ')}</span>`,
       ...(S ? [safe(() => j.done(S), false) ? '<span class="tag g">Done</span>' : i === curM ? '<span class="tag o">Now</span>' : ''] : [])]), { min: 640, me: (i) => i === curM })}
-    ${H('Time in this prototype', 'time')}
+    ${H('Time', 'time')}
     ${UL([
-      `A <b>farm day</b> lasts ${tm(F.day)} here (the real game would use 24 hours). Eggs, FEED upkeep, the Feed Mill quota and the daily HENIUM payouts all run on farm days.`,
-      `Factory jobs take seconds, buildings minutes, deep digs hours: everything is compressed for play-testing.`,
-      `The game saves automatically. While you're away your mine keeps working for up to ${RULE.offlineH} hours (machines don't wear out while you're offline).`,
+      `Everything runs in real time. A <b>farm day</b> is a real day (${tm(F.day)}): eggs, FEED upkeep, the Feed Mill quota and the daily HENIUM payouts all run on farm days.`,
+      `Factory jobs take minutes to hours, building upgrades from minutes (Lv. 2) to about two weeks (Lv. 10), and deep digs about a week each. Nothing comes easy: the Core Zone is about half a year away.`,
+      `The game saves automatically. While you're away your floors keep mining for up to ${RULE.offlineH} hours; factories, buildings, digs, the farm and the daily payouts keep running for up to 60 days (machines don't wear out while you're offline).`,
     ])}`;
 }
 
@@ -10226,7 +10319,7 @@ function aZones() {
       `<b>Live events</b> can double a zone for a while (${L('events')}); a <b>cave-in</b> stops a floor until you clear it (${L('hazards')}).`,
     ])}
     ${H('Tapping', 'tap')}
-    ${P(`Tapping a floor mines by hand: each tap gives ${pc(RULE.tap.share, 0)} of the floor's output per second plus ${RULE.tap.base} × base × √(floor level), at least 1. A <b>rich vein</b> makes taps worth ×${RULE.rich.mult} for ${RULE.rich.taps} taps.`)}
+    ${P(`Tapping a floor mines by hand: each tap gives ${pc(RULE.tap.share, 0)} of the floor's output per second plus ${RULE.tap.base} × base × √(floor level), at least 1. A <b>rich vein</b> makes taps worth ×${RULE.rich.mult} for ${RULE.rich.taps} taps. Every tap costs 1 <b>tap energy</b>: you hold up to ${RULE.tap.energyMax}, and it refills 1 every ${Math.round(1 / RULE.tap.regen)} s, so tapping speeds you up but never replaces your floors' real production.`)}
     ${mine.length ? you(T(['Floor', ['Level', 'wk-n'], ['Dug', 'wk-n'], ['Output', 'wk-n'], 'Machine'], mine, { min: 460 })) : ''}
     ${goBtn('mines', 'Open the Mines')}`;
 }
@@ -10489,7 +10582,7 @@ function aFarm() {
   const coopRows = Array.from({ length: F.coopMax }, (_, i) => i + 1).map((l) => [{ h: `Lv. ${l}`, c: 'wk-n' }, { h: F.coop(l), c: 'wk-n' }, { h: n0(F.millQuota(l)), c: 'wk-n' }, { h: sig(F.coop(l) * F.upkeep(100), 3), c: 'wk-n' }]);
   const pE = G.spot('egg', 'henium'), e100 = WORLD_CHIKNS * F.eggsAt(100), u100 = WORLD_CHIKNS * F.upkeep(100);
   const fullCoop = F.coop(F.coopMax);
-  return `${P(`Every Chikn lays about <b>1 EGG per farm day</b> (a farm day is ${tm(F.day)} in this prototype; the real game would use 24 hours). Heavier Chikns lay more, with diminishing returns. In exchange, every Chikn <b>eats FEED</b> every day, and FEED is scarce. That trade-off is the whole farm: it keeps EGG scarce and rewards players who manage their flock well.`)}
+  return `${P(`Every Chikn lays about <b>1 EGG per farm day</b> (a farm day is a real day, ${tm(F.day)}). Heavier Chikns lay more, with diminishing returns. In exchange, every Chikn <b>eats FEED</b> every day, and FEED is scarce. That trade-off is the whole farm: it keeps EGG scarce and rewards players who manage their flock well.`)}
     ${H('Eggs and upkeep by weight', 'eggs')}
     ${fx(`EGG per day = (weight ÷ 100 kg)<sup>${sig(Math.log(F.eggsAt(200)) / Math.log(2), 2)}</sup> · FEED per day = weight ÷ ${sig(100 / F.upkeep(100))} kg`)}
     ${T([['Weight', 'wk-n'], ['EGG / day', 'wk-n'], ['FEED upkeep / day', 'wk-n'], ['EGG per FEED eaten', 'wk-n'], ['FEED per feeding (+' + F.step + ' kg)', 'wk-n'], ['FEED to grow from 100 kg', 'wk-n']], rows, { min: 640, cap: `Which rarities can reach a weight: see the max weights in ${L('chikns', 'Chikns')}.` })}
@@ -10549,12 +10642,12 @@ function aSpecs() {
 
 function aHenium() {
   const S = G.S, sp = D.supply, B = supplyBounds(), ep = G.epoch(), mined = S.world.mined;
-  const eps = B.slice(0, -1).map((lo, i) => { const hiB = B[i + 1]; const e = atEpoch(lo, () => G.emission()); return { i, lo, hi: hiB, e, days: e > 0 ? (hiB - lo) / e : Infinity }; });
+  const eps = B.slice(0, -1).map((lo, i) => ({ i, lo, hi: B[i + 1], e: atEpoch(i, () => G.emission()) }));
   const rows = eps.map((x) => [{ h: `<b>${x.i + 1}</b>`, c: 'wk-n' }, { h: `${G.fmt(x.lo)} – ${G.fmt(x.hi)}`, c: 'wk-n' }, { h: `${sig(x.e)}`, c: 'wk-n' },
-    ...Object.keys(sp.split).map((k) => ({ h: sig(x.e * sp.split[k]), c: 'wk-n' })), { h: isFinite(x.days) ? `${G.fmtFull(Math.round(x.days))} <small>${tm(x.days * F.day)} here</small>` : '∞', c: 'wk-n' }]);
+    ...Object.keys(sp.split).map((k) => ({ h: sig(x.e * sp.split[k]), c: 'wk-n' })), { h: `${epochDate(x.i)} – ${epochDate(x.i + 1)}`, c: 'wk-n' }]);
   const nowX = (() => { const e = Math.min(ep, eps.length - 1), x = eps[e]; return e + Math.min(1, Math.max(0, (mined - x.lo) / (x.hi - x.lo))); })();
   const ch = chart({ x0: 0, x1: eps.length, y0: 0, y1: sp.cap * 1.05, h: 300, left: 50, label: 'HENIUM total supply by epoch',
-    xt: B.map((b, i) => [i, i === 0 ? 'Launch' : i === B.length - 1 ? 'Cap' : `H${i}`]),
+    xt: B.map((b, i) => [i, i === 0 ? 'Launch' : `H${i}`]),
     yt: [0, 5e6, 10e6, 15e6, 20e6].map((v) => [v, v ? `${v / 1e6}M` : '0']),
     series: [{ pts: B.map((b, i) => [i, b]), cls: 'purple', area: true }],
     extra: (X, Y) => `<line class="wk-cap" x1="${X(0)}" x2="${X(eps.length)}" y1="${Y(sp.cap)}" y2="${Y(sp.cap)}"/><text class="wk-lbl" x="${X(0) + 6}" y="${Y(sp.cap) - 6}">cap ${G.fmt(sp.cap)}</text>`
@@ -10562,12 +10655,12 @@ function aHenium() {
       + eps.map((x) => `<text class="wk-seg" x="${X(x.i + 0.5)}" y="${Y(sp.cap * 0.12)}" text-anchor="middle">${sig(x.e)}</text><text class="wk-seg2" x="${X(x.i + 0.5)}" y="${Y(sp.cap * 0.12) + 15}" text-anchor="middle">per day</text>`).join('')
       + B.map((b, i) => `<circle class="wk-dot2" cx="${X(i)}" cy="${Y(b)}" r="3.5"/>`).join('')
       + `<circle class="wk-dot" cx="${X(nowX)}" cy="${Y(mined)}" r="7"/><text class="wk-lbl wk-now" x="${X(nowX) + (nowX > eps.length * 0.6 ? -10 : 10)}" y="${Y(mined) + 24}" text-anchor="${nowX > eps.length * 0.6 ? 'end' : 'start'}">now ${G.fmt(mined)}</text>`,
-    legend: [['purple', 'HENIUM mined in total'], ['gold', 'the world today']], cap: 'Each column is one epoch. Not to time scale: every halving halves the daily emission, so later epochs take far longer (see the table).' });
+    legend: [['purple', 'HENIUM mined in total'], ['gold', 'the world today']], cap: `Each column is one epoch of ${G.fmtFull(sp.halvingDays)} days (about 4 years). Every halving halves the daily emission, so each epoch adds half as much as the one before; the total never quite reaches the cap.` });
   const W = G.worldRefPower(), E = G.emission(), Er = E * sp.split.refinery, lv = S.factories.refinery.lv, PL = PLAY();
   const myP = lv ? G.myRefPower() : 0, exLv = lv || 5, exP = lv ? myP : D.refPower(exLv), exSh = exP / (exP + W);
-  const refRows = Array.from({ length: D.factoryMaxLv }, (_, i) => i + 1).map((l) => { const p = D.refPower(l), sh = p / (p + W), W2 = withS({ 'farm.day': S.farm.day + 365 }, () => G.worldRefPower()), sh2 = p / (p + W2);
+  const refRows = Array.from({ length: D.factoryMaxLv }, (_, i) => i + 1).map((l) => { const p = D.refPower(l), sh = p / (p + W), W2 = withS({ worldT: S.worldT + 365 * 86400 }, () => G.worldRefPower()), sh2 = p / (p + W2);
     return [{ h: `Lv. ${l}`, c: 'wk-n' }, { h: n0(p), c: 'wk-n' }, { h: pc(sh, 2), c: 'wk-n' }, { h: nd(Er * sh), c: 'wk-n' }, { h: `${pc(sh2, 2)} · ${nd(Er * sh2)}`, c: 'wk-n' }]; });
-  const days = [0, 30, 100, 365, 1000].map((d) => [{ h: `${d ? '+' : ''}${G.fmtFull(d)}`, c: 'wk-n' }, { h: n0(withS({ 'farm.day': S.farm.day + d }, () => G.worldRefPower())), c: 'wk-n' }]);
+  const days = [0, 30, 100, 365, 1000].map((d) => [{ h: `${d ? '+' : ''}${G.fmtFull(d)}`, c: 'wk-n' }, { h: n0(withS({ worldT: S.worldT + d * 86400 }, () => G.worldRefPower())), c: 'wk-n' }]);
   const firsts = D.stages.filter((s) => s.first && s.first.henium);
   const questH = D.quests.reduce((s, q) => s + (q.r.henium || 0), 0);
   let seasonH = 0; for (let l = 1; l <= D.seasonMax; l++) seasonH += D.seasonReward(l).henium || 0;
@@ -10580,15 +10673,15 @@ function aHenium() {
   const fupH = D.fUpgrades.reduce((s, u) => s + Array.from({ length: u.max }, (_, l) => D.fUpCost(u, l).henium || 0).reduce((a, b) => a + b, 0), 0);
   const mHen = D.machines.filter((m) => m.cost.henium);
   const donH = D.donations.find((d) => d.res === 'henium');
-  const kRows = eps.map((x) => atEpoch(x.lo, () => { const hp = G.poolFor('henium', 'eth'), sp2 = G.poolFor('stone', 'henium');
+  const kRows = eps.map((x) => atEpoch(x.i, () => { const hp = G.poolFor('henium', 'eth'), sp2 = G.poolFor('stone', 'henium');
     return [{ h: `<b>${x.i + 1}</b>`, c: 'wk-n' }, { h: `×${sig(G.henValueK())}`, c: 'wk-n' }, { h: hp ? sig(G.fairPrice(hp)) : '—', c: 'wk-n' }, { h: sp2 ? sig(G.fairPrice(sp2)) : '—', c: 'wk-n' }, { h: sig(x.e), c: 'wk-n' }]; }));
   const ws = G.warShare(), hunt = S.hunt || 0;
   const burned = S.dex ? S.dex.burned.henium : 0;
-  return `${dl([['Max supply', `<b>${G.fmtFull(sp.cap)}</b>`], ['Mined at launch', `${G.fmt(sp.start)} (${pc(sp.start / sp.cap, 0)})`], ['Mined so far', `<b data-b="wkMined">${G.fmt(mined)}</b>`], ['Epoch now', `${ep + 1} of ${eps.length}`], ['Emission now', `${sig(E)} / farm day`], ['Next halving at', `${G.fmt(G.nextHalving())}`]])}
-    ${P(`HENIUM is built like bitcoin: a fixed maximum of <b>${G.fmtFull(sp.cap)}</b>, new coins only from work and fighting, and an emission that halves over time. ${G.fmt(sp.start)} already existed when the world launched; the rest is minted day by day, exactly the daily emission and no more. Every HENIUM paid to a player (refinery jobs, war and hunt payouts, bounties, quests, the season track, guild projects, expedition and fight loot) is taken out of that emission, so whatever you earn is HENIUM the rest of the world doesn't get. Once all ${G.fmt(sp.cap)} are mined, nobody gets paid any more.`)}
+  return `${dl([['Max supply', `<b>${G.fmtFull(sp.cap)}</b>`], ['Launch', epochDate(0)], ['Mined so far', `<b data-b="wkMined">${G.fmt(mined)}</b>`], ['Epoch now', `${ep + 1} of ${eps.length}`], ['Emission now', `${sig(E)} / farm day`], ['Next halving', `${epochDate(ep + 1)} (at ${G.fmt(G.nextHalving())})`]])}
+    ${P(`HENIUM is built like bitcoin: a fixed maximum of <b>${G.fmtFull(sp.cap)}</b>, new coins only from work and fighting, and an emission that halves over time. Nothing existed at launch: every HENIUM is minted day by day on a fixed schedule, exactly the daily emission and no more. The HENIUM contract enforces the same schedule on-chain. Every HENIUM paid to a player (refinery jobs, war and hunt payouts, bounties, quests, the season track, guild projects, expedition and fight loot) is taken out of that emission, so whatever you earn is HENIUM the rest of the world doesn't get. Once all ${G.fmt(sp.cap)} are mined, nobody gets paid any more.`)}
     ${H('Halvings', 'halving')}
-    ${P(`The whole world may mint <b>${sig(sp.daily)} HENIUM per farm day</b> in the first epoch. Each time the total crosses a halving line, the daily emission halves, and the split between refiners, fighters and hunters stays the same.`)}
-    ${T([['Epoch', 'wk-n'], ['Supply range', 'wk-n'], ['Emission / day', 'wk-n'], ...Object.keys(sp.split).map((k) => [`${SPLIT[k] || k} (${pc(sp.split[k], 0)})`, 'wk-n']), ['Farm days to mine it', 'wk-n']], rows, { min: 720, me: (i) => i === ep })}
+    ${P(`The whole world may mint <b>${sig(sp.daily)} HENIUM per farm day</b> in the first epoch. Every ${G.fmtFull(sp.halvingDays)} days (about 4 years) the daily emission halves, like bitcoin's halvings, and the split between refiners, fighters and hunters stays the same.`)}
+    ${T([['Epoch', 'wk-n'], ['Supply range', 'wk-n'], ['Emission / day', 'wk-n'], ...Object.keys(sp.split).map((k) => [`${SPLIT[k] || k} (${pc(sp.split[k], 0)})`, 'wk-n']), ['Dates', 'wk-n']], rows, { min: 720, me: (i) => i === ep })}
     ${ch}
     ${H('Where the daily emission goes', 'split')}
     <div class="wk-split" role="img" aria-label="Emission split">${Object.keys(sp.split).map((k) => `<i style="--g:${sp.split[k] * 100}"></i>`).join('')}</div>
@@ -10617,7 +10710,7 @@ function aHenium() {
       [`${L('guild', 'Guild projects')}`, chips({ henium: projH }, 15), 'all projects together, once'],
       [`${L('expeditions', 'Expeditions')}`, expH.map((e) => `${esc(e.name)} ${ranges({ henium: e.r.henium }, 15)}`).join('<br>'), 'loot, before team bonuses'],
     ], { min: 620 })}
-    ${P(`None of these adds HENIUM on top of the emission: they are all paid out of it. Whatever you are paid comes off the other players' part (the game books it as a debt that the world's next mints repay), so the total supply grows by exactly ${sig(E)} a day and the halvings arrive on schedule, however much is paid out.${PL && S.world.debt > 0.005 ? ` Right now ${nd(S.world.debt)} HENIUM of your recent pay is still coming off the world's next mints.` : ''} Selling goods on the ${L('dex', 'DEX')} is <b>not</b> a faucet: the HENIUM you get comes from the other players (the market makers' treasury${D.dex.npcBuy ? `, refilled by only ${pc(D.dex.npcBuy, 0)} of what the other players mint` : ''}), so it only changes hands.`)}
+    ${P(`None of these adds HENIUM on top of the emission: they are all paid out of it. Whatever you are paid comes off the other players' part: the world's supply follows the emission schedule exactly, so it grows by exactly ${sig(E)} a day and the halvings arrive on schedule, however much is paid out to you. Selling goods on the ${L('dex', 'DEX')} is <b>not</b> a faucet: the HENIUM you get comes from the other players (the market makers' treasury${D.dex.npcBuy ? `, refilled by only ${pc(D.dex.npcBuy, 0)} of what the other players mint` : ''}), so it only changes hands.`)}
     ${H('Sinks: where HENIUM leaves', 'sinks')}
     ${T(['Sink', 'Cost', 'Notes'], [
       [`${L('digging', 'Digging')} from depth ${hd}`, `${chips({ henium: D.digCost(hd).henium }, 15)} → ${chips({ henium: D.digCost(D.maxDepth - 1).henium }, 15)}`, `${chips({ henium: digH }, 15)} to reach depth ${D.maxDepth}`],
@@ -10797,7 +10890,7 @@ function aEvents() {
   const lvP = S ? S.player.lv : 10, dP = S ? S.depth : 10;
   const ms = D.missions.map((m) => { const fixed = !RULE.rotating.includes(m.id); return [esc(m.text(m.n(lvP))), { h: `${G.fmtFull(m.n(1))} · ${G.fmtFull(m.n(30))}`, c: 'wk-n' }, chips(G.missionReward(m, dP), 15), fixed ? 'every day' : 'rotates']; });
   const qs = D.quests.map((q, i) => [{ h: `${i + 1}`, c: 'wk-n' }, esc(q.text), chips(q.r, 15), ...(S ? [S.quests.done.includes(q.id) ? '<span class="tag g">Done</span>' : ''] : [])]);
-  return `${P('Something is always going on: live events change the rules for a few minutes, the season pass rewards everything you do, daily missions reset every day and story quests guide you through the game.')}
+  return `${P('Something is always going on: live events change the rules for a few hours, the season pass rewards everything you do, daily missions reset every day and story quests guide you through the game.')}
     ${H('Live events', 'live')}
     ${P(`One live event runs at a time; the next starts ${tm(RULE.liveGap[0])}–${tm(RULE.liveGap[1])} after the last one ends. Some only appear once you're deep enough.${ev ? ` Right now: <b>${esc(ev.name)}</b>, <span data-b="until:${S.live.until}"></span> left.` : ''}`)}
     ${T(['Event', 'Effect', ['Lasts', 'wk-n'], ['From depth', 'wk-n']], evRows, { min: 600, me: (i) => ev && D.liveEvents[i].id === ev.id })}
@@ -10827,7 +10920,7 @@ function aHazards() {
       `<b>Pay the toll</b>: ${chips({ egg: B.toll(d) }, 16)} and they leave.`,
       `<b>Defend</b>: win and take their loot, ${chips({ ...B.win.loot(d), henium: B.win.henium }, 16)}, plus ${B.win.hunt} hunt points; lose and they steal ${pc(B.lose[0], 0)} of that floor's ore and ${pc(B.lose[1], 0)} of your HENIUM.`,
       `<b>Ignore them</b>: when time runs out they steal ${pc(B.ignore[0], 0)} of the ore and ${pc(B.ignore[1], 0)} of your HENIUM.`,
-    ])}${P(`Raiders only go after HENIUM when you hold more than ${B.keep}. A strong Mining Team (Guardians, the Commander specialization) is the best defense.`)}`)}
+    ])}${P(`Raiders only go after HENIUM when you hold more than ${B.keep}, and they come at most once every ${tm(B.gap)}. A strong Mining Team (Guardians, the Commander specialization) is the best defense.`)}`)}
     ${H('Handling hazards well', 'tips')}
     ${UL([
       'Keep a stock of Stone for cave-ins, and a Medic in the squad if they hurt you.',
@@ -10850,7 +10943,7 @@ const GLOSS = [
   ['EGG', 'Scarce everyday currency, laid by Chikns.', 'currencies'],
   ['Emission', 'The HENIUM the whole world may mint per farm day.', 'henium'],
   ['Epoch', 'The period between two halvings.', 'henium'],
-  ['Farm day', `The game's day for eggs, FEED and payouts (${tm(F.day)} in this prototype).`, 'farm'],
+  ['Farm day', `The game's day for eggs, FEED and payouts: a real day (${tm(F.day)}).`, 'farm'],
   ['FEED', 'Chikn food; daily upkeep and feeding.', 'currencies'],
   ['Floor', 'A zone\'s production line in the mine; upgrade it to mine more.', 'zones'],
   ['Gate', 'A milestone you need before digging into a new zone.', 'digging'],
@@ -10891,7 +10984,7 @@ function aFaq() {
     ['Can I lose Chikns?', `No. Expeditions can injure them (they rest ${tm(RULE.injuredSec)}) and hunger costs weight, but nobody is ever lost.`],
     ['How do I reach the Core Zone?', `${core ? `Its gate needs ${gateText(core)}` : 'Upgrade the refinery and buy a Guild License'}. The License needs a guild at Lv. ${RULE.licenseGuildLv}: finish guild projects.`],
     ['Is ETH real?', 'No. ETH, HENIUM, EGG and the other players are simulated in this prototype; nothing leaves the game.'],
-    ['What happens while I\'m offline?', `Your mine, factories and farm keep working for up to ${RULE.offlineH} hours. Machines don't wear out offline.`],
+    ['What happens while I\'m offline?', `Your floors keep mining for up to ${RULE.offlineH} hours. Factories, buildings, digs, the farm and the daily HENIUM payouts keep running the whole time (up to 60 days). Machines don't wear out offline.`],
   ];
   return qa.map(([q, a]) => `<details class="wk-qa"><summary>${esc(q)}</summary><p>${a}</p></details>`).join('');
 }
@@ -11212,7 +11305,7 @@ G.on('hazard', (h) => {
 G.on('hazardEnd', () => { if ((ui.cur === 'mines' || ui.cur === 'events') && !ui.modalOpen()) ui.render(); });
 G.on('built', () => { if (['mines', 'farm'].includes(ui.cur) && !ui.modalOpen()) ui.render(); });
 G.on('hungry', () => note({ text: 'Your Chikns are hungry and losing weight! Grind FEED in the Feed Mill or burn EGG for FEED.', icon: 'res/feed', bad: true }));
-G.on('farmDay', () => { if (ui.cur === 'farm' && !ui.modalOpen()) ui.render(); });
+G.on('farmDay', (day, offline) => { if (!offline && ui.cur === 'farm' && !ui.modalOpen()) ui.render(); });
 
 function welcome() {
   ui.modal({ title: 'Welcome to Chikn Henium Mines!', hero: 'ui/logo', wide: false,

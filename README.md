@@ -9,5 +9,9 @@ HENIUM and trade on the DEX.
 Each page is a single self-contained HTML file (all art included) that runs in any modern browser, on desktop or
 phone. Progress is saved in your browser.
 
+The game runs in **real time**: a farm day is 24 hours and deep digs take about a week. HENIUM follows a fixed
+schedule of 7,200 a day for the whole world, halving every 1,458 days, from 1 Nov 2026. Away from the game, your floors
+mine for up to 8 hours, and factories, digs and the farm keep running.
+
 > Prototype: HENIUM, EGG, FEED, ETH, NFTs, other players and the DEX are simulated locally — there is no
 > blockchain, wallet, server or real money involved.
